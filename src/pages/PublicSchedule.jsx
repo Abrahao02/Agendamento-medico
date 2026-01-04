@@ -14,6 +14,8 @@ export default function PublicSchedule() {
 
   // Mini-form
   const [selectedSlot, setSelectedSlot] = useState(null);
+  // Selected day (show times after selecting a day)
+  const [selectedDay, setSelectedDay] = useState(null);
   const [patientName, setPatientName] = useState("");
   const [patientWhatsapp, setPatientWhatsapp] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -61,6 +63,13 @@ export default function PublicSchedule() {
 
     fetchDoctorAndAvailability();
   }, [slug]);
+
+  const handleDayClick = (day) => {
+    setSelectedDay(day);
+    setSelectedSlot(null);
+    setPatientName("");
+    setPatientWhatsapp("");
+  };
 
   const handleSlotClick = (dayId, date, slot) => {
     setSelectedSlot({ dayId, date, time: slot });
@@ -137,24 +146,39 @@ export default function PublicSchedule() {
 
       {availability.length === 0 && <p>Nenhum horário disponível.</p>}
 
-      {availability.map(({ id, date, slots }) => (
-        <div key={id} className="day-slots">
-          <h4>Escolha seu horário em {formatDate(date)}</h4>
-          {slots.length === 0 ? (
-            <p>Nenhum horário disponível</p>
+      {/* Lista de dias disponíveis */}
+      <div className="days-list">
+        <h4>Escolha o dia</h4>
+        {availability.map(({ id, date, slots }) => (
+          <button
+            key={id}
+            className={`day-btn ${selectedDay && selectedDay.id === id ? 'selected' : ''} ${slots.length === 0 ? 'empty' : ''}`}
+            onClick={() => handleDayClick({ id, date, slots })}
+          >
+            {formatDate(date)}{slots.length > 0 ? ` — ${slots.length} horário(s)` : ''}
+          </button>
+        ))}
+      </div>
+
+      {/* Depois de escolher um dia, mostrar horários desse dia */}
+      {selectedDay && (
+        <div className="day-slots">
+          <h4>Horários em {formatDate(selectedDay.date)}</h4>
+          {selectedDay.slots.length === 0 ? (
+            <p>Nenhum horário disponível nesse dia.</p>
           ) : (
-            slots.map((slot, idx) => (
-              <button 
-                key={idx} 
+            selectedDay.slots.map((slot, idx) => (
+              <button
+                key={idx}
                 className="slot-btn"
-                onClick={() => handleSlotClick(id, date, slot)}
+                onClick={() => handleSlotClick(selectedDay.id, selectedDay.date, slot)}
               >
                 {slot}
               </button>
             ))
           )}
         </div>
-      ))}
+      )}
 
       {selectedSlot && (
         <div className="appointment-form">
