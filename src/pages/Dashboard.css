@@ -1,0 +1,107 @@
+.dashboard-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.dashboard-container h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.public-link-card {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1rem 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.8rem;
+  background-color: #f9f9f9;
+}
+
+.link-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.5rem;
+  gap: 0.5rem;
+}
+
+.link-box span {
+  font-family: monospace;
+  background: #eee;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.link-box button {
+  padding: 0.5rem 1rem;
+  background-color: #4caf50;
+  border: none;
+  border-radius: 0.5rem;
+  color: white;
+  cursor: pointer;
+}
+
+.link-box button:hover {
+  background-color: #43a047;
+}
+
+.stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.stat-card {
+  flex: 1 1 160px;
+  min-width: 160px;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  text-align: center;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stat-card h3 {
+  font-size: 2rem;
+  margin: 0 0 0.5rem 0;
+}
+
+/* Cada card com cor própria */
+.stat-card.clients-pending { background-color: #ff9800; }      /* laranja */
+.stat-card.slots-open { background-color: #1976d2; }           /* azul */
+.stat-card.appointments-confirmed { background-color: #4caf50; } /* verde */
+.stat-card.appointments-attended { background-color: #9c27b0; } /* roxo */
+.stat-card.no-shows { background-color: #f44336; }             /* vermelho */
+
+/* Faz o <p> branco */
+.stat-card p {
+  color: white;
+  margin: 0;
+  font-weight: 500;
+}
+
+.logout-btn {
+  display: block;
+  margin: 0 auto;
+  padding: 0.8rem 1.5rem;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #d32f2f;
+}

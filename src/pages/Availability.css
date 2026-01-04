@@ -1,0 +1,153 @@
+/* CalendarAvailability.css */
+.calendar-availability-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: 'Inter', sans-serif;
+}
+
+.calendar-availability-container h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+/* Day slots */
+.day-slots {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.slot-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.slot-item.free {
+  background-color: #d1fae5; /* verde */
+  color: #065f46;
+}
+
+.slot-item.booked {
+  background-color: #fee2e2; /* vermelho */
+  color: #991b1b;
+}
+
+.slot-item button {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.slot-item button:hover {
+  background: #b91c1c;
+}
+
+/* Adicionar slot */
+.add-slot {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.add-slot input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.add-slot button {
+  padding: 0.4rem 0.8rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.add-slot button:hover {
+  background: #059669;
+}
+
+/* Botão Salvar Alterações */
+.save-changes {
+  text-align: right;
+  margin-top: 0.5rem;
+}
+
+.save-changes button {
+  padding: 0.5rem 1rem;
+  background-color: #2563eb; /* azul */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.save-changes button:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* Erro */
+.error {
+  color: #ef4444;
+  margin-top: 0.5rem;
+}
+
+/* Calendário badges - bolinhas pequenas */
+.calendar-badges {
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+.badge {
+  font-size: 0.6rem;
+  font-weight: bold;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%; /* totalmente redonda */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  line-height: 1;
+}
+
+.badge.free {
+  background-color: #10b981; /* verde */
+}
+
+.badge.booked {
+  background-color: #ef4444; /* vermelho */
+}
+
