@@ -1,0 +1,74 @@
+.todos-appointments-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
+
+.filter-buttons {
+  margin-bottom: 15px;
+}
+
+.filter-buttons button {
+  margin-right: 10px;
+  padding: 8px 12px;
+  border: none;
+  background-color: #ddd;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+.filter-buttons button.active {
+  background-color: #4caf50;
+  color: white;
+}
+
+.filter-buttons button:hover {
+  background-color: #a0a0a0;
+  color: white;
+}
+
+.appointments-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.appointment-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  border-bottom: 1px solid #ddd;
+  background-color: #f9f9f9;
+  margin-bottom: 5px;
+  border-radius: 6px;
+}
+
+.appointment-item span,
+.appointment-item select {
+  margin-right: 10px;
+}
+
+.appointment-item select {
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.save-btn {
+  margin-top: 15px;
+  padding: 10px 15px;
+  border: none;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

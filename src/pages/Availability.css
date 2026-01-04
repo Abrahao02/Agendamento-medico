@@ -1,0 +1,152 @@
+.availability-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.availability-container h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.date-label {
+  display: block;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.slots-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.slot-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.slot-input input[type="time"] {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid #ccc;
+  transition: all 0.2s;
+}
+
+.slot-input input.filled {
+  border-color: #4caf50;
+  background-color: #e8f5e9;
+}
+
+.slot-input input.empty {
+  border-color: #f44336;
+  background-color: #ffebee;
+}
+
+.slot-input button {
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.4rem;
+  border: none;
+  background-color: #f44336;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slot-input button:hover {
+  background-color: #d32f2f;
+}
+
+.slots-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.slots-actions button {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.slots-actions button[type="button"]:first-child {
+  background-color: #2196f3;
+  color: #fff;
+}
+
+.slots-actions button[type="button"]:first-child:hover {
+  background-color: #1976d2;
+}
+
+.submit-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.submit-btn:hover {
+  background-color: #43a047;
+}
+
+.error {
+  color: #f44336;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.availability-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.availability-container h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+  font-size: 2rem;
+}
+
+.date-label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  color: #555;
+  font-size: 1.1rem;
+}
+
+.date-label input[type="date"] {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-size: 1.1rem;
+  border-radius: 0.6rem;
+  border: 1px solid #ccc;
+  width: 100%;
+  max-width: 250px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+.date-label input[type="date"]:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.4);
+}
