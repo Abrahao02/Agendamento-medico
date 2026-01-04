@@ -1,7 +1,5 @@
 # Projeto: Sistema de Agendamento Médico
 
-![Projeto Dashboard](https://via.placeholder.com/600x200.png?text=Dashboard+Médico)
-
 ## Descrição
 
 Este projeto é um **sistema completo de agendamento para consultórios médicos**, desenvolvido com **React**, **Firebase** e integração opcional com **WhatsApp**.  
