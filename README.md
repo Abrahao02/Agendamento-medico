@@ -27,7 +27,4 @@ O sistema permite:
 - **Integração WhatsApp:** envio de mensagens via link para número do paciente
 - **Gerenciamento de estado:** useState, useEffect
 
----
-
-## Estrutura do Projeto
 
