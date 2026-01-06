@@ -111,6 +111,7 @@ export default function PublicSchedule() {
 
     setSubmitting(true);
     try {
+      // Salvar no Firestore
       await addDoc(collection(db, "appointments"), {
         doctorId: doctor.id,
         doctorSlug: doctor.slug,
@@ -122,6 +123,7 @@ export default function PublicSchedule() {
         createdAt: new Date()
       });
 
+      // Atualizar disponibilidade
       const availRef = doc(db, "availability", selectedSlot.dayId);
       await updateDoc(availRef, {
         slots: availability
@@ -135,7 +137,39 @@ export default function PublicSchedule() {
           : a
       ));
 
-      navigate(`/public/${slug}/success`, { state: { name: patientName, date: selectedSlot.date, time: selectedSlot.time } });
+      // Enviar e-mail via Apps Script (simples, sem CORS)
+      const formData = new URLSearchParams();
+      formData.append("to", doctor.email);
+      formData.append("subject", `Novo agendamento com ${patientName}`);
+      formData.append("body",
+        `Paciente: ${patientName}\nWhatsApp: ${whatsappNumbers}\nData: ${selectedSlot.date}\nHora: ${selectedSlot.time}`
+      );
+      formData.append("htmlBody", `
+        <p>Olá Dr(a). ${doctor.name},</p>
+        <p>Você tem um novo agendamento:</p>
+        <ul>
+          <li><b>Paciente:</b> ${patientName}</li>
+          <li><b>WhatsApp:</b> ${whatsappNumbers}</li>
+          <li><b>Data:</b> ${selectedSlot.date}</li>
+          <li><b>Hora:</b> ${selectedSlot.time}</li>
+        </ul>
+      `);
+
+      const emailEndpoint = import.meta.env.VITE_APPS_SCRIPT_URL;
+
+      if (!emailEndpoint) {
+        throw new Error("Endpoint de e-mail não configurado");
+      }
+
+      await fetch(emailEndpoint, {
+        method: "POST",
+        body: formData
+      });
+
+      // Redirecionar para página de sucesso
+      navigate(`/public/${slug}/success`, {
+        state: { name: patientName, date: selectedSlot.date, time: selectedSlot.time }
+      });
 
     } catch (err) {
       console.error("Erro ao agendar:", err);
