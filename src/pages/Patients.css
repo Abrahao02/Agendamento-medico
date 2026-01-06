@@ -1,0 +1,91 @@
+.patients-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #f9fafb;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  font-family: "Inter", sans-serif;
+}
+
+.patients-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+}
+
+.patients-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.patients-table thead {
+  background: #f3f4f6;
+}
+
+.patients-table th,
+.patients-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.patients-table th {
+  color: #374151;
+  font-weight: 600;
+}
+
+.patients-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.patients-table input {
+  width: 90px;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.patients-table input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.center {
+  text-align: center;
+}
+
+.total {
+  font-weight: 600;
+  color: #065f46;
+}
+
+.whatsapp {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.save-btn {
+  padding: 0.35rem 0.8rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #3b82f6;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.save-btn:hover {
+  background: #2563eb;
+}
+
+.save-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}

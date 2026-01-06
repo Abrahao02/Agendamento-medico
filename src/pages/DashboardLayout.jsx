@@ -37,6 +37,12 @@ export default function DashboardLayout() {
               📚 Todas consultas
             </NavLink>
           </li>
+
+          <li>
+            <NavLink to="/dashboard/patients">
+              👤 Pacientes
+            </NavLink>
+          </li>
           <li>
             <button onClick={handleLogout} className="logout-btn">
               🚪 Sair

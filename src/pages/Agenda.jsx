@@ -13,7 +13,6 @@ export default function Agenda() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Formata data para YYYY-MM-DD
   const formatDateForQuery = (date) => {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -23,53 +22,30 @@ export default function Agenda() {
 
   const currentDateStr = formatDateForQuery(currentDate);
 
-  // Funções para navegar datas
-  const goToPreviousDay = () => {
-    setCurrentDate(prev => {
-      const newDate = new Date(prev);
-      newDate.setDate(newDate.getDate() - 1);
-      return newDate;
-    });
-  };
-
-  const goToNextDay = () => {
-    setCurrentDate(prev => {
-      const newDate = new Date(prev);
-      newDate.setDate(newDate.getDate() + 1);
-      return newDate;
-    });
-  };
-
-  const goToToday = () => {
-    setCurrentDate(new Date());
-  };
-
-  // Redireciona se não estiver logado
   useEffect(() => {
     if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
 
-  // Busca agendamentos do dia selecionado
   useEffect(() => {
     const fetchAppointments = async () => {
       if (!user) return;
 
       try {
-        const appointmentsRef = collection(db, "appointments");
         const q = query(
-          appointmentsRef,
+          collection(db, "appointments"),
           where("doctorId", "==", user.uid),
           where("date", "==", currentDateStr)
         );
+
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         data.sort((a, b) => a.time.localeCompare(b.time));
+
         setAppointments(data);
 
-        // Inicializa statusUpdates
         const initialStatus = {};
         data.forEach(a => {
-          initialStatus[a.id] = a.status;
+          initialStatus[a.id] = a.status || "Pendente";
         });
         setStatusUpdates(initialStatus);
       } catch (err) {
@@ -84,20 +60,37 @@ export default function Agenda() {
     setStatusUpdates(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSendWhatsapp = (appt) => {
-    const message = `Olá ${appt.patientName}, seu horário com Dr(a) está agendado para ${formatDate(appt.date)} às ${appt.time}.`;
-    window.open(`https://wa.me/${appt.patientWhatsapp}?text=${encodeURIComponent(message)}`, "_blank");
+  // 🔥 NOVA LÓGICA AQUI
+  const handleSendWhatsapp = async (appt) => {
+    const message = `Olá ${appt.patientName}, sua sessão está agendada para ${formatDate(appt.date)} às ${appt.time}. Caso não possa comparecer, por favor retornar ainda hoje. Obrigada!`;
+
+    window.open(
+      `https://wa.me/${appt.patientWhatsapp}?text=${encodeURIComponent(message)}`,
+      "_blank"
+    );
+
+    const newStatus = "Msg enviada";
+
+    try {
+      const apptRef = doc(db, "appointments", appt.id);
+      await updateDoc(apptRef, { status: newStatus });
+
+      // Atualiza estado local
+      setStatusUpdates(prev => ({ ...prev, [appt.id]: newStatus }));
+      setAppointments(prev =>
+        prev.map(a => a.id === appt.id ? { ...a, status: newStatus } : a)
+      );
+    } catch (err) {
+      console.error("Erro ao atualizar status após envio:", err);
+    }
   };
 
   const handleSave = async () => {
     try {
       for (const [id, status] of Object.entries(statusUpdates)) {
-        const apptRef = doc(db, "appointments", id);
-        await updateDoc(apptRef, { status });
+        await updateDoc(doc(db, "appointments", id), { status });
       }
       alert("Status atualizado com sucesso!");
-      // Atualiza localmente
-      setAppointments(prev => prev.map(a => ({ ...a, status: statusUpdates[a.id] })));
     } catch (err) {
       console.error("Erro ao salvar status:", err);
       alert("Erro ao salvar. Tente novamente.");
@@ -109,12 +102,12 @@ export default function Agenda() {
   return (
     <div className="agenda-container">
       <h2>Agenda</h2>
-      
+
       <div className="date-navigation">
-        <button onClick={goToPreviousDay}>⬅ Anterior</button>
+        <button onClick={() => setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() - 1)))}>⬅ Anterior</button>
         <span>{formatDate(currentDate)}</span>
-        <button onClick={goToNextDay}>Próximo ➡</button>
-        <button onClick={goToToday}>Hoje</button>
+        <button onClick={() => setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + 1)))}>Próximo ➡</button>
+        <button onClick={() => setCurrentDate(new Date())}>Hoje</button>
       </div>
 
       <h3>Agendamentos para {formatDate(currentDateStr)}</h3>
@@ -123,7 +116,7 @@ export default function Agenda() {
 
       <ul className="appointments-list">
         {appointments.map(app => (
-          <li key={app.id} className={`appointment-item ${app.status.toLowerCase().replace(" ", "-")}`}>
+          <li key={app.id} className={`appointment-item ${app.status?.toLowerCase().replace(" ", "-")}`}>
             <span className="time">{app.time}</span>
             <span className="patient-name">{app.patientName}</span>
             <span className="patient-whatsapp">{app.patientWhatsapp}</span>
@@ -133,17 +126,22 @@ export default function Agenda() {
               onChange={(e) => handleStatusChange(app.id, e.target.value)}
             >
               <option value="Pendente">⏳ Pendente</option>
+              <option value="Msg enviada">📩 Msg enviada</option>
               <option value="Confirmado">✔ Confirmado</option>
               <option value="Não Compareceu">❌ Não Compareceu</option>
             </select>
 
-            <button onClick={() => handleSendWhatsapp(app)}>📱 Enviar WhatsApp</button>
+            <button onClick={() => handleSendWhatsapp(app)}>
+              📱 Enviar WhatsApp
+            </button>
           </li>
         ))}
       </ul>
 
       {appointments.length > 0 && (
-        <button className="save-btn" onClick={handleSave}>💾 Salvar Alterações</button>
+        <button className="save-btn" onClick={handleSave}>
+          💾 Salvar Alterações
+        </button>
       )}
     </div>
   );

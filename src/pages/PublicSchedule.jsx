@@ -53,17 +53,10 @@ export default function PublicSchedule() {
           date: doc.data().date,
           slots: doc.data().slots || []
         }));
-        console.log("Raw availability:", rawData);
-        const data = rawData
-          .filter(a => {
-            const dateValid = a.date >= todayStr;
-            const hasSlots = a.slots.length > 0;
-            console.log(`Date ${a.date}: dateValid=${dateValid}, hasSlots=${hasSlots}, slots=${a.slots}`);
-            return hasSlots && dateValid;
-          })
-          .sort((a, b) => a.date.localeCompare(b.date));
 
-        console.log("Filtered data:", data);
+        const data = rawData
+          .filter(a => a.slots.length > 0 && a.date >= todayStr)
+          .sort((a, b) => a.date.localeCompare(b.date));
 
         setAvailability(data);
 
@@ -110,7 +103,9 @@ export default function PublicSchedule() {
     }
 
     setSubmitting(true);
+
     try {
+      // 1️⃣ Salvar no Firestore
       await addDoc(collection(db, "appointments"), {
         doctorId: doctor.id,
         doctorSlug: doctor.slug,
@@ -122,20 +117,47 @@ export default function PublicSchedule() {
         createdAt: new Date()
       });
 
+      // 2️⃣ Atualizar disponibilidade
       const availRef = doc(db, "availability", selectedSlot.dayId);
       await updateDoc(availRef, {
-        slots: availability
-          .find(a => a.id === selectedSlot.dayId)
+        slots: availability.find(a => a.id === selectedSlot.dayId)
           .slots.filter(s => s !== selectedSlot.time)
       });
 
-      setAvailability(prev => prev.map(a => 
-        a.id === selectedSlot.dayId 
-          ? { ...a, slots: a.slots.filter(s => s !== selectedSlot.time) } 
+      setAvailability(prev => prev.map(a =>
+        a.id === selectedSlot.dayId
+          ? { ...a, slots: a.slots.filter(s => s !== selectedSlot.time) }
           : a
       ));
 
-      navigate(`/public/${slug}/success`, { state: { name: patientName, date: selectedSlot.date, time: selectedSlot.time } });
+      // 3️⃣ Enviar e-mail via Apps Script (simples, sem CORS)
+      const formData = new URLSearchParams();
+      formData.append("to", doctor.email);
+      formData.append("subject", `Novo agendamento com ${patientName}`);
+      formData.append("body",
+        `Paciente: ${patientName}\nWhatsApp: ${whatsappNumbers}\nData: ${selectedSlot.date}\nHora: ${selectedSlot.time}`
+      );
+      formData.append("htmlBody", `
+        <p>Olá Dr(a). ${doctor.name},</p>
+        <p>Você tem um novo agendamento:</p>
+        <ul>
+          <li><b>Paciente:</b> ${patientName}</li>
+          <li><b>WhatsApp:</b> ${whatsappNumbers}</li>
+          <li><b>Data:</b> ${selectedSlot.date}</li>
+          <li><b>Hora:</b> ${selectedSlot.time}</li>
+        </ul>
+      `);
+
+      // Substitua a URL abaixo pelo link do seu Apps Script
+      await fetch("https://script.google.com/macros/s/AKfycbyymLbPJh-h-f0rSKlPnbMQoQ9OM337tXhp_l5jW8fOEQFuYOf50t2SfJKDxWFA6wU9/exec", {
+        method: "POST",
+        body: formData
+      });
+
+      // 4️⃣ Redirecionar para página de sucesso
+      navigate(`/public/${slug}/success`, {
+        state: { name: patientName, date: selectedSlot.date, time: selectedSlot.time }
+      });
 
     } catch (err) {
       console.error("Erro ao agendar:", err);
@@ -145,6 +167,7 @@ export default function PublicSchedule() {
     }
   };
 
+
   if (loading) return <p>Carregando...</p>;
   if (!doctor) return <p>Médico não encontrado.</p>;
 
@@ -152,7 +175,7 @@ export default function PublicSchedule() {
     <div className="public-schedule-container">
       <h2>Agendar com Dr(a). {doctor.name}</h2>
       <p className="instructions">
-        Preencha o formulário abaixo para solicitar seu horário de atendimento.<br/>
+        Preencha o formulário abaixo para solicitar seu horário de atendimento.<br />
         Após o envio, você receberá a confirmação pelo WhatsApp.
       </p>
 
@@ -193,14 +216,14 @@ export default function PublicSchedule() {
           <form onSubmit={handleSubmitAppointment}>
             <label>
               Nome completo:
-              <input 
+              <input
                 value={patientName}
                 onChange={e => setPatientName(e.target.value)}
               />
             </label>
             <label>
               WhatsApp:
-              <input 
+              <input
                 value={patientWhatsapp}
                 onChange={e => setPatientWhatsapp(e.target.value)}
                 placeholder="Ex: 5511988888888"
