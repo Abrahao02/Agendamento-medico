@@ -1,107 +1,244 @@
+/* ===============================
+   LAYOUT GERAL
+================================ */
 .dashboard-container {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 2rem auto;
-  padding: 2rem;
-  background: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 6px 25px rgba(0,0,0,0.12);
-  font-family: 'Segoe UI', sans-serif;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 1.2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
 .dashboard-container h2 {
   text-align: center;
-  margin-bottom: 2rem;
-  color: #333;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+  font-size: 1.6rem;
+  font-weight: 600;
 }
 
-.public-link-card {
-  text-align: center;
-  margin-bottom: 2rem;
-  padding: 1rem 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 0.8rem;
-  background-color: #f9f9f9;
-}
-
-.link-box {
+/* ===============================
+   FILTRO DE MÊS
+================================ */
+.month-filter {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 0.5rem;
-  gap: 0.5rem;
+  gap: 0.6rem;
+  margin-bottom: 1.8rem;
+}
+
+.month-filter label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.month-filter input {
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+}
+
+/* ===============================
+   LINK PÚBLICO
+================================ */
+.public-link-card {
+  margin-bottom: 2.2rem;
+  padding: 1.2rem 1.5rem;
+  border-radius: 0.9rem;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.public-link-card p {
+  text-align: center;
+  font-weight: 500;
+  color: #374151;
+}
+
+
+.link-box {
+  margin-top: 0.6rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .link-box span {
   font-family: monospace;
-  background: #eee;
-  padding: 0.5rem 1rem;
+  background: #eef2ff;
+  color: #1e40af;
+  padding: 0.5rem 0.9rem;
   border-radius: 0.5rem;
-  overflow-x: auto;
+  font-size: 0.9rem;
 }
 
 .link-box button {
-  padding: 0.5rem 1rem;
-  background-color: #4caf50;
+  padding: 0.45rem 0.9rem;
+  background-color: #2563eb;
   border: none;
   border-radius: 0.5rem;
   color: white;
   cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
 }
 
 .link-box button:hover {
-  background-color: #43a047;
+  background-color: #1d4ed8;
 }
 
+/* ===============================
+   CARDS DE INDICADORES
+================================ */
 .stats-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  margin-bottom: 2rem;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 2.5rem;
 }
 
 .stat-card {
-  flex: 1 1 160px;
-  min-width: 160px;
-  padding: 1.5rem;
+  padding: 1.6rem 1rem;
   border-radius: 1rem;
   text-align: center;
   color: white;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
 .stat-card h3 {
-  font-size: 2rem;
-  margin: 0 0 0.5rem 0;
+  font-size: 2.2rem;
+  margin: 0;
 }
 
-/* Cada card com cor própria */
-.stat-card.clients-pending { background-color: #ff9800; }      /* laranja */
-.stat-card.slots-open { background-color: #1976d2; }           /* azul */
-.stat-card.appointments-confirmed { background-color: #4caf50; } /* verde */
-.stat-card.appointments-attended { background-color: #9c27b0; } /* roxo */
-.stat-card.no-shows { background-color: #f44336; }             /* vermelho */
-
-/* Faz o <p> branco */
 .stat-card p {
-  color: white;
-  margin: 0;
+  margin-top: 0.4rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Cores dos cards */
+.stat-card.slots-open { background: linear-gradient(135deg, #2563eb, #1e40af); }
+.stat-card.appointments-confirmed { background: linear-gradient(135deg, #16a34a, #15803d); }
+.stat-card.clients-pending { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.stat-card.appointments-attended { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+.stat-card.no-shows { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+/* ===============================
+   GRÁFICOS
+================================ */
+.charts {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+.chart-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.2rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.chart-card h3 {
+  text-align: center;
+  margin-bottom: 0.8rem;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+/* Texto dentro dos cards SEMPRE branco */
+.stat-card h3,
+.stat-card p {
+  color: #ffffff !important;
+}
+
+.public-link-card {
+  margin: 2rem auto;
+  padding: 1.5rem;
+  max-width: 700px;
+  border-radius: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.public-link-label {
+  font-size: 0.9rem;
+  color: #475569;
+  margin-bottom: 0.6rem;
   font-weight: 500;
 }
 
-.logout-btn {
-  display: block;
-  margin: 0 auto;
-  padding: 0.8rem 1.5rem;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 0.6rem;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: 0.2s;
+.public-link-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
-.logout-btn:hover {
-  background-color: #d32f2f;
+/* Link em destaque */
+.public-link-text {
+  background: #eef2ff;
+  color: #1e40af;
+  padding: 0.6rem 1rem;
+  border-radius: 0.6rem;
+  font-family: monospace;
+  font-size: 0.9rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Botões */
+.copy-btn {
+  padding: 0.55rem 1rem;
+  background-color: #2563eb;
+  border: none;
+  border-radius: 0.6rem;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.copy-btn:hover {
+  background-color: #1e40af;
+}
+
+.open-btn {
+  padding: 0.55rem 1rem;
+  background-color: #10b981;
+  border-radius: 0.6rem;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.open-btn:hover {
+  background-color: #059669;
+}
+
+
+/* ===============================
+   RESPONSIVO
+================================ */
+@media (max-width: 900px) {
+  .charts {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-container {
+    padding: 1.5rem;
+  }
 }

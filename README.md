@@ -1,175 +1,156 @@
-# Sistema de Agendamento Médico
+# 🩺 Sistema de Agendamento Médico — Plataforma SaaS
 
-Um sistema completo para gerenciamento de agendamentos médicos, desenvolvido com React e Firebase. Permite que médicos configurem suas disponibilidades e pacientes agendem consultas online.
+Uma **plataforma SaaS de agendamento médico online**, desenvolvida para automatizar a gestão de consultas, reduzir faltas e simplificar a comunicação entre médicos e pacientes.
 
-## 🚀 Funcionalidades
-
-### Para Médicos
-- **Cadastro e Login Seguro**: Autenticação com Firebase Auth, incluindo verificação de email e reset de senha.
-- **Gerenciamento de Disponibilidade**: Calendário interativo para definir horários disponíveis, com slots customizáveis (ex.: 09:30, 10:00).
-- **Agenda Navegável**: Visualize agendamentos por data, com navegação entre dias (anterior/próximo/hoje).
-- **Controle de Consultas**: Altere status das consultas (Pendente, Confirmado, Não Compareceu).
-- **Dashboard**: Indicadores de consultas do mês, horários livres e confirmados.
-- **Notificações**: Envio automático de mensagens WhatsApp para pacientes.
-
-### Para Pacientes
-- **Agendamento Online**: Interface pública para agendar consultas em horários disponíveis.
-- **Confirmação**: Recebem confirmação via WhatsApp após agendamento.
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Frontend**: React 18, React Router DOM, CSS Modules
-- **Backend**: Firebase (Authentication, Firestore)
-- **Ferramentas**: Vite, ESLint, GitHub Actions
-- **Integrações**: WhatsApp (via links), Email (Firebase Auth)
-
-## 📦 Instalação e Configuração
-
-### Pré-requisitos
-- Node.js 18+
-- Conta Firebase
-
-### Passos
-
-1. **Clone o repositório**:
-   ```bash
-   git clone https://github.com/Abrahao02/Agendamento-medico.git
-   cd agendamento-medico
-   ```
-
-2. **Instale as dependências**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure o Firebase**:
-   - Crie um projeto no [Firebase Console](https://console.firebase.google.com/)
-   - Ative Authentication (Email/Password) e Firestore
-   - Configure as regras de segurança no Firestore
-   - Copie as chaves de configuração para variáveis de ambiente
-
-4. **Configure as variáveis de ambiente**:
-   Crie um arquivo `.env` na raiz:
-   ```
-   VITE_FIREBASE_API_KEY=your_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   VITE_FIREBASE_PROJECT_ID=your_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   VITE_FIREBASE_APP_ID=your_app_id
-   ```
-
-5. **Execute o projeto**:
-   ```bash
-   npm run dev
-   ```
-
-6. **Build para produção**:
-   ```bash
-   npm run build
-   npm run preview
-   ```
-
-7. **Deploy no Firebase**:
-   ```bash
-   firebase login
-   firebase init hosting
-   firebase deploy
-   ```
-
-## 📁 Estrutura do Projeto
-
-```
-agendamento-medico/
-├── public/
-├── src/
-│   ├── components/
-│   │   └── PrivateRoute.jsx
-│   ├── pages/
-│   │   ├── Agenda.jsx          # Agenda navegável por datas
-│   │   ├── AllAppointments.jsx # Lista de todos agendamentos
-│   │   ├── Availability.jsx    # Gerenciamento de disponibilidade
-│   │   ├── Dashboard.jsx       # Dashboard com métricas
-│   │   ├── Login.jsx           # Login com verificação de email
-│   │   ├── Register.jsx        # Cadastro de médicos
-│   │   └── PublicSchedule.jsx  # Agendamento público
-│   ├── routes/
-│   │   └── AppRoutes.jsx
-│   ├── services/
-│   │   ├── firebase.js         # Configuração Firebase
-│   │   └── doctors.js          # Funções para médicos
-│   ├── utils/
-│   │   ├── formatDate.js       # Formatação de datas (DD/MM/YYYY)
-│   │   └── generateSlug.js     # Geração de slugs para URLs
-│   └── App.jsx
-├── dataconnect/                # Firebase Data Connect (opcional)
-├── functions/                  # Cloud Functions (opcional)
-├── firestore.rules            # Regras de segurança Firestore
-├── firebase.json              # Configuração Firebase
-└── package.json
-```
-
-## 🔧 Funcionalidades Detalhadas
-
-### Autenticação
-- Cadastro de médicos com validação de senha forte
-- Verificação de email obrigatória
-- Reset de senha via email
-- Proteção de rotas com PrivateRoute
-
-### Gerenciamento de Horários
-- Calendário visual com badges para dias com disponibilidade
-- Adição de slots customizáveis (qualquer horário)
-- Remoção de slots não agendados
-- Salvamento automático no Firestore
-
-### Agenda Médica
-- Navegação por datas (anterior/próximo/hoje)
-- Filtro por status de consultas
-- Atualização de status em tempo real
-- Envio de WhatsApp para pacientes
-
-### Agendamento Público
-- URL personalizada por slug do médico
-- Seleção de data e horário disponíveis
-- Formulário com validação
-- Confirmação via WhatsApp
-
-## 🚀 Deploy
-
-O projeto inclui configuração para deploy automático no Firebase Hosting via GitHub Actions.
-
-Para deploy manual:
-```bash
-npm run build
-firebase deploy
-```
-
-## 📝 Scripts Disponíveis
-
-- `npm run dev`: Inicia servidor de desenvolvimento
-- `npm run build`: Build para produção
-- `npm run preview`: Preview do build
-- `npm run lint`: Executa ESLint
-
-## 🤝 Contribuição
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
-3. Commit suas mudanças (`git commit -am 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/nova-feature`)
-5. Abra um Pull Request
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para detalhes.
-
-## 📞 Suporte
-
-Para dúvidas ou sugestões, abra uma issue no GitHub.
+O sistema permite que profissionais de saúde gerenciem sua agenda de forma inteligente, enquanto pacientes realizam agendamentos de maneira rápida, segura e totalmente online.
 
 ---
 
-**Versão 1.0** - Sistema completo e funcional para agendamento médico.
+## 💡 Visão do Produto
 
+Clínicas e profissionais de saúde perdem tempo com:
+- Agendamentos manuais
+- Falta de controle de horários
+- Confirmações feitas individualmente
+- Pacientes que esquecem consultas
 
+Este sistema resolve esses problemas oferecendo uma **experiência digital completa**, moderna e escalável, pronta para uso em produção como um produto SaaS.
+
+---
+
+## 🚀 Principais Benefícios
+
+- ⏱️ Redução de tempo operacional
+- 📅 Controle total da agenda médica
+- 📉 Diminuição de faltas em consultas
+- 🔐 Segurança e confiabilidade dos dados
+- 🌐 Acesso online para médicos e pacientes
+- 📈 Estrutura escalável para crescimento do negócio
+
+---
+
+## 👨‍⚕️ Funcionalidades para Médicos
+
+- **Autenticação Segura**
+  - Cadastro e login com autenticação robusta
+  - Verificação de e-mail
+  - Recuperação de senha
+
+- **Gerenciamento de Disponibilidade**
+  - Definição de horários livres por dia
+  - Slots customizáveis (ex.: 09:30, 10:00, 14:15)
+  - Bloqueio automático de horários já agendados
+
+- **Agenda Inteligente**
+  - Visualização diária da agenda
+  - Navegação entre dias (anterior / próximo / hoje)
+  - Atualização de status das consultas:
+    - Pendente
+    - Confirmada
+    - Não compareceu
+
+- **Dashboard**
+  - Visão geral das consultas do mês
+  - Quantidade de horários livres e ocupados
+  - Indicadores operacionais em tempo real
+
+- **Comunicação Automática**
+  - Envio de mensagens automáticas via WhatsApp
+  - Confirmação instantânea de agendamentos
+
+---
+
+## 🧑‍🤝‍🧑 Funcionalidades para Pacientes
+
+- **Agendamento Online**
+  - Acesso público sem necessidade de login
+  - Visualização apenas de horários disponíveis
+  - Interface simples e intuitiva
+
+- **Confirmação Automática**
+  - Confirmação do agendamento via WhatsApp
+  - Redução de esquecimentos e faltas
+
+---
+
+## 🔐 Segurança e Confiabilidade
+
+- Autenticação gerenciada por **Firebase Authentication**
+- Dados armazenados com **regras de segurança no Firestore**
+- Variáveis sensíveis protegidas via **variáveis de ambiente**
+- Separação clara entre áreas públicas e privadas
+- Estrutura pronta para conformidade com boas práticas de segurança
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+### Frontend
+- React 18
+- React Router DOM
+- Vite
+- CSS modularizado
+
+### Backend & Infraestrutura
+- Firebase Authentication
+- Firestore Database
+- Firebase Hosting
+- Cloud Functions (opcional)
+
+### DevOps & Qualidade
+- ESLint
+- GitHub Actions (CI/CD)
+- Controle de versão com Git
+
+---
+
+## 🧩 Arquitetura do Sistema
+
+- Aplicação SPA moderna
+- Backend serverless
+- Separação clara entre:
+  - Área pública (pacientes)
+  - Área autenticada (médicos)
+- Estrutura escalável para múltiplos profissionais
+
+---
+
+## 🌐 Acesso à Plataforma
+
+🔗 **Aplicação em produção:**  
+> [Link da aplicação](https://etna-agendamento-medico.web.app/login)
+
+---
+
+## 🎯 Público-Alvo
+
+- Médicos autônomos
+- Clínicas médicas
+- Consultórios
+- Profissionais da área da saúde que desejam digitalizar seu atendimento
+
+---
+
+## 📈 Potencial como SaaS
+
+- Modelo de assinatura mensal
+- Multiusuário
+- Fácil personalização por profissional
+- Base sólida para expansão (pagamentos, prontuários, lembretes automáticos)
+
+---
+
+## 📄 Licença
+
+Este projeto está licenciado sob a licença **MIT**, permitindo uso comercial e personalizações.
+
+---
+
+## 👨‍💻 Autor
+
+Desenvolvido por **Eduardo de Sá Abrahão**  
+Projeto com foco em qualidade, escalabilidade e experiência do usuário.
+
+---
+
+⭐ Se este projeto chamou sua atenção, considere deixar uma estrela no repositório.

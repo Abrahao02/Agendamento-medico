@@ -1,11 +1,18 @@
-// CalendarAvailabilityFull.js
 import { useState, useEffect } from "react";
 import { auth, db } from "../services/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
-import { collection, query, where, getDocs, doc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  setDoc,
+  deleteDoc
+} from "firebase/firestore";
 import Calendar from "react-calendar";
-import 'react-calendar/dist/Calendar.css';
+import "react-calendar/dist/Calendar.css";
 import formatDate from "../utils/formatDate";
 import "./Availability.css";
 
@@ -20,28 +27,28 @@ export default function Availability() {
   const [newSlot, setNewSlot] = useState("12:00");
   const [error, setError] = useState("");
   const [loadingData, setLoadingData] = useState(true);
-  const [changed, setChanged] = useState(false); // controla se houve alteração
+  const [changed, setChanged] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
 
-  // Buscar disponibilidade e agendamentos
+  // Buscar dados
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
       setLoadingData(true);
-      try {
-        // Disponibilidade
-        const availRef = collection(db, "availability");
-        const q = query(availRef, where("doctorId", "==", user.uid));
-        const snap = await getDocs(q);
-        setAvailability(snap.docs.map(d => ({ id: d.id, ...d.data() })));
 
-        // Agendamentos
-        const appRef = collection(db, "appointments");
-        const qApp = query(appRef, where("doctorId", "==", user.uid));
-        const appSnap = await getDocs(qApp);
+      try {
+        const availSnap = await getDocs(
+          query(collection(db, "availability"), where("doctorId", "==", user.uid))
+        );
+
+        const appSnap = await getDocs(
+          query(collection(db, "appointments"), where("doctorId", "==", user.uid))
+        );
+
+        setAvailability(availSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         setAppointments(appSnap.docs.map(d => ({ id: d.id, ...d.data() })));
       } catch (err) {
         console.error(err);
@@ -49,107 +56,106 @@ export default function Availability() {
         setLoadingData(false);
       }
     };
+
     fetchData();
   }, [user]);
 
-  // Atualiza slots do dia selecionado
   const handleSelectDate = (dateStr) => {
-    if (changed) {
-      const confirmLeave = window.confirm("Você tem alterações não salvas. Deseja continuar sem salvar?");
-      if (!confirmLeave) return;
-    }
+    if (changed && !window.confirm("Você tem alterações não salvas. Deseja continuar?")) return;
     setSelectedDate(dateStr);
   };
 
   useEffect(() => {
     if (!selectedDate) return;
+
     const dayAvail = availability.find(a => a.date === selectedDate)?.slots || [];
     const dayApps = appointments.filter(a => a.date === selectedDate).map(a => a.time);
-    const combinedSlots = [...new Set([...dayAvail, ...dayApps])].sort();
-    setSlots(combinedSlots);
+
+    setSlots([...new Set([...dayAvail, ...dayApps])].sort());
     setChanged(false);
-    setNewSlot("12:00");
     setError("");
   }, [selectedDate, availability, appointments]);
 
-  const handleRemoveSlot = (slot) => {
-    const dayApps = appointments.filter(a => a.date === selectedDate).map(a => a.time);
-    if (dayApps.includes(slot)) {
-      setError("Não é possível remover um horário já agendado!");
+  const getAppointmentBySlot = (slot) =>
+    appointments.find(a => a.date === selectedDate && a.time === slot);
+
+  const handleRemoveSlot = async (slot) => {
+    const appointment = getAppointmentBySlot(slot);
+
+    if (appointment) {
+      const confirmDelete = window.confirm(
+        `Deseja cancelar o agendamento de ${appointment.patientName}?`
+      );
+      if (!confirmDelete) return;
+
+      try {
+        await deleteDoc(doc(db, "appointments", appointment.id));
+        setAppointments(prev => prev.filter(a => a.id !== appointment.id));
+        setSlots(prev => prev.filter(s => s !== slot));
+      } catch (err) {
+        console.error(err);
+        setError("Erro ao excluir agendamento.");
+      }
       return;
     }
 
     setSlots(prev => prev.filter(s => s !== slot));
     setChanged(true);
-    setError("");
   };
 
   const handleAddSlot = () => {
-    if (!newSlot) return;
-    if (slots.includes(newSlot)) {
-      setError("Horário já existe!");
+    if (!newSlot || slots.includes(newSlot)) {
+      setError("Horário inválido ou duplicado.");
       return;
     }
+
     setSlots(prev => [...prev, newSlot].sort());
-    setNewSlot("12:00");
     setChanged(true);
     setError("");
   };
 
   const handleSave = async () => {
-    if (!selectedDate) return;
-
     const dayAvail = availability.find(a => a.date === selectedDate);
-    const currentSlots = slots.filter(s => !appointments.some(a => a.date === selectedDate && a.time === s));
+    const freeSlots = slots.filter(
+      s => !appointments.some(a => a.date === selectedDate && a.time === s)
+    );
 
     const docId = dayAvail ? dayAvail.id : `${user.uid}_${selectedDate}`;
-    const docRef = doc(db, "availability", docId);
 
     try {
-      await setDoc(docRef, {
+      await setDoc(doc(db, "availability", docId), {
         doctorId: user.uid,
         date: selectedDate,
-        slots: currentSlots,
+        slots: freeSlots
       });
 
-      setAvailability(prev => {
-        if (dayAvail) {
-          return prev.map(a => a.id === dayAvail.id ? { ...a, slots: currentSlots } : a);
-        } else {
-          return [...prev, { id: docId, date: selectedDate, slots: currentSlots }];
-        }
-      });
+      setAvailability(prev =>
+        dayAvail
+          ? prev.map(a => (a.id === docId ? { ...a, slots: freeSlots } : a))
+          : [...prev, { id: docId, date: selectedDate, slots: freeSlots }]
+      );
 
       setChanged(false);
-      setError("");
-      alert("Alterações salvas com sucesso!");
+      alert("Alterações salvas!");
     } catch (err) {
       console.error(err);
-      setError("Erro ao salvar. Tente novamente.");
+      setError("Erro ao salvar.");
     }
-  };
-
-  const getSlotStatus = (slot) => {
-    const dayApps = appointments.filter(a => a.date === selectedDate).map(a => a.time);
-    return dayApps.includes(slot) ? "booked" : "free";
   };
 
   const tileContent = ({ date, view }) => {
     if (view !== "month") return null;
-    const dateStr = date.toISOString().slice(0,10);
-    
-    const dayAvail = availability.find(a => a.date === dateStr)?.slots || [];
-    const dayApps = appointments.filter(a => a.date === dateStr).map(a => a.time);
 
-    const freeSlots = dayAvail.filter(s => !dayApps.includes(s)).length;
-    const bookedSlots = dayApps.length;
+    const dateStr = date.toISOString().slice(0, 10);
+    const free = availability.find(a => a.date === dateStr)?.slots?.length || 0;
+    const booked = appointments.filter(a => a.date === dateStr).length;
 
-    if(freeSlots === 0 && bookedSlots === 0) return null;
+    if (!free && !booked) return null;
 
     return (
       <div className="calendar-badges">
-        {freeSlots > 0 && <span className="badge free">{freeSlots}</span>}
-        {bookedSlots > 0 && <span className="badge booked">{bookedSlots}</span>}
+        {free > 0 && <span className="badge free">{free}</span>}
+        {booked > 0 && <span className="badge booked">{booked}</span>}
       </div>
     );
   };
@@ -162,24 +168,37 @@ export default function Availability() {
 
       <Calendar
         tileContent={tileContent}
-        onClickDay={(date) => handleSelectDate(date.toISOString().slice(0,10))}
+        onClickDay={(date) => handleSelectDate(date.toISOString().slice(0, 10))}
       />
 
       {selectedDate && (
         <div className="day-slots">
           <h3>DIA {formatDate(selectedDate)}</h3>
 
-          {slots.length === 0 && <p>Nenhum horário disponível.</p>}
-
           <div className="slots-list">
-            {slots.map((slot, idx) => (
-              <div key={idx} className={`slot-item ${getSlotStatus(slot)}`}>
-                <span>{slot}</span>
-                {getSlotStatus(slot) === "free" && (
-                  <button onClick={() => handleRemoveSlot(slot)}>❌</button>
-                )}
-              </div>
-            ))}
+            {slots.map((slot, idx) => {
+              const appointment = getAppointmentBySlot(slot);
+
+              return (
+                <div
+                  key={idx}
+                  className={`slot-item ${appointment ? "booked" : "free"}`}
+                >
+                  <span>
+                    {slot}
+                    {appointment && ` - ${appointment.patientName}`}
+                  </span>
+
+                  <button
+                    className="slot-action"
+                    title={appointment ? "Cancelar agendamento" : "Remover horário"}
+                    onClick={() => handleRemoveSlot(slot)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
           <div className="add-slot">
@@ -187,7 +206,6 @@ export default function Availability() {
               type="time"
               value={newSlot}
               onChange={(e) => setNewSlot(e.target.value)}
-              placeholder="Selecione o horário"
             />
             <button onClick={handleAddSlot}>+ Adicionar horário</button>
           </div>
