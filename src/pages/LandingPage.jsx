@@ -28,8 +28,8 @@ const features = [
   },
   {
     icon: Users,
-    title: "Controle de pacientes",
-    description: "Visualize e gerencie seus pacientes com praticidade.",
+    title: "Controle de Clientes",
+    description: "Visualize e gerencie seus clientes com praticidade.",
   },
   {
     icon: BarChart3,
@@ -58,7 +58,7 @@ const freeFeatures = [
 
 const proFeatures = [
   "Atendimentos ilimitados",
-  "Controle avançado de pacientes",
+  "Controle avançado de clientes",
   "Relatórios detalhados",
   "WhatsApp integrado",
   "Suporte prioritário",
@@ -116,7 +116,7 @@ export default function LandingPage() {
           <div className="hero-text fade-up">
             <h1>Organize sua agenda médica de forma simples</h1>
             <p>
-              Agendamento rápido, seguro e fácil para você e seus pacientes.
+              Agendamento rápido, seguro e fácil para você e seus clientes.
               Simplifique sua rotina e foque no que importa.
             </p>
 
@@ -144,7 +144,7 @@ export default function LandingPage() {
             <h2>Marcar consultas nunca foi tão fácil</h2>
             <p>
               Evite ligações intermináveis e confusões de horários. Nosso sistema
-              permite que seus pacientes agendem diretamente com você.
+              permite que seus clientes agendem diretamente com você.
             </p>
 
             <ul className="check-list">
@@ -261,7 +261,7 @@ export default function LandingPage() {
       <section className="cta-section">
         <div className="cta-container fade-up">
           <h2>Comece agora mesmo</h2>
-          <p>Organize sua agenda e foque nos seus pacientes.</p>
+          <p>Organize sua agenda e foque nos seus clientes.</p>
 
           <button
             className="btn btn-primary"

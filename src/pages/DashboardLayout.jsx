@@ -79,7 +79,7 @@ export default function DashboardLayout() {
     { to: "/dashboard/appointments", icon: <FiCalendar />, text: "Agenda do dia" },
     { to: "/dashboard/availability", icon: <FiClock />, text: "Disponibilidade" },
     { to: "/dashboard/allappointments", icon: <FiBookOpen />, text: "Todas consultas" },
-    { to: "/dashboard/patients", icon: <FiUser />, text: "Pacientes" },
+    { to: "/dashboard/clients", icon: <FiUser />, text: "Clientes" },
   ];
 
   return (

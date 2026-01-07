@@ -29,11 +29,11 @@ import {
   TrendingUp,
   Copy,
   ExternalLink,
-  LogOut,
   CheckCircle,
 } from "lucide-react";
 
 import "./Dashboard.css";
+import formatDate from "../utils/formatDate";
 
 const STATUS_COLORS = {
   Confirmado: "#16a34a",
@@ -49,12 +49,9 @@ export default function Dashboard() {
   const [doctorSlug, setDoctorSlug] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const [selectedDay, setSelectedDay] = useState("");
-  const [selectedWeek, setSelectedWeek] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState(
-    new Date().toISOString().slice(0, 7)
-  );
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  // 🔹 Filtros
+  const [selectedDateFrom, setSelectedDateFrom] = useState("");
+  const [selectedDateTo, setSelectedDateTo] = useState("");
 
   const [appointmentsByDay, setAppointmentsByDay] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
@@ -95,13 +92,11 @@ export default function Dashboard() {
     if (!user) return;
 
     const fetchDashboard = async () => {
-      // Consultas
       const appSnap = await getDocs(
         query(collection(db, "appointments"), where("doctorId", "==", user.uid))
       );
       const appointments = appSnap.docs.map((d) => d.data());
 
-      // Pacientes e preços
       const patientSnap = await getDocs(
         query(collection(db, "patients"), where("doctorId", "==", user.uid))
       );
@@ -110,34 +105,15 @@ export default function Dashboard() {
         priceMap[d.data().whatsapp] = d.data().price || 0;
       });
 
-      // Filtrar por mês, semana ou dia
+      // 🔹 Filtrar por intervalo de datas
       let filteredAppointments = appointments;
-
-      const today = new Date();
-      const [year, month] = selectedMonth.split("-");
-      const startMonth = `${year}-${month}-01`;
-      const endMonth = `${year}-${month}-31`;
-
-      if (selectedDay) {
+      if (selectedDateFrom && selectedDateTo) {
         filteredAppointments = appointments.filter(
-          (a) => a.date === selectedDay
-        );
-      } else if (selectedWeek) {
-        const [weekYear, weekNumber] = selectedWeek.split("-W");
-        filteredAppointments = appointments.filter((a) => {
-          const d = new Date(a.date);
-          const w = getWeekNumber(d);
-          return w.week === parseInt(weekNumber) && w.year === parseInt(weekYear);
-        });
-      } else if (selectedMonth) {
-        filteredAppointments = appointments.filter(
-          (a) => a.date >= startMonth && a.date <= endMonth
-        );
-      } else if (selectedYear) {
-        filteredAppointments = appointments.filter(
-          (a) => new Date(a.date).getFullYear() === parseInt(selectedYear)
+          (a) => a.date >= selectedDateFrom && a.date <= selectedDateTo
         );
       }
+
+      const today = new Date();
 
       // Status resumido
       const summary = { Confirmado: 0, Pendente: 0, "Não Compareceu": 0 };
@@ -157,7 +133,7 @@ export default function Dashboard() {
       });
       setAppointmentsByDay(Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date)));
 
-      // Faturamento e ticket médio
+      // Faturamento
       let revenue = 0;
       filteredAppointments.forEach((a) => {
         if (a.status === "Confirmado") revenue += priceMap[a.patientWhatsapp] || 0;
@@ -171,7 +147,7 @@ export default function Dashboard() {
         totalAppointments: filteredAppointments.length,
         attendedAppointments: attended,
         totalRevenue: revenue,
-        averageTicket: patientSnap.size ? (totalValue / patientSnap.size).toFixed(2) : 0,
+        averageTicket: patientSnap.size ? Math.round(totalValue / patientSnap.size) : 0,
       });
 
       // Próximas consultas
@@ -183,7 +159,7 @@ export default function Dashboard() {
     };
 
     fetchDashboard();
-  }, [user, selectedDay, selectedWeek, selectedMonth, selectedYear]);
+  }, [user, selectedDateFrom, selectedDateTo]);
 
   // Copiar link público
   const handleCopyLink = () => {
@@ -201,15 +177,6 @@ export default function Dashboard() {
       .slice(0, 2)
       .toUpperCase();
 
-  const getWeekNumber = (d) => {
-    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const dayNum = date.getUTCDay() || 7;
-    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    const weekNo = Math.ceil(((date - yearStart) / 86400000 + 1) / 7);
-    return { week: weekNo, year: date.getUTCFullYear() };
-  };
-
   const getSlotsOpen = async (uid) => {
     const snap = await getDocs(query(collection(db, "availability"), where("doctorId", "==", uid)));
     return snap.docs.reduce((sum, d) => sum + (d.data().slots?.length || 0), 0);
@@ -217,20 +184,14 @@ export default function Dashboard() {
 
   // Resetar filtros
   const handleResetFilters = () => {
-    setSelectedDay("");
-    setSelectedWeek("");
-    setSelectedMonth(new Date().toISOString().slice(0, 7));
-    setSelectedYear(new Date().getFullYear());
-
-    // Rolagem suave até o topo do dashboard
+    setSelectedDateFrom("");
+    setSelectedDateTo("");
     document.querySelector(".dashboard-content").scrollIntoView({ behavior: "smooth" });
   };
-
 
   if (loading) return <p>Carregando...</p>;
 
   return (
-
     <div className="dashboard-content">
       {/* Public Link */}
       <div className="public-link-card fade-up">
@@ -250,42 +211,25 @@ export default function Dashboard() {
       {/* Filters */}
       <div className="filters-line">
         <div className="filter-item">
-          <label>Dia</label>
+          <label>Selecione da data:</label>
           <div className="input-icon-wrapper">
-            <input type="date" value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)} />
+            <input type="date" value={selectedDateFrom} onChange={(e) => setSelectedDateFrom(e.target.value)} />
             <Calendar size={16} className="input-icon" />
           </div>
         </div>
 
         <div className="filter-item">
-          <label>Semana</label>
+          <label>Selecione a data até:</label>
           <div className="input-icon-wrapper">
-            <input type="week" value={selectedWeek} onChange={(e) => setSelectedWeek(e.target.value)} />
-            <Clock size={16} className="input-icon" />
-          </div>
-        </div>
-
-        <div className="filter-item">
-          <label>Mês</label>
-          <div className="input-icon-wrapper">
-            <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} />
-            <TrendingUp size={16} className="input-icon" />
-          </div>
-        </div>
-
-        <div className="filter-item">
-          <label>Ano</label>
-          <div className="input-icon-wrapper">
-            <input type="number" min="2020" max="2100" value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} />
-            <Users size={16} className="input-icon" />
+            <input type="date" value={selectedDateTo} onChange={(e) => setSelectedDateTo(e.target.value)} />
+            <Calendar size={16} className="input-icon" />
           </div>
         </div>
 
         <button className="reset-btn" onClick={handleResetFilters}>
-          Resetar filtros
+          Limpar filtros
         </button>
       </div>
-
 
       {/* Stats Grid */}
       <div className="stats-grid">
@@ -307,14 +251,14 @@ export default function Dashboard() {
           <div className="stat-icon amber"><DollarSign size={24} /></div>
           <div className="stat-info">
             <p className="stat-value">R$ {stats.totalRevenue}</p>
-            <p className="stat-title">Faturamento previsto</p>
+            <p className="stat-title">Faturamento previsto clientes confirmados</p>
           </div>
         </div>
         <div className="stat-card fade-up delay-4">
           <div className="stat-icon purple"><Users size={24} /></div>
           <div className="stat-info">
             <p className="stat-value">R$ {stats.averageTicket}</p>
-            <p className="stat-title">Ticket médio</p>
+            <p className="stat-title">Ticket médio por cliente cadastrado</p>
           </div>
         </div>
       </div>
@@ -350,9 +294,9 @@ export default function Dashboard() {
           <h3>Consultas por dia</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={appointmentsByDay}>
-              <XAxis dataKey="date" />
+              <XAxis dataKey="date" tickFormatter={formatDate} />
               <YAxis />
-              <Tooltip />
+              <Tooltip labelFormatter={formatDate} />
               <Legend />
               <Bar dataKey="Confirmado" stackId="a" fill={STATUS_COLORS.Confirmado} radius={[4, 4, 0, 0]} />
               <Bar dataKey="Pendente" stackId="a" fill={STATUS_COLORS.Pendente} radius={[0, 0, 0, 0]} />
@@ -369,7 +313,7 @@ export default function Dashboard() {
                 <div className="upcoming-avatar">{getInitials(a.patientName)}</div>
                 <div className="upcoming-info">
                   <h4>{a.patientName}</h4>
-                  <p>{a.date} às {a.time}</p>
+                  <p>{formatDate(a.date)} às {a.time}</p>
                 </div>
                 <span className={`upcoming-status ${a.status === "Confirmado" ? "confirmed" : "pending"}`}>
                   {a.status}

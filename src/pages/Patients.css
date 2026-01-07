@@ -141,3 +141,12 @@
     margin-top: 0.5rem;
   }
 }
+
+.patients-total {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: #111;
+}
+.patients-total strong {
+  color: #0d6efd; /* destaque azul */
+}

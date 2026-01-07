@@ -1,8 +1,8 @@
 # 🩺 Sistema de Agendamento Médico — Plataforma SaaS
 
-Uma **plataforma SaaS de agendamento médico online**, desenvolvida para automatizar a gestão de consultas, reduzir faltas e simplificar a comunicação entre médicos e pacientes.
+Uma **plataforma SaaS de agendamento médico online**, desenvolvida para automatizar a gestão de consultas, reduzir faltas e simplificar a comunicação entre médicos e clientes.
 
-O sistema permite que profissionais de saúde gerenciem sua agenda de forma inteligente, enquanto pacientes realizam agendamentos de maneira rápida, segura e totalmente online.
+O sistema permite que profissionais de saúde gerenciem sua agenda de forma inteligente, enquanto clientes realizam agendamentos de maneira rápida, segura e totalmente online.
 
 ---
 
@@ -12,7 +12,7 @@ Clínicas e profissionais de saúde perdem tempo com:
 - Agendamentos manuais
 - Falta de controle de horários
 - Confirmações feitas individualmente
-- Pacientes que esquecem consultas
+- clientes que esquecem consultas
 
 Este sistema resolve esses problemas oferecendo uma **experiência digital completa**, moderna e escalável, pronta para uso em produção como um produto SaaS.
 
@@ -24,7 +24,7 @@ Este sistema resolve esses problemas oferecendo uma **experiência digital compl
 - 📅 Controle total da agenda médica
 - 📉 Diminuição de faltas em consultas
 - 🔐 Segurança e confiabilidade dos dados
-- 🌐 Acesso online para médicos e pacientes
+- 🌐 Acesso online para médicos e clientes
 - 📈 Estrutura escalável para crescimento do negócio
 
 ---
@@ -60,7 +60,7 @@ Este sistema resolve esses problemas oferecendo uma **experiência digital compl
 
 ---
 
-## 🧑‍🤝‍🧑 Funcionalidades para Pacientes
+## 🧑‍🤝‍🧑 Funcionalidades para clientes
 
 - **Agendamento Online**
   - Acesso público sem necessidade de login
@@ -109,7 +109,7 @@ Este sistema resolve esses problemas oferecendo uma **experiência digital compl
 - Aplicação SPA moderna
 - Backend serverless
 - Separação clara entre:
-  - Área pública (pacientes)
+  - Área pública (clientes)
   - Área autenticada (médicos)
 - Estrutura escalável para múltiplos profissionais
 

@@ -46,7 +46,7 @@ export default function Patients() {
         map[key].totalConsultas += 1;
       });
 
-      // 2️⃣ Buscar pacientes (preços)
+      // 2️⃣ Buscar Clientes (preços)
       const patientSnap = await getDocs(
         query(
           collection(db, "patients"),
@@ -108,7 +108,12 @@ export default function Patients() {
 
   return (
     <div className="patients-container">
-      <h2>Pacientes</h2>
+      <h2>Clientes</h2>
+
+      {/* Total de Clientes */}
+      <div className="patients-total">
+        Total de Clientes: <strong>{list.length}</strong>
+      </div>
 
       {list.length === 0 ? (
         <p>Nenhum paciente encontrado.</p>

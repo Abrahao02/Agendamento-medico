@@ -9,8 +9,8 @@ import PublicSchedule from "../pages/PublicSchedule";
 import { PrivateRoute } from "../components/PrivateRoute";
 import PublicScheduleSuccess from "../pages/PublicScheduleSuccess";
 import AllAppointments from "../pages/AllAppointments";
-import Patients from "../pages/patients";
 import LandingPage from "../pages/LandingPage";
+import Patients from "../pages/Patients";
 
 
 export default function AppRoutes() {
@@ -39,7 +39,7 @@ export default function AppRoutes() {
           <Route path="availability" element={<Availability />} />
           <Route path="appointments" element={<Agenda />} />
           <Route path="allappointments" element={<AllAppointments />} />
-          <Route path="patients" element={<Patients />} />
+          <Route path="clients" element={<Patients />} />
         </Route>
 
         {/* Rota padrão */}
