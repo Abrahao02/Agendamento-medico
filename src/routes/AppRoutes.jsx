@@ -10,6 +10,7 @@ import { PrivateRoute } from "../components/PrivateRoute";
 import PublicScheduleSuccess from "../pages/PublicScheduleSuccess";
 import AllAppointments from "../pages/AllAppointments";
 import Patients from "../pages/patients";
+import LandingPage from "../pages/LandingPage";
 
 
 export default function AppRoutes() {
@@ -17,6 +18,7 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
         {/* Rotas públicas */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/public/:slug" element={<PublicSchedule />} />
