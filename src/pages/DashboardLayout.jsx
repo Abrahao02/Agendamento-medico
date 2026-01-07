@@ -3,6 +3,10 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "../services/firebase";
 import { useState, useEffect } from "react";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
+
+// Ícones do react-icons
+import { FiHome, FiCalendar, FiClock, FiBookOpen, FiUser, FiLogOut, FiMenu } from "react-icons/fi";
+
 import "./DashboardLayout.css";
 
 const APPOINTMENT_LIMIT = 10;
@@ -56,7 +60,10 @@ export default function DashboardLayout() {
       ).length;
 
       setAppointmentsThisMonth(attendedThisMonth);
-      setIsLimitReached((snap.exists() ? (snap.data().plan || "free") : "free") === "free" && attendedThisMonth >= APPOINTMENT_LIMIT);
+      setIsLimitReached(
+        (snap.exists() ? snap.data().plan || "free" : "free") === "free" &&
+        attendedThisMonth >= APPOINTMENT_LIMIT
+      );
     });
 
     return () => unsubscribe();
@@ -68,11 +75,11 @@ export default function DashboardLayout() {
   };
 
   const menuItems = [
-    { to: "/dashboard", icon: "🏠", text: "Home" },
-    { to: "/dashboard/appointments", icon: "📋", text: "Agenda do dia" },
-    { to: "/dashboard/availability", icon: "🕒", text: "Disponibilidade" },
-    { to: "/dashboard/allappointments", icon: "📚", text: "Todas consultas" },
-    { to: "/dashboard/patients", icon: "👤", text: "Pacientes" },
+    { to: "/dashboard", icon: <FiHome />, text: "Home" },
+    { to: "/dashboard/appointments", icon: <FiCalendar />, text: "Agenda do dia" },
+    { to: "/dashboard/availability", icon: <FiClock />, text: "Disponibilidade" },
+    { to: "/dashboard/allappointments", icon: <FiBookOpen />, text: "Todas consultas" },
+    { to: "/dashboard/patients", icon: <FiUser />, text: "Pacientes" },
   ];
 
   return (
@@ -86,7 +93,7 @@ export default function DashboardLayout() {
             onClick={() => setSidebarOpen(!sidebarOpen)}
             title={sidebarOpen ? "Encolher menu" : "Expandir menu"}
           >
-            ☰
+            <FiMenu />
           </button>
 
           {/* Nome do médico */}
@@ -98,6 +105,7 @@ export default function DashboardLayout() {
             <li key={item.to} role="none">
               <NavLink
                 to={item.to}
+                end
                 className="menu-link"
                 role="menuitem"
                 aria-label={item.text}
@@ -122,23 +130,35 @@ export default function DashboardLayout() {
                   <>✨ Consultas ilimitadas</>
                 )}
               </p>
+
               {plan === "free" && (
-                <>
+                <div className="plan-actions">
+                  {/* Assinar PRO */}
                   <a
                     href="https://mpago.la/1TYVDfE"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="pro-subscribe-btn"
                   >
-                    Assinar PRO
+                    Assinar PRO <br />
+                                      {/* Texto de formas de pagamento */}
+                  <span className="plan-payment-info">Pix, cartão ou Mercado Pago</span>
                   </a>
-                  <span className="pro-payment-options">Pix, cartão ou Mercado Pago</span>
-                </>
+
+                  {/* Conhecer planos */}
+                  <a
+                    href="/#plans"
+                    className="free-plan-btn"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    Conhecer planos
+                  </a>
+                </div>
               )}
             </div>
 
             <button onClick={handleLogout} className="logout-btn" aria-hidden={!sidebarOpen}>
-              🚪 Sair
+              <FiLogOut /> Sair
             </button>
           </>
         )}
@@ -153,7 +173,7 @@ export default function DashboardLayout() {
             className="hamburger-fixed"
             title="Abrir menu"
           >
-            {sidebarOpen ? "" : "☰"}
+            <FiMenu />
           </button>
           <div className={`sidebar-overlay ${sidebarOpen ? "open" : ""}`} onClick={() => setSidebarOpen(false)} />
         </>

@@ -1,55 +1,54 @@
+/* Base - Desktop */
 .todos-appointments-container {
   max-width: 900px;
   margin: 2rem auto;
   padding: 2rem;
-  background: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 6px 25px rgba(0,0,0,0.12);
-  font-family: 'Segoe UI', sans-serif;
+  background-color: #f7f9fc;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  font-family: 'Inter', sans-serif;
 }
 
 .todos-appointments-container h2 {
   text-align: center;
+  color: #1f2937;
   margin-bottom: 1.5rem;
-  color: #333;
 }
 
-.date-filter-buttons, .filter-buttons {
+/* Filtros */
+.date-filter-buttons,
+.filter-buttons {
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 0.6rem;
   flex-wrap: wrap;
+  margin-bottom: 1rem;
 }
 
-.date-filter-buttons button, .filter-buttons button {
-  padding: 0.6rem 1.2rem;
-  font-size: 0.95rem;
+.date-filter-buttons button,
+.filter-buttons button {
+  padding: 6px 14px;
   border: none;
-  border-radius: 0.6rem;
+  border-radius: 8px;
   cursor: pointer;
-  background-color: #eee;
-  transition: 0.2s;
-  position: relative;
+  font-weight: 500;
+  background-color: #e5e7eb;
+  color: #1f2937;
+  transition: all 0.2s;
 }
 
-.filter-buttons button.active, .date-filter-buttons button.active {
-  background-color: #1976d2;
-  color: white;
+.date-filter-buttons button.active,
+.filter-buttons button.active {
+  background-color: #3b82f6;
+  color: #fff;
 }
 
-.filter-buttons button span.badge {
-  position: absolute;
-  top: -5px;
-  right: -10px;
-  background-color: #ef4444;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: bold;
-  padding: 2px 5px;
-  border-radius: 50%;
+.date-filter-buttons button:hover:not(.active),
+.filter-buttons button:hover:not(.active) {
+  background-color: #d1d5db;
 }
 
+/* Lista de agendamentos - Desktop */
 .appointments-list {
   list-style: none;
   padding: 0;
@@ -58,34 +57,113 @@
 
 .appointment-item {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 2fr 2fr 1.5fr;
-  gap: 0.5rem;
+  grid-template-columns: 120px 80px 1fr 150px 180px;
   align-items: center;
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid #ddd;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.15s, box-shadow 0.15s;
 }
 
+.appointment-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.appointment-item span {
+  font-size: 0.95rem;
+  color: #374151;
+  overflow-wrap: anywhere;
+}
+
+/* Select status */
 .appointment-item select {
-  padding: 0.3rem;
-  border-radius: 0.4rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background-color: #fff;
+  color: #1f2937;
+  transition: all 0.15s;
 }
 
+.appointment-item select:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+/* Status colors */
+.appointment-item.pendente {
+  border-left: 4px solid #facc15;
+}
+
+.appointment-item.confirmado {
+  border-left: 4px solid #22c55e;
+}
+
+.appointment-item.nao-compareceu {
+  border-left: 4px solid #ef4444;
+}
+
+/* Botão salvar */
 .save-btn {
-  display: block;
-  margin: 1.5rem auto;
-  padding: 0.7rem 1.5rem;
-  border-radius: 0.6rem;
-  background-color: #10b981;
-  color: white;
+  margin-top: 1.5rem;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #3b82f6;
+  color: #fff;
   border: none;
+  border-radius: 10px;
   cursor: pointer;
-  transition: 0.2s;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
 .save-btn:hover {
-  background-color: #059669;
+  background-color: #2563eb;
+  transform: translateY(-1px);
 }
 
-.appointment-item.confirmado { background-color: #d1fae5; }
-.appointment-item.pendente { background-color: #fef3c7; }
-.appointment-item.nao-compareceu { background-color: #fee2e2; }
+/* ============================
+   RESPONSIVO
+============================ */
+@media (max-width: 768px) {
+  .appointment-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 10px 12px;
+  }
+
+  .appointment-item span {
+    font-size: 0.9rem;
+  }
+
+  .appointment-item select {
+    width: 100%;
+  }
+
+  .date-filter-buttons,
+  .filter-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .date-filter-buttons button,
+  .filter-buttons button {
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    padding: 8px 0;
+  }
+
+  .save-btn {
+    width: 100%;
+  }
+}

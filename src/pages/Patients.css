@@ -1,11 +1,12 @@
+/* Base - Desktop */
 .patients-container {
   max-width: 900px;
   margin: 2rem auto;
   padding: 2rem;
-  background: #f9fafb;
+  background: #f7f9fc;
   border-radius: 16px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .patients-container h2 {
@@ -14,6 +15,7 @@
   color: #1f2937;
 }
 
+/* Tabela desktop */
 .patients-table {
   width: 100%;
   border-collapse: collapse;
@@ -28,7 +30,7 @@
 
 .patients-table th,
 .patients-table td {
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
   font-size: 0.9rem;
@@ -48,6 +50,7 @@
   padding: 0.35rem 0.5rem;
   border-radius: 8px;
   border: 1px solid #d1d5db;
+  transition: all 0.2s;
 }
 
 .patients-table input:focus {
@@ -78,7 +81,7 @@
   color: white;
   font-size: 0.85rem;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .save-btn:hover {
@@ -88,4 +91,53 @@
 .save-btn:disabled {
   background: #9ca3af;
   cursor: not-allowed;
+}
+
+/* =========================
+   RESPONSIVO - MOBILE
+========================= */
+@media (max-width: 768px) {
+  .patients-table,
+  .patients-table thead,
+  .patients-table tbody,
+  .patients-table th,
+  .patients-table td,
+  .patients-table tr {
+    display: block;
+  }
+
+  .patients-table thead {
+    display: none;
+  }
+
+  .patients-table tbody tr {
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  .patients-table tbody td {
+    padding: 6px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+
+  .patients-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .patients-table input {
+    width: 100%;
+  }
+
+  .save-btn {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
 }

@@ -15,6 +15,8 @@ import "./LandingPage.css";
 import { auth } from "../services/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 /* ===== DADOS ===== */
 
@@ -74,22 +76,39 @@ const checklistItems = [
 export default function LandingPage() {
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
+  const location = useLocation()
   console.log(user);
+
+  useEffect(() => {
+    if (location.hash === "#plans") {
+      const plansSection = document.querySelector("#plans");
+      if (plansSection) {
+        // scroll suave
+        plansSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }, [location]);
 
   function handleProClick() {
     if (!user) {
-      navigate("/login", {
-        state: { redirectTo: "pro" },
-      });
+      // Se não estiver logado, vai pro login e salva intenção
+      navigate("/login", { state: { redirectTo: "pro" } });
       return;
     }
 
+    if (user.plan === "pro") {
+      alert("Você já é PRO!");
+      return;
+    }
+
+    // Se estiver logado e não for PRO, abre checkout
     window.open("https://mpago.la/1TYVDfE", "_blank");
   }
 
+
   return (
     <div className="landing-page">
-      <Header />
+      <Header user={user} />
 
       {/* HERO */}
       <section className="hero-section">

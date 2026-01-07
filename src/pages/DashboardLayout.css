@@ -250,3 +250,173 @@
     display: block;
   }
 }
+.plan-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.pro-subscribe-btn,
+.free-plan-btn {
+  display: block;
+  text-align: center;
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pro-subscribe-btn {
+  background-color: #1976d2;
+  color: white;
+}
+
+.pro-subscribe-btn:hover {
+  background-color: #ff9800;
+  color: white;
+}
+
+.free-plan-btn {
+  background-color: #1565d8;
+  color: white;
+}
+
+.free-plan-btn:hover {
+  background-color: #0d3a91;
+  color: white;
+}
+
+.plan-payment-info {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  margin-top: 0.25rem;
+  text-align: center;
+}
+/* PLAN BOX */
+.plan-box {
+  margin-top: 1.5rem;
+  background: linear-gradient(135deg, rgba(25,118,210,0.9), rgba(25,118,210,0.7));
+  padding: 1.25rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255,255,255,0.3);
+  text-align: center;
+  color: white;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.plan-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+.plan-box.limit-reached {
+  border-color: #ff7043;
+  background: linear-gradient(135deg, rgba(255,112,67,0.85), rgba(255,112,67,0.6));
+}
+
+/* Badge do plano */
+.plan-badge {
+  display: inline-block;
+  background: #ffeb3b;
+  color: #1976d2;
+  font-weight: 700;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Descrição do plano */
+.plan-box p {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  margin-bottom: 0.75rem;
+}
+
+/* Container dos botões */
+.plan-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+/* Botão Assinar PRO */
+.pro-subscribe-btn {
+  display: block;
+  width: 100%;
+  padding: 0.65rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: white;
+  background: linear-gradient(90deg, #ff9800, #ffb74d);
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.pro-subscribe-btn:hover {
+  background: linear-gradient(90deg, #ffb74d, #ff9800);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+}
+
+.plan-payment-info {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  margin-top: 0.3rem;
+}
+
+/* Botão Conhecer Planos */
+.free-plan-btn {
+  display: block;
+  width: 100%;
+  padding: 0.55rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: white;
+  background: rgba(25,118,210,0.8);
+  border: 1px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.free-plan-btn:hover {
+  background: rgba(25,118,210,1);
+  transform: translateY(-1px);
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
+  .plan-box {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 0.85rem;
+  }
+
+  .plan-actions {
+    gap: 0.5rem;
+  }
+
+  .pro-subscribe-btn,
+  .free-plan-btn {
+    font-size: 0.85rem;
+    padding: 0.55rem;
+  }
+}

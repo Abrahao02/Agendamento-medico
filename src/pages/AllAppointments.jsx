@@ -73,14 +73,6 @@ export default function AllAppointments() {
     }
   };
 
-  // Contagem para badges
-  const counts = {
-    Todos: appointments.length,
-    Confirmado: appointments.filter(a => a.status === "Confirmado").length,
-    Pendente: appointments.filter(a => a.status === "Pendente").length,
-    NaoCompareceu: appointments.filter(a => a.status === "Não Compareceu").length,
-  };
-
   // Confirmação antes de mudar filtros
   const handleSelectStatusFilter = (filter) => {
     if (changed) {
@@ -98,19 +90,27 @@ export default function AllAppointments() {
     setDateFilter(filter);
   };
 
-  // Filtragem combinada
-  const filteredAppointments = appointments.filter(app => {
-    // Filtro status
-    if (statusFilter !== "Todos") {
-      if (statusFilter === "Confirmado" && app.status !== "Confirmado") return false;
-      if (statusFilter === "Pendente" && app.status !== "Pendente") return false;
-      if (statusFilter === "NaoCompareceu" && app.status !== "Não Compareceu") return false;
-    }
-
-    // Filtro datas
+  // Filtragem por data para badges
+  const dateFilteredAppointments = appointments.filter(app => {
     if (dateFilter === "Futuros" && app.date < todayStr) return false;
     if (dateFilter === "Passados" && app.date >= todayStr) return false;
+    return true;
+  });
 
+  // Contagem dinâmica para badges
+  const counts = {
+    Todos: dateFilteredAppointments.length,
+    Confirmado: dateFilteredAppointments.filter(a => a.status === "Confirmado").length,
+    Pendente: dateFilteredAppointments.filter(a => a.status === "Pendente").length,
+    NaoCompareceu: dateFilteredAppointments.filter(a => a.status === "Não Compareceu").length,
+  };
+
+  // Filtragem final combinando status + data
+  const filteredAppointments = dateFilteredAppointments.filter(app => {
+    if (statusFilter === "Todos") return true;
+    if (statusFilter === "Confirmado") return app.status === "Confirmado";
+    if (statusFilter === "Pendente") return app.status === "Pendente";
+    if (statusFilter === "NaoCompareceu") return app.status === "Não Compareceu";
     return true;
   });
 
