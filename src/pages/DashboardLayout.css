@@ -1,3 +1,4 @@
+/* Layout */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
@@ -6,62 +7,246 @@
 
 /* Sidebar */
 .sidebar {
-  width: 250px;
   background-color: #1976d2;
   color: white;
-  padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  padding: 1rem;
+  transition: width 0.25s ease, transform 0.3s ease;
+  overflow: hidden;
+  z-index: 1000;
+  position: relative;
 }
 
-.sidebar h2 {
-  margin-bottom: 2rem;
-  text-align: center;
+/* Estados */
+.sidebar.compact {
+  width: 80px; /* só ícones visíveis */
+  align-items: center;
 }
 
-.sidebar ul {
+.sidebar.open {
+  width: 250px; /* mostra textos */
+  align-items: stretch;
+}
+
+/* Header */
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Botão hamburguer */
+.hamburger-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: transform 0.3s ease;
+}
+
+/* Quando aberto, alinhar botão à direita */
+.sidebar.open .hamburger-btn {
+  align-self: flex-end;
+  margin-right: 0.25rem;
+}
+
+/* Menu */
+.menu {
   list-style: none;
   padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.4rem;
+  width: 100%;
 }
 
-.sidebar a {
+.menu-link {
   color: white;
   text-decoration: none;
   font-weight: 600;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem;
   border-radius: 0.5rem;
-  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: background-color 0.2s ease;
 }
 
-.sidebar a.active {
+/* Ícone sempre visível */
+.icon {
+  font-size: 1.2rem;
+  width: 28px;
+  text-align: center;
+}
+
+/* Texto aparece só quando open */
+.text {
+  white-space: nowrap;
+  opacity: 1;
+}
+
+/* Quando compact, esconder texto */
+.sidebar.compact .text {
+  display: none;
+}
+
+/* Active / hover */
+.menu-link:hover,
+.menu-link.active {
   background-color: #1565c0;
 }
 
-.sidebar a:hover {
-  background-color: #1565c0;
+/* Plano box */
+.plan-box {
+  margin-top: 1.25rem;
+  background-color: rgba(255,255,255,0.1);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  text-align: center;
+  color: white;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
+.plan-box.limit-reached {
+  border-color: #ff7043;
+  background-color: rgba(255,112,67,0.1);
+}
+
+.plan-badge {
+  display: inline-block;
+  background: #ffeb3b;
+  color: #1976d2;
+  font-weight: 700;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.pro-subscribe-btn {
+  display: block;
+  min-width: 160px;
+  width: 80%;
+  text-align: center;
+  background-color: #1976d2;
+  color: white;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.pro-subscribe-btn:hover {
+  background-color: #ff9800;
+  color: white;
+}
+
+.pro-payment-options {
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.4rem;
+  display: block;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Logout */
 .logout-btn {
-  margin-top: auto;
+  margin-top: 0.8rem;
   background-color: #f44336;
   color: white;
   padding: 0.6rem 1rem;
-  border: none;
   border-radius: 0.5rem;
+  border: none;
   cursor: pointer;
+  transition: all 0.3s ease;
+  display: none;
 }
 
 .logout-btn:hover {
   background-color: #d32f2f;
 }
 
-/* Conteúdo principal */
+/* Mostrar plan e logout quando open */
+.sidebar.open .plan-box,
+.sidebar.open .logout-btn {
+  display: flex;
+}
+
+/* Conteúdo */
 .dashboard-content {
   flex: 1;
   padding: 2rem;
   background-color: #f5f5f5;
+  transition: margin-left 0.25s ease;
+}
+
+/* RESPONSIVO MOBILE */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px; /* escondida por padrão */
+    height: 100%;
+    z-index: 1000;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(250px); /* desliza do canto */
+  }
+
+  .dashboard-content {
+    margin-left: 0;
+    padding-top: 1.5rem;
+  }
+
+  /* Ajustes de menu */
+  .menu-link {
+    padding: 0.6rem 0.5rem;
+    justify-content: center;
+  }
+
+  .sidebar.open .menu-link {
+    justify-content: flex-start;
+    padding-left: 0.75rem;
+  }
+
+  /* Botão hambúrguer fixo */
+  .hamburger-fixed {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1100;
+    background: transparent;
+    border: none;
+    color: #1976d2;
+    font-size: 1.6rem;
+  }
+
+  /* Overlay */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 900;
+  }
+
+  .sidebar.open ~ .sidebar-overlay {
+    display: block;
+  }
 }
