@@ -1,10 +1,36 @@
 import { db } from "./firebase"
-import { doc, setDoc, getDoc, collection, getDocs, addDoc, query, where } from "firebase/firestore"
+import { 
+  doc, 
+  setDoc, 
+  getDoc, 
+  collection, 
+  getDocs, 
+  addDoc, 
+  query, 
+  where,
+  serverTimestamp
+} from "firebase/firestore"
 
 // Criar doctor
 export const createDoctor = async ({ uid, name, email, whatsapp, slug }) => {
-  await setDoc(doc(db, "doctors", uid), { name, email, whatsapp, slug })
+  await setDoc(doc(db, "doctors", uid), {
+    uid,
+    name,
+    email,
+    whatsapp,
+    slug,
+
+    // 🔐 Plano SaaS
+    plan: "free",
+
+    // 📊 Controle futuro
+    appointmentsThisMonth: 0,
+
+    // 🕒 Auditoria
+    createdAt: serverTimestamp()
+  })
 }
+
 
 // Verificar slug disponível
 export const isSlugAvailable = async (slug) => {
