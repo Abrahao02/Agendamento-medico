@@ -8,6 +8,8 @@ import {
   getDocs,
   addDoc,
   doc,
+  setDoc,
+  serverTimestamp,
   updateDoc
 } from "firebase/firestore";
 import "./PublicSchedule.css";
@@ -112,6 +114,7 @@ export default function PublicSchedule() {
       alert("Preencha seu nome completo.");
       return;
     }
+
     const whatsappNumbers = patientWhatsapp.replace(/\D/g, "");
     if (whatsappNumbers.length !== 11) {
       alert("Informe um número de WhatsApp válido com 11 dígitos (ex: 5511988888888).");
@@ -120,17 +123,37 @@ export default function PublicSchedule() {
 
     setSubmitting(true);
     try {
+      // 🔹 1. Cria ou pega paciente pelo ID truncado
+      const patientId = `${doctor.id}_${whatsappNumbers}`;
+      const patientRef = doc(db, "patients", patientId);
+      const patientSnap = await getDocs(
+        query(collection(db, "patients"), where("doctorId", "==", doctor.id), where("whatsapp", "==", whatsappNumbers))
+      );
+
+      if (patientSnap.empty) {
+        // Cria paciente com ID truncado
+        await setDoc(patientRef, {
+          doctorId: doctor.id,
+          name: patientName,
+          whatsapp: whatsappNumbers,
+          createdAt: serverTimestamp(),
+        });
+      }
+
+      // 🔹 2. Cria o agendamento
       await addDoc(collection(db, "appointments"), {
         doctorId: doctor.id,
         doctorSlug: doctor.slug,
+        patientId,
         date: selectedSlot.date,
         time: selectedSlot.time,
         patientName,
         patientWhatsapp: whatsappNumbers,
         status: "Pendente",
-        createdAt: new Date()
+        createdAt: serverTimestamp()
       });
 
+      // 🔹 3. Atualiza disponibilidade
       const availRef = doc(db, "availability", selectedSlot.dayId);
       await updateDoc(availRef, {
         slots: availability.find(a => a.id === selectedSlot.dayId).slots.filter(s => s !== selectedSlot.time)
@@ -140,7 +163,7 @@ export default function PublicSchedule() {
         a.id === selectedSlot.dayId ? { ...a, slots: a.slots.filter(s => s !== selectedSlot.time) } : a
       ));
 
-      // Apps Script email
+      // 🔹 4. Disparo de email
       const formData = new URLSearchParams();
       formData.append("to", doctor.email);
       formData.append("subject", `Novo agendamento com ${patientName}`);
@@ -159,11 +182,13 @@ export default function PublicSchedule() {
       `);
       const emailEndpoint = import.meta.env.VITE_APPS_SCRIPT_URL;
       if (!emailEndpoint) throw new Error("Endpoint de e-mail não configurado");
-      await fetch(emailEndpoint, { method: "POST", body: formData });
+      //await fetch(emailEndpoint, { method: "POST", body: formData });
 
+      // 🔹 5. Redireciona
       navigate(`/public/${slug}/success`, {
         state: { name: patientName, date: selectedSlot.date, time: selectedSlot.time }
       });
+
     } catch (err) {
       console.error(err);
       alert("Erro ao agendar. Tente novamente.");
@@ -178,8 +203,7 @@ export default function PublicSchedule() {
   return (
     <div className="public-schedule-container">
       <h2>Agendar com Dr(a). {doctor.name}</h2>
-      
-      {/* Mensagem introdutória */}
+
       <div className="intro-message">
         Aqui você pode marcar sua consulta de forma rápida e segura. <br/>
         Escolha um dos horários disponíveis abaixo e preencha seus dados para confirmar.
