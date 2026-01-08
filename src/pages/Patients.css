@@ -1,4 +1,6 @@
-/* Base - Desktop */
+/* =========================
+   CONTAINER BASE - DESKTOP
+========================= */
 .patients-container {
   max-width: 900px;
   margin: 2rem auto;
@@ -15,7 +17,61 @@
   color: #1f2937;
 }
 
-/* Tabela desktop */
+/* =========================
+   FORMULÁRIO ADICIONAR PACIENTE
+========================= */
+.add-patient-form {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.add-patient-form h3 {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  color: #374151;
+}
+
+.add-patient-form input {
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  flex: 1 1 200px;
+}
+
+.add-patient-form input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.add-patient-form button {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #3b82f6;
+  color: white;
+  font-weight: 500;
+  transition: all 0.2s;
+  flex: 1 1 120px;
+}
+
+.add-patient-form button:hover {
+  background: #2563eb;
+}
+
+/* =========================
+   TABELA DE PACIENTES - DESKTOP
+========================= */
 .patients-table {
   width: 100%;
   border-collapse: collapse;
@@ -94,54 +150,8 @@
 }
 
 /* =========================
-   RESPONSIVO - MOBILE
+   TOTAL DE CLIENTES
 ========================= */
-@media (max-width: 768px) {
-  .patients-table,
-  .patients-table thead,
-  .patients-table tbody,
-  .patients-table th,
-  .patients-table td,
-  .patients-table tr {
-    display: block;
-  }
-
-  .patients-table thead {
-    display: none;
-  }
-
-  .patients-table tbody tr {
-    background: #fff;
-    border-radius: 12px;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  }
-
-  .patients-table tbody td {
-    padding: 6px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-  }
-
-  .patients-table tbody td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #374151;
-  }
-
-  .patients-table input {
-    width: 100%;
-  }
-
-  .save-btn {
-    width: 100%;
-    margin-top: 0.5rem;
-  }
-}
-
 .patients-total {
   margin-bottom: 1rem;
   font-size: 1.2rem;
@@ -149,4 +159,46 @@
 }
 .patients-total strong {
   color: #0d6efd; /* destaque azul */
+}
+
+/* WhatsApp duplicado */
+.add-patient-form input.input-error {
+  border-color: #dc2626;
+  background-color: #fee2e2;
+}
+
+.add-patient-form input {
+  width: 200px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
+}
+
+.add-patient-form input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.add-patient-form button {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #3b82f6;
+  color: white;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.add-patient-form button:hover {
+  background: #2563eb;
+}
+
+.error {
+  color: #dc2626;
+  margin-top: 0.5rem;
+  font-weight: 500;
 }
