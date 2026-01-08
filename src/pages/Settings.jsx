@@ -143,10 +143,10 @@ export default function Settings() {
 
         {/* 👁 Preview */}
         <div className="whatsapp-preview">
-          <h4>Preview</h4>
+          <h4>Preview, exemplo:</h4>
           <div className="preview-box">
             <p>
-              <strong>{whatsappIntro} João 😊</strong>
+              <strong>{whatsappIntro} João</strong>
             </p>
             <p>{whatsappBody}</p>
             <p>

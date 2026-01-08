@@ -256,24 +256,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="cta-section">
-        <div className="cta-container fade-up">
-          <h2>Comece agora mesmo</h2>
-          <p>Organize sua agenda e foque nos seus clientes.</p>
-
-          <button
-            className="btn btn-primary"
-            onClick={handleProClick}
-          >
-            Assinar PRO <ArrowRight size={18} />
-          </button>
-        </div>
-      </section>
-
       <footer className="footer">
-        © 2025 MedAgenda. Todos os direitos reservados.
+        <div className="footer-sections">
+          Entre em contato:
+
+          {/* WhatsApp */}
+          <div className="footer-section">
+            <Users size={18} />
+            <div className="whatsapp-number">
+              <span>+55</span> <span>21</span> <span>99437</span> <span>7887</span>
+            </div>
+          </div>
+          
+          {/* Email */}
+          <div className="footer-section">
+            <MessageCircle size={18} />
+            <a href="mailto:seuemail@exemplo.com">eduardo.abrahao@hotmail.com</a>
+          </div>
+
+
+
+          {/* LinkedIn */}
+          <div className="footer-section">
+            <BarChart3 size={18} />
+            <a
+              href="https://www.linkedin.com/in/eduardo-abrah%C3%A3o-dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              LinkedIn
+            </a>
+          </div>
+        </div>
+
+        <div>
+          © 2025 MedAgenda. Todos os direitos reservados.
+        </div>
       </footer>
+
     </div>
   );
 }

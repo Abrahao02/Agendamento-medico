@@ -83,6 +83,12 @@ export default function DashboardLayout() {
     { to: "/dashboard/settings", icon: <FiSettings />, text: "Configurações" }
   ];
 
+  // Função para calcular consultas restantes
+  function remainingAppointments(limit, used) {
+    return limit - used;
+  }
+
+
   return (
     <div className="dashboard-layout">
       {/* SIDEBAR */}
@@ -126,7 +132,9 @@ export default function DashboardLayout() {
               <span className="plan-badge">Plano {PLAN_LABELS[plan]}</span>
               <p>
                 {plan === "free" ? (
-                  <>Consultas atendidas este mês: <strong>{appointmentsThisMonth} / {APPOINTMENT_LIMIT}</strong></>
+                  <p>
+                    Você ainda possui: <strong className="remaining-appointments">{remainingAppointments(APPOINTMENT_LIMIT, appointmentsThisMonth)}</strong> consultas.
+                  </p>
                 ) : (
                   <>✨ Consultas ilimitadas</>
                 )}
@@ -142,8 +150,6 @@ export default function DashboardLayout() {
                     className="pro-subscribe-btn"
                   >
                     Assinar PRO <br />
-                                      {/* Texto de formas de pagamento */}
-                  <span className="plan-payment-info">Pix, cartão ou Mercado Pago</span>
                   </a>
 
                   {/* Conhecer planos */}

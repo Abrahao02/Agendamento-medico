@@ -53,7 +53,6 @@ export default function Header() {
       <div className="header-container">
         {/* Logo */}
         <a href="/" className="logo">
-          <span className="logo-icon">📅</span>
           <span className="logo-text">MedAgenda</span>
         </a>
 

@@ -1,9 +1,9 @@
 :root {
-  --blue: #1565d8;   /* Azul principal */
-  --red: #ef4444;    /* Vermelho para agendado */
-  --green: #16a34a;  /* Verde para disponível */
+  --blue: #1565d8;     /* Azul principal */
+  --red: #ef4444;      /* Vermelho */
+  --green: #16a34a;    /* Verde para disponível */
   --text: #1f2937;
-  --muted: #6b7280;
+  --muted: #6b7280;    /* Cinza para ocupado */
   --card-bg: #ffffff;
   --card-border: #e5e7eb;
   --shadow-md: 0 8px 20px rgba(0,0,0,0.06);
@@ -106,13 +106,11 @@
   transform: translateY(-2px);
 }
 
-/* Hoje */
 .react-calendar__tile--now {
   background: #eff6ff;
   border: 2px solid var(--blue);
 }
 
-/* Selecionado */
 .react-calendar__tile--active {
   background: var(--blue);
   color: #fff;
@@ -135,15 +133,15 @@
   line-height: 1;
 }
 
-.badge.free { background: var(--green); }   /* verde para disponível */
-.badge.booked { background: var(--red); }
+.badge.free { background: var(--green); }
+.badge.booked { background: var(--muted); }
 
 /* Legenda */
 .calendar-legend-card {
   background: #f9fafb;
   border-radius: 0.9rem;
   padding: 0.85rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   margin-top: 0.9rem;
   display: flex;
   justify-content: center;
@@ -165,7 +163,7 @@
 }
 
 .legend-dot.free { background: var(--green); }
-.legend-dot.booked { background: var(--red); }
+.legend-dot.booked { background: var(--muted); }
 
 /* Card do dia */
 .day-slots-card {
@@ -180,10 +178,13 @@
 }
 
 .day-slots-card h3 {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 /* Slots */
@@ -195,28 +196,76 @@
 }
 
 .slot-item {
-  flex: 1 1 150px;
-  background: #f4f7fc;
-  padding: 0.6rem 0.8rem;
-  border-radius: 0.75rem;
+  flex: 1 1 140px;
+  background: #f9fafb;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.65rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.2;
   transition: all 0.2s;
+  border: 1px solid #e5e7eb;
 }
 
-.slot-item.free:hover { background: #e8f0fe; }
-.slot-item.booked { background: #fef2f2; border-left: 4px solid var(--red); }
+.slot-item.free {
+  background: #ffffff;
+  border-left: 4px solid var(--green);
+}
+
+
+.slot-item.booked {
+  background: #f9fafb;
+  border-left: 4px solid var(--muted);
+  color: #374151;
+}
+
+.slot-item.booked:hover {
+  background: #e5e7eb;
+}
+
+/* Botão de exclusão do slot (X) */
+.slot-item-remove {
+  color: var(--red) !important;
+  background: #ffffff !important;;
+}
+
+
+/* Hover: vermelho clarinho */
+.slot-item-remove:hover {
+  color: #f87171;
+}
+
+/* Slot detalhes */
+.slot-time {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.slot-name {
+  background: #f3f4f6;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
 
 .slot-action {
   background: transparent;
   border: none;
-  font-weight: 800;
   color: var(--red);
+  font-size: 1rem;
   cursor: pointer;
-  font-size: 1.05rem;
+}
+
+.slot-action svg {
+  font-size: 0.9rem;
 }
 
 /* Alternador de modo */
@@ -270,7 +319,9 @@
   transition: background 0.2s;
 }
 
-.add-slot button:hover { background: #1254b5; }
+.add-slot button:hover {
+  background: #1254b5;
+}
 
 /* Marcar consulta */
 .book-slot {
@@ -302,57 +353,7 @@
   background: #138a3b;
 }
 
-/* Save changes */
-.save-changes button {
-  padding: 0.6rem 1rem;
-  border-radius: 0.75rem;
-  border: none;
-  background: var(--blue);
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.save-changes button:hover {
-  background: #0f4aa8;
-}
-
-/* Mensagens de erro */
-.error {
-  color: var(--red);
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-}
-
-/* Animação suave */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsividade */
-@media (max-width: 1024px) {
-  .calendar-wrapper { flex: 1 1 100%; }
-  .day-slots-card { flex: 1 1 100%; }
-}
-
-.day-slots-card h3 {
-  font-size: 1.35rem;
-  font-weight: 700;
-  margin-bottom: 1.2rem;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.day-slots-card h3 i {
-  font-size: 1.2rem;
-  color: var(--blue);
-}
-
-/* Botão salvar estilizado com ícone */
+/* Botões de salvar */
 .save-changes button {
   width: 100%;
   padding: 0.75rem 1.2rem;
@@ -370,73 +371,34 @@
   gap: 0.6rem;
 }
 
+.save-changes button:hover {
+  background: #0f4aa8;
+}
+
 .save-changes button i {
   font-size: 1.1rem;
 }
 
-.save-changes button:hover {
-  background: #0f4aa8;
-}
-.slot-item {
-  flex: 1 1 140px;
-  background: #f9fafb;
-  padding: 0.35rem 0.6rem;
-  border-radius: 0.65rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.85rem;
-  font-weight: 500;
-  line-height: 1.2;
-  transition: all 0.2s;
-  border: 1px solid #e5e7eb;
-}
-
-.slot-item.free:hover {
-  background: #eef2f7;
-}
-
-.slot-item.booked {
-  background: #fef2f2;
-  border-left: 3px solid var(--red);
-}
-
-.slot-time {
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.slot-name {
-  background: #f3f4f6;
-  padding: 0.15rem 0.45rem;
-  border-radius: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #374151;
-  border: 1px solid #e5e7eb;
-}
-
-.slot-action {
-  background: transparent;
-  border: none;
+/* Mensagens de erro */
+.error {
   color: var(--red);
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.slot-action svg {
   font-size: 0.9rem;
+  margin-top: 0.5rem;
 }
 
-/* Responsivo */
-@media (max-width: 768px) {
-  .slots-list {
-    flex-direction: column;
-  }
+/* Animação */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-  .slot-item {
-    flex: 1 1 100%;
-  }
+/* Responsividade */
+@media (max-width: 1024px) {
+  .calendar-wrapper { flex: 1 1 100%; }
+  .day-slots-card { flex: 1 1 100%; }
+}
+
+@media (max-width: 768px) {
+  .slots-list { flex-direction: column; }
+  .slot-item { flex: 1 1 100%; }
 }

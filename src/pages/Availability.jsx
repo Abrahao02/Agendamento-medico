@@ -263,6 +263,16 @@ export default function Availability() {
             onClickDay={handleSelectDate}
             tileContent={tileContent}
           />
+
+          <div className="calendar-legend-card">
+            <div className="legend-item">
+              <span className="legend-dot free"></span> Disponível
+            </div>
+            <div className="legend-item">
+              <span className="legend-dot booked"></span> Ocupado
+            </div>
+          </div>
+
         </div>
 
         {selectedDate && (
@@ -279,7 +289,10 @@ export default function Availability() {
                     <FaClock /> {slot}
                     {app && <strong> — {app.patientName}</strong>}
                   </span>
-                  <button onClick={() => handleRemoveSlot(slot)}>
+                  <button
+                    className="slot-item-remove"
+                    onClick={() => handleRemoveSlot(slot)}
+                  >
                     <FaTimes />
                   </button>
                 </div>

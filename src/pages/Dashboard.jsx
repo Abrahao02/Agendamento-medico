@@ -254,9 +254,10 @@ export default function Dashboard() {
             />
             {/* ícone apenas para inputs date (opcional) */}
             {!false && <Calendar size={16} className="input-icon" aria-hidden="true" />}
+            
           </div>
         </div>
-
+        
         <div className="filter-item">
           <label htmlFor="date-to">Data até</label>
           <div className="input-icon-wrapper">
