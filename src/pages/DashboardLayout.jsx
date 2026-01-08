@@ -125,6 +125,10 @@ export default function DashboardLayout() {
           ))}
         </ul>
 
+        <button onClick={handleLogout} className="logout-btn" aria-hidden={!sidebarOpen}>
+          <FiLogOut /> Sair
+        </button>
+        
         {/* Plan box */}
         {user && (
           <>
@@ -132,9 +136,9 @@ export default function DashboardLayout() {
               <span className="plan-badge">Plano {PLAN_LABELS[plan]}</span>
               <p>
                 {plan === "free" ? (
-                  <p>
+                  <span>
                     Você ainda possui: <strong className="remaining-appointments">{remainingAppointments(APPOINTMENT_LIMIT, appointmentsThisMonth)}</strong> consultas.
-                  </p>
+                  </span>
                 ) : (
                   <>✨ Consultas ilimitadas</>
                 )}
@@ -164,9 +168,7 @@ export default function DashboardLayout() {
               )}
             </div>
 
-            <button onClick={handleLogout} className="logout-btn" aria-hidden={!sidebarOpen}>
-              <FiLogOut /> Sair
-            </button>
+
           </>
         )}
       </nav>

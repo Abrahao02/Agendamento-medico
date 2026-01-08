@@ -135,11 +135,12 @@ export default function Dashboard() {
       } else {
         // 🔹 Caso contrário, filtrar pelo mês e ano selecionados (padrão: mês atual)
         filteredAppointments = filteredAppointments.filter((a) => {
-          const d = new Date(a.date);
-          const matchesMonth = selectedMonth ? d.getMonth() + 1 === Number(selectedMonth) : true;
-          const matchesYear = selectedYear ? d.getFullYear() === Number(selectedYear) : true;
+          const [year, month] = a.date.split("-").map(Number);
+          const matchesMonth = selectedMonth ? month === Number(selectedMonth) : true;
+          const matchesYear = selectedYear ? year === Number(selectedYear) : true;
           return matchesMonth && matchesYear;
         });
+
       }
 
       // Status resumido
@@ -254,10 +255,10 @@ export default function Dashboard() {
             />
             {/* ícone apenas para inputs date (opcional) */}
             {!false && <Calendar size={16} className="input-icon" aria-hidden="true" />}
-            
+
           </div>
         </div>
-        
+
         <div className="filter-item">
           <label htmlFor="date-to">Data até</label>
           <div className="input-icon-wrapper">
