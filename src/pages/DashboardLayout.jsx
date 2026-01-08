@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
 
 // Ícones do react-icons
-import { FiHome, FiCalendar, FiClock, FiBookOpen, FiUser, FiLogOut, FiMenu } from "react-icons/fi";
+import { FiSettings, FiHome, FiCalendar, FiClock, FiBookOpen, FiUser, FiLogOut, FiMenu } from "react-icons/fi";
 
 import "./DashboardLayout.css";
 
@@ -77,9 +77,10 @@ export default function DashboardLayout() {
   const menuItems = [
     { to: "/dashboard", icon: <FiHome />, text: "Home" },
     { to: "/dashboard/appointments", icon: <FiCalendar />, text: "Agenda do dia" },
-    { to: "/dashboard/availability", icon: <FiClock />, text: "Disponibilidade" },
-    { to: "/dashboard/allappointments", icon: <FiBookOpen />, text: "Todas consultas" },
+    { to: "/dashboard/availability", icon: <FiClock />, text: "Agenda do mês" },
+    { to: "/dashboard/allappointments", icon: <FiBookOpen />, text: "Todos agendamentos" },
     { to: "/dashboard/clients", icon: <FiUser />, text: "Clientes" },
+    { to: "/dashboard/settings", icon: <FiSettings />, text: "Configurações" }
   ];
 
   return (

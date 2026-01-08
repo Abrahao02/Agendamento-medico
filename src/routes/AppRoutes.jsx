@@ -11,6 +11,7 @@ import PublicScheduleSuccess from "../pages/PublicScheduleSuccess";
 import AllAppointments from "../pages/AllAppointments";
 import LandingPage from "../pages/LandingPage";
 import Patients from "../pages/Patients";
+import Settings from "../pages/Settings";
 
 
 export default function AppRoutes() {
@@ -40,6 +41,7 @@ export default function AppRoutes() {
           <Route path="appointments" element={<Agenda />} />
           <Route path="allappointments" element={<AllAppointments />} />
           <Route path="clients" element={<Patients />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
 
         {/* Rota padrão */}
