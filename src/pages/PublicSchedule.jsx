@@ -126,21 +126,35 @@ export default function PublicSchedule() {
       // 🔹 1. Cria ou pega paciente pelo ID truncado
       const patientId = `${doctor.id}_${whatsappNumbers}`;
       const patientRef = doc(db, "patients", patientId);
+
       const patientSnap = await getDocs(
-        query(collection(db, "patients"), where("doctorId", "==", doctor.id), where("whatsapp", "==", whatsappNumbers))
+        query(
+          collection(db, "patients"),
+          where("doctorId", "==", doctor.id),
+          where("whatsapp", "==", whatsappNumbers)
+        )
       );
 
+      let appointmentValue = doctor.defaultValueSchedule || 0; // valor padrão
+
       if (patientSnap.empty) {
-        // Cria paciente com ID truncado
+        // Cria paciente novo
         await setDoc(patientRef, {
           doctorId: doctor.id,
           name: patientName,
           whatsapp: whatsappNumbers,
+          price: doctor.defaultValueSchedule,
           createdAt: serverTimestamp(),
         });
+      } else {
+        // Paciente já existe, pega o preço cadastrado
+        const existingPatient = patientSnap.docs[0].data();
+        if (existingPatient.price && existingPatient.price > 0) {
+          appointmentValue = existingPatient.price;
+        }
       }
 
-      // 🔹 2. Cria o agendamento
+      // 🔹 2. Cria o agendamento com o valor definido
       await addDoc(collection(db, "appointments"), {
         doctorId: doctor.id,
         doctorSlug: doctor.slug,
@@ -149,6 +163,7 @@ export default function PublicSchedule() {
         time: selectedSlot.time,
         patientName,
         patientWhatsapp: whatsappNumbers,
+        value: appointmentValue, // 💰 valor final da consulta
         status: "Pendente",
         createdAt: serverTimestamp()
       });
@@ -205,14 +220,14 @@ export default function PublicSchedule() {
       <h2>Agendar com Dr(a). {doctor.name}</h2>
 
       <div className="intro-message">
-        Aqui você pode marcar sua consulta de forma rápida e segura. <br/>
+        Aqui você pode marcar sua consulta de forma rápida e segura. <br />
         Escolha um dos horários disponíveis abaixo e preencha seus dados para confirmar.
       </div>
 
       {limitReached && (
         <div className="booking-blocked">
           <h3>Agenda temporariamente indisponível</h3>
-          <p>O limite mensal foi atingido.<br/>Entre em contato diretamente:</p>
+          <p>O limite mensal foi atingido.<br />Entre em contato diretamente:</p>
           <strong className="whatsapp">{doctor.whatsapp}</strong>
         </div>
       )}
