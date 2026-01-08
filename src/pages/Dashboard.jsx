@@ -26,7 +26,6 @@ import {
   Users,
   DollarSign,
   Clock,
-  TrendingUp,
   Copy,
   ExternalLink,
   CheckCircle,
@@ -49,9 +48,30 @@ export default function Dashboard() {
   const [doctorSlug, setDoctorSlug] = useState("");
   const [copied, setCopied] = useState(false);
 
+  const today = new Date();
+  const currentMonth = today.getMonth() + 1; // Janeiro = 0
+  const currentYear = today.getFullYear();
+
   // 🔹 Filtros
   const [selectedDateFrom, setSelectedDateFrom] = useState("");
   const [selectedDateTo, setSelectedDateTo] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+
+  const months = [
+    { value: 1, label: "Janeiro" },
+    { value: 2, label: "Fevereiro" },
+    { value: 3, label: "Março" },
+    { value: 4, label: "Abril" },
+    { value: 5, label: "Maio" },
+    { value: 6, label: "Junho" },
+    { value: 7, label: "Julho" },
+    { value: 8, label: "Agosto" },
+    { value: 9, label: "Setembro" },
+    { value: 10, label: "Outubro" },
+    { value: 11, label: "Novembro" },
+    { value: 12, label: "Dezembro" },
+  ];
 
   const [appointmentsByDay, setAppointmentsByDay] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
@@ -105,15 +125,22 @@ export default function Dashboard() {
         priceMap[d.data().whatsapp] = d.data().price || 0;
       });
 
-      // 🔹 Filtrar por intervalo de datas
       let filteredAppointments = appointments;
+
+      // 🔹 Se houver filtro de datas, ele tem prioridade
       if (selectedDateFrom && selectedDateTo) {
-        filteredAppointments = appointments.filter(
+        filteredAppointments = filteredAppointments.filter(
           (a) => a.date >= selectedDateFrom && a.date <= selectedDateTo
         );
+      } else {
+        // 🔹 Caso contrário, filtrar pelo mês e ano selecionados (padrão: mês atual)
+        filteredAppointments = filteredAppointments.filter((a) => {
+          const d = new Date(a.date);
+          const matchesMonth = selectedMonth ? d.getMonth() + 1 === Number(selectedMonth) : true;
+          const matchesYear = selectedYear ? d.getFullYear() === Number(selectedYear) : true;
+          return matchesMonth && matchesYear;
+        });
       }
-
-      const today = new Date();
 
       // Status resumido
       const summary = { Confirmado: 0, Pendente: 0, "Não Compareceu": 0 };
@@ -136,8 +163,19 @@ export default function Dashboard() {
       // Faturamento
       let revenue = 0;
       filteredAppointments.forEach((a) => {
-        if (a.status === "Confirmado") revenue += priceMap[a.patientWhatsapp] || 0;
+        if (a.status === "Confirmado") {
+          console.log(
+            "CONFIRMADO:",
+            a.patientName,
+            "WhatsApp:",
+            a.patientWhatsapp,
+            "Preço encontrado:",
+            priceMap[a.patientWhatsapp]
+          );
+          revenue += priceMap[a.patientWhatsapp] || 0;
+        }
       });
+
 
       let totalValue = 0;
       patientSnap.docs.forEach((d) => (totalValue += d.data().price || 0));
@@ -159,7 +197,7 @@ export default function Dashboard() {
     };
 
     fetchDashboard();
-  }, [user, selectedDateFrom, selectedDateTo]);
+  }, [user, selectedDateFrom, selectedDateTo, selectedMonth, selectedYear]);
 
   // Copiar link público
   const handleCopyLink = () => {
@@ -182,10 +220,11 @@ export default function Dashboard() {
     return snap.docs.reduce((sum, d) => sum + (d.data().slots?.length || 0), 0);
   };
 
-  // Resetar filtros
   const handleResetFilters = () => {
     setSelectedDateFrom("");
     setSelectedDateTo("");
+    setSelectedMonth(currentMonth);
+    setSelectedYear(currentYear);
     document.querySelector(".dashboard-content").scrollIntoView({ behavior: "smooth" });
   };
 
@@ -209,44 +248,102 @@ export default function Dashboard() {
       </div>
 
       {/* Filters */}
-      <div className="filters-line">
+      <div className="filters-line" role="region" aria-label="Filtros de data e período">
         <div className="filter-item">
-          <label>Selecione da data:</label>
+          <label htmlFor="date-from">Data de</label>
           <div className="input-icon-wrapper">
-            <input type="date" value={selectedDateFrom} onChange={(e) => setSelectedDateFrom(e.target.value)} />
-            <Calendar size={16} className="input-icon" />
+            <input
+              id="date-from"
+              type="date"
+              value={selectedDateFrom}
+              onChange={(e) => setSelectedDateFrom(e.target.value)}
+              aria-label="Data de início"
+            />
+            {/* ícone apenas para inputs date (opcional) */}
+            {!false && <Calendar size={16} className="input-icon" aria-hidden="true" />}
           </div>
         </div>
 
         <div className="filter-item">
-          <label>Selecione a data até:</label>
+          <label htmlFor="date-to">Data até</label>
           <div className="input-icon-wrapper">
-            <input type="date" value={selectedDateTo} onChange={(e) => setSelectedDateTo(e.target.value)} />
-            <Calendar size={16} className="input-icon" />
+            <input
+              id="date-to"
+              type="date"
+              value={selectedDateTo}
+              onChange={(e) => setSelectedDateTo(e.target.value)}
+              aria-label="Data de término"
+            />
+            {!false && <Calendar size={16} className="input-icon" aria-hidden="true" />}
           </div>
         </div>
 
-        <button className="reset-btn" onClick={handleResetFilters}>
-          Limpar filtros
-        </button>
+        <div className="filter-item">
+          <label htmlFor="month">Mês</label>
+          <div className="input-icon-wrapper">
+            <select
+              id="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              disabled={!!(selectedDateFrom && selectedDateTo)}
+              aria-label="Selecionar mês"
+            >
+              <option value="">Todos</option>
+              {months.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+            {/* não renderizar ícone extra aqui; o CSS já mostra a seta do select */}
+          </div>
+        </div>
+
+        <div className="filter-item">
+          <label htmlFor="year">Ano</label>
+          <div className="input-icon-wrapper">
+            <select
+              id="year"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              aria-label="Selecionar ano"
+            >
+              <option value={today.getFullYear()}>{today.getFullYear()}</option>
+              {/* se quiser listar mais anos, mapeie um array de anos aqui */}
+            </select>
+          </div>
+        </div>
+
+        <div className="filter-actions">
+          <button
+            className="reset-btn"
+            onClick={handleResetFilters}
+            type="button"
+            aria-label="Limpar filtros"
+          >
+            Limpar filtros
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
       <div className="stats-grid">
-        <div className="stat-card fade-up delay-1">
+        <div className="stat-card fade-up delay-1 clickable" onClick={() => navigate("/dashboard/availability")}>
           <div className="stat-icon blue"><Clock size={24} /></div>
           <div className="stat-info">
             <p className="stat-value">{stats.slotsOpen}</p>
-            <p className="stat-title">Horários abertos</p>
+            <p className="stat-title">Disponibilidade</p>
           </div>
         </div>
-        <div className="stat-card fade-up delay-2">
+
+        <div className="stat-card fade-up delay-2 clickable" onClick={() => navigate("/dashboard/allappointments")}>
           <div className="stat-icon green"><Calendar size={24} /></div>
           <div className="stat-info">
             <p className="stat-value">{stats.totalAppointments}</p>
             <p className="stat-title">Total de consultas</p>
           </div>
         </div>
+
         <div className="stat-card fade-up delay-3">
           <div className="stat-icon amber"><DollarSign size={24} /></div>
           <div className="stat-info">
@@ -254,6 +351,7 @@ export default function Dashboard() {
             <p className="stat-title">Faturamento previsto clientes confirmados</p>
           </div>
         </div>
+
         <div className="stat-card fade-up delay-4">
           <div className="stat-icon purple"><Users size={24} /></div>
           <div className="stat-info">

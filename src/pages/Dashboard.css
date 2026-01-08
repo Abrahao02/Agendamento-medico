@@ -28,11 +28,13 @@
   opacity: 0.9;
 }
 
+/* Filters */
 .filters-line {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  align-items: flex-end;
+  gap: 1rem;
   flex-wrap: wrap;
+  margin-bottom: 2rem;
 }
 
 .filter-item {
@@ -45,12 +47,62 @@
   margin-bottom: 0.25rem;
 }
 
-.filter-item input {
-  padding: 0.4rem 0.6rem;
+/* Wrapper para ícone dentro do input ou select */
+.input-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Ícone à esquerda */
+.input-icon-wrapper .input-icon {
+  position: absolute;
+  left: 0.5rem;
+  color: #9ca3af;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Input estilizado */
+.input-icon-wrapper input {
+  width: 100%;
+  padding: 0.4rem 0.75rem 0.4rem 2rem; /* espaço para ícone à esquerda */
   border-radius: 0.5rem;
-  border: none;
+  border: 1px solid #d1d5db;
   font-size: 0.85rem;
   cursor: pointer;
+  transition: all 0.3s;
+}
+
+.input-icon-wrapper input:focus {
+  border-color: #1565d8;
+  box-shadow: 0 0 0 2px rgba(21, 101, 216, 0.2);
+  outline: none;
+}
+
+/* Select estilizado */
+.input-icon-wrapper select {
+  width: 100%;
+  padding: 0.4rem 0.75rem 0.4rem 2rem; /* espaço para ícone à esquerda */
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  appearance: none; /* remove a seta padrão */
+  background-color: white;
+  background-image: url("data:image/svg+xml,%3Csvg fill='%239ca3af' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+}
+
+.input-icon-wrapper select:focus {
+  border-color: #1565d8;
+  box-shadow: 0 0 0 2px rgba(21, 101, 216, 0.2);
+  outline: none;
 }
 
 /* Dashboard Content */
@@ -270,90 +322,7 @@
 .upcoming-status.confirmed { background: rgba(22, 163, 74, 0.1); color: #16a34a; }
 .upcoming-status.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .charts-section { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 768px) {
-  .dashboard-header { padding: 1rem; }
-  .dashboard-content { padding: 1rem; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .status-summary { flex-direction: column; }
-}
-
-@media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .public-link-box { flex-direction: column; align-items: stretch; }
-  .public-link-text { min-width: unset; }
-}
-
-/* Animations */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.fade-up { opacity: 0; animation: fadeUp 0.6s ease forwards; }
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
-
 /* Botão de reset de filtros */
-.reset-btn {
-  margin-top: 1rem;
-  padding: 0.6rem 1.2rem;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.reset-btn:hover {
-  background: #dc2626;
-}
-
-/* Suavidade de scroll para filtros e dashboard */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Wrapper para ícone dentro do input */
-.input-icon-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-icon-wrapper input {
-  width: 100%;
-  padding: 0.4rem 0.75rem 0.4rem 2rem; /* espaço para ícone à esquerda */
-  border-radius: 0.5rem;
-  border: 1px solid #d1d5db;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.input-icon-wrapper input:focus {
-  border-color: #1565d8;
-  box-shadow: 0 0 0 2px rgba(21, 101, 216, 0.2);
-  outline: none;
-}
-
-.input-icon {
-  position: absolute;
-  left: 0.5rem;
-  color: #9ca3af;
-  pointer-events: none;
-}
-
-/* Hover para botão de reset */
 .reset-btn {
   margin-top: 1.5rem;
   padding: 0.6rem 1.2rem;
@@ -371,11 +340,164 @@ html {
   background: #dc2626;
 }
 
-/* Espaçamento entre filtros e reset */
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+/* Suavidade de scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .charts-section { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header { padding: 1rem; }
+  .dashboard-content { padding: 1rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .status-summary { flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .public-link-box { flex-direction: column; align-items: stretch; }
+  .public-link-text { min-width: unset; }
+  .input-icon-wrapper select,
+  .input-icon-wrapper input { font-size: 0.8rem; padding: 0.35rem 0.6rem 0.35rem 2rem; }
+}
+
+/* Filters layout */
 .filters-line {
   display: flex;
-  align-items: flex-end;
-  gap: 1rem;
   flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center; /* alinha verticalmente todos os itens */
   margin-bottom: 2rem;
+}
+
+/* Cada item do filtro */
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 160px;      /* evita colapso em telas médias */
+  flex: 0 1 220px;       /* permite encolher/expandir de forma previsível */
+  font-size: 0.75rem;
+}
+
+/* Ação dos filtros (botão) */
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+  margin-left: auto;     /* empurra o botão para a direita */
+}
+
+/* Wrapper do input com ícone */
+.input-icon-wrapper {
+  position: relative;
+  display: block;
+}
+
+/* Ícone posicionado à esquerda (apenas para inputs date) */
+.input-icon-wrapper .input-icon {
+  position: absolute;
+  left: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Inputs e selects unificados */
+.input-icon-wrapper input,
+.input-icon-wrapper select {
+  width: 100%;
+  height: 2.2rem;               /* altura consistente */
+  padding: 0.4rem 0.9rem 0.4rem 2.2rem; /* espaço para ícone à esquerda */
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  font-size: 0.85rem;
+  font-family: inherit;
+  line-height: 1.2;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  background-color: #fff;
+}
+
+/* Ajuste para selects: seta via background-image */
+.input-icon-wrapper select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2.2rem; /* espaço para a seta à direita */
+  background-image: url("data:image/svg+xml,%3Csvg fill='%239ca3af' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 1rem;
+}
+
+/* Foco consistente */
+.input-icon-wrapper input:focus,
+.input-icon-wrapper select:focus {
+  border-color: #1565d8;
+  box-shadow: 0 0 0 3px rgba(21, 101, 216, 0.12);
+  outline: none;
+}
+
+/* Labels */
+.filter-item label {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #374151;
+}
+
+/* Botão limpar alinhado e com tamanho consistente */
+.reset-btn {
+  height: 2.2rem;
+  padding: 0 0.9rem;
+  margin-top: 0; /* removido espaçamento extra para alinhar com os campos */
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pequeno ajuste visual do card do link público para manter consistência */
+.public-link-box { gap: 0.75rem; align-items: center; }
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .filter-actions { width: 100%; justify-content: flex-end; margin-left: 0; }
+  .filter-item { flex: 1 1 45%; min-width: 140px; }
+}
+
+@media (max-width: 640px) {
+  .filters-line { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+  .filter-item { width: 100%; flex: none; min-width: 0; }
+  .filter-actions { justify-content: stretch; }
+  .reset-btn { width: 100%; }
+  .input-icon-wrapper input,
+  .input-icon-wrapper select { height: 2.4rem; padding-left: 2.4rem; }
 }
