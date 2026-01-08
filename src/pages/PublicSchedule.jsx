@@ -30,7 +30,6 @@ export default function PublicSchedule() {
   const [doctor, setDoctor] = useState(null);
   const [availability, setAvailability] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [appointmentsThisMonth, setAppointmentsThisMonth] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
 
@@ -117,13 +116,12 @@ export default function PublicSchedule() {
 
     const whatsappNumbers = patientWhatsapp.replace(/\D/g, "");
     if (whatsappNumbers.length !== 11) {
-      alert("Informe um número de WhatsApp válido com 11 dígitos (ex: 5511988888888).");
+      alert("Informe um número de WhatsApp válido com 11 dígitos (ex: 11988888888).");
       return;
     }
 
     setSubmitting(true);
     try {
-      // 🔹 1. Cria ou pega paciente pelo ID truncado
       const patientId = `${doctor.id}_${whatsappNumbers}`;
       const patientRef = doc(db, "patients", patientId);
 
@@ -135,10 +133,9 @@ export default function PublicSchedule() {
         )
       );
 
-      let appointmentValue = doctor.defaultValueSchedule || 0; // valor padrão
+      let appointmentValue = doctor.defaultValueSchedule || 0;
 
       if (patientSnap.empty) {
-        // Cria paciente novo
         await setDoc(patientRef, {
           doctorId: doctor.id,
           name: patientName,
@@ -147,14 +144,13 @@ export default function PublicSchedule() {
           createdAt: serverTimestamp(),
         });
       } else {
-        // Paciente já existe, pega o preço cadastrado
         const existingPatient = patientSnap.docs[0].data();
         if (existingPatient.price && existingPatient.price > 0) {
           appointmentValue = existingPatient.price;
         }
       }
 
-      // 🔹 2. Cria o agendamento com o valor definido
+      // 🔹 Cria o agendamento
       await addDoc(collection(db, "appointments"), {
         doctorId: doctor.id,
         doctorSlug: doctor.slug,
@@ -163,12 +159,12 @@ export default function PublicSchedule() {
         time: selectedSlot.time,
         patientName,
         patientWhatsapp: whatsappNumbers,
-        value: appointmentValue, // 💰 valor final da consulta
+        value: appointmentValue,
         status: "Pendente",
         createdAt: serverTimestamp()
       });
 
-      // 🔹 3. Atualiza disponibilidade
+      // 🔹 Atualiza disponibilidade
       const availRef = doc(db, "availability", selectedSlot.dayId);
       await updateDoc(availRef, {
         slots: availability.find(a => a.id === selectedSlot.dayId).slots.filter(s => s !== selectedSlot.time)
@@ -178,28 +174,51 @@ export default function PublicSchedule() {
         a.id === selectedSlot.dayId ? { ...a, slots: a.slots.filter(s => s !== selectedSlot.time) } : a
       ));
 
-      // 🔹 4. Disparo de email
+      // 🔹 Disparo de e-mail
       const formData = new URLSearchParams();
       formData.append("to", doctor.email);
       formData.append("subject", `Novo agendamento com ${patientName}`);
       formData.append("body",
-        `Paciente: ${patientName}\nWhatsApp: ${whatsappNumbers}\nData: ${selectedSlot.date}\nHora: ${selectedSlot.time}`
+        `Olá ${doctor.name},\n\nVocê tem um novo agendamento:\n\nPaciente: ${patientName}\nWhatsApp: ${whatsappNumbers}\nData: ${selectedSlot.date}\nHora: ${selectedSlot.time}\nValor: ${appointmentValue}\n\nNão esqueça de entrar em contato com o paciente para confirmar a consulta!`
       );
       formData.append("htmlBody", `
-        <p>Olá Dr(a). ${doctor.name},</p>
-        <p>Você tem um novo agendamento:</p>
-        <ul>
-          <li><b>Paciente:</b> ${patientName}</li>
-          <li><b>WhatsApp:</b> ${whatsappNumbers}</li>
-          <li><b>Data:</b> ${selectedSlot.date}</li>
-          <li><b>Hora:</b> ${selectedSlot.time}</li>
-        </ul>
+        <div style="font-family: Arial, sans-serif; color: #333;">
+          <h2 style="color: #1D4ED8;">Novo agendamento!</h2>
+          <p>Olá <b>${doctor.name}</b>,</p>
+          <p>Você tem um novo agendamento no seu aplicativo:</p>
+          <table style="width: 100%; border-collapse: collapse; margin: 1em 0;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Paciente:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${patientName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>WhatsApp:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${whatsappNumbers}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Data:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${selectedSlot.date}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Hora:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${selectedSlot.time}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;"><b>Valor:</b></td>
+              <td style="padding: 8px; border: 1px solid #ddd; color: #16A34A;"><b>${appointmentValue}</b></td>
+            </tr>
+          </table>
+          <p style="background-color: #FEF3C7; padding: 10px; border-left: 5px solid #F59E0B;">
+            ⚠️ Não esqueça de entrar em contato com o paciente para confirmar a consulta!
+          </p>
+          <p>Atenciosamente,<br/><b>Equipe do App de Agendamento</b></p>
+        </div>
       `);
       const emailEndpoint = import.meta.env.VITE_APPS_SCRIPT_URL;
       if (!emailEndpoint) throw new Error("Endpoint de e-mail não configurado");
-      //await fetch(emailEndpoint, { method: "POST", body: formData });
+      await fetch(emailEndpoint, { method: "POST", body: formData });
 
-      // 🔹 5. Redireciona
+      // 🔹 Redireciona
       navigate(`/public/${slug}/success`, {
         state: { name: patientName, date: selectedSlot.date, time: selectedSlot.time }
       });
@@ -217,22 +236,22 @@ export default function PublicSchedule() {
 
   return (
     <div className="public-schedule-container">
-      <h2>Agendar com Dr(a). {doctor.name}</h2>
+      <h2>Marque sua consulta com {doctor.name}</h2>
 
       <div className="intro-message">
-        Aqui você pode marcar sua consulta de forma rápida e segura. <br />
-        Escolha um dos horários disponíveis abaixo e preencha seus dados para confirmar.
+        ⏱️ Agende sua consulta de forma rápida e segura!<br />
+        Escolha um horário disponível abaixo e preencha seus dados para confirmar.
       </div>
 
       {limitReached && (
         <div className="booking-blocked">
-          <h3>Agenda temporariamente indisponível</h3>
-          <p>O limite mensal foi atingido.<br />Entre em contato diretamente:</p>
+          <h3>Agenda cheia este mês</h3>
+          <p>Todos os horários foram preenchidos. Entre em contato pelo WhatsApp para verificar novas datas:</p>
           <strong className="whatsapp">{doctor.whatsapp}</strong>
         </div>
       )}
 
-      {availability.length === 0 && !limitReached && <p>Nenhum horário disponível.</p>}
+      {availability.length === 0 && !limitReached && <p>Nenhum horário disponível no momento.</p>}
 
       <div className="days-list">
         {availability.map(({ id, date, slots }) => (
@@ -265,21 +284,30 @@ export default function PublicSchedule() {
 
       {selectedSlot && (
         <div className="appointment-form" ref={formRef}>
-          <h3>Agendar {formatDate(selectedSlot.date)} às {selectedSlot.time}</h3>
+          <h3>Agendando para {formatDate(selectedSlot.date)} às {selectedSlot.time}</h3>
           <form onSubmit={handleSubmitAppointment}>
             <label>
               Nome completo:
-              <input value={patientName} onChange={e => setPatientName(e.target.value)} />
+              <input value={patientName} onChange={e => setPatientName(e.target.value)} placeholder="Ex: João da Silva" />
             </label>
             <label>
               WhatsApp:
-              <input value={patientWhatsapp} onChange={e => setPatientWhatsapp(formatWhatsapp(e.target.value))} placeholder="Ex: 5511988888888" />
+              <div className="phone-input-wrapper">
+                <span>+55</span>
+                <input
+                  value={patientWhatsapp}
+                  onChange={e => setPatientWhatsapp(formatWhatsapp(e.target.value))}
+                  placeholder="11 98888-8888"
+                />
+              </div>
             </label>
+
+
             <p className="privacy">
-              🔒 Seus dados serão usados apenas para controle de agendamento.
+              Seus dados serão usados apenas para controle de agendamento.
             </p>
             <div className="form-buttons">
-              <button type="submit" disabled={submitting}>{submitting ? "Agendando..." : "Confirmar"}</button>
+              <button type="submit" disabled={submitting}>{submitting ? "Agendando..." : "Confirmar consulta"}</button>
               <button type="button" onClick={() => setSelectedSlot(null)}>Cancelar</button>
             </div>
           </form>

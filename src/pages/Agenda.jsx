@@ -139,7 +139,7 @@ export default function Agenda() {
   };
 
   /**
-   * 📱 Envia WhatsApp (mensagem personalizada)
+   * 📱 Envia WhatsApp (mensagem personalizada) sem abrir várias abas
    */
   const handleSendWhatsapp = (appt) => {
     if (!whatsappConfig) return;
@@ -165,9 +165,10 @@ Horário: ${appt.time}
 
     const phone = formatWhatsappNumber(appt.patientWhatsapp);
 
+    // Usando o mesmo nome de janela, assim não abre várias abas
     window.open(
       `https://wa.me/${phone}?text=${encodeURIComponent(message.trim())}`,
-      "_blank"
+      "whatsappWindow" // 👈 nome fixo da aba
     );
 
     handleStatusChange(appt.id, "Msg enviada");

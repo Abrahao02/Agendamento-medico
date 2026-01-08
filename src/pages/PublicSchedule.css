@@ -1,136 +1,206 @@
+:root {
+  --primary-color: #0288d1;
+  --primary-light: #b3e5fc;
+  --primary-dark: #01579b;
+  --danger-color: #d32f2f;
+  --danger-bg: #ffebee;
+  --info-bg: #e3f2fd;
+  --info-border: #90caf9;
+  --text-color: #333;
+  --font-family: 'Segoe UI', sans-serif;
+  --border-radius: 10px;
+  --transition-speed: 0.3s;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: #f5f7fa;
+  margin: 0;
+  padding: 0;
+}
+
 .public-schedule-container {
   max-width: 650px;
-  margin: auto;
-  padding: 25px 20px;
-  font-family: 'Segoe UI', sans-serif;
-  color: #333;
+  margin: 40px auto;
+  padding: 30px 25px;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .intro-message {
-  background-color: #e3f2fd;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  line-height: 1.5;
+  background-color: var(--info-bg);
+  border: 1px solid var(--info-border);
+  padding: 16px;
+  border-radius: var(--border-radius);
+  margin-bottom: 24px;
+  font-size: 15px;
   text-align: center;
-  color: #0d47a1;
-  border: 1px solid #90caf9;
+  color: var(--primary-dark);
 }
 
 .booking-blocked {
-  background: #ffebee;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid #f44336;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-color);
+  padding: 16px;
+  border-radius: var(--border-radius);
   text-align: center;
+  margin-bottom: 24px;
 }
+
 .booking-blocked .whatsapp {
-  display: block;
   margin-top: 8px;
   font-size: 16px;
-  color: #d32f2f;
+  color: var(--danger-color);
   font-weight: bold;
 }
 
 .days-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 25px;
+  gap: 12px;
+  margin-bottom: 30px;
 }
 
 .day-card {
-  border-radius: 10px;
+  border-radius: var(--border-radius);
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .day-btn {
   width: 100%;
-  padding: 14px 18px;
+  padding: 16px 20px;
   background: #f0f4f8;
   border: none;
-  text-align: left;
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background 0.2s;
+  transition: background var(--transition-speed);
 }
 .day-btn.selected {
-  background: #bbdefb;
+  background: var(--primary-light);
 }
 .day-btn:hover:not(:disabled) {
-  background: #e3f2fd;
+  background: var(--info-bg);
 }
 .day-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .arrow {
-  font-size: 12px;
-  margin-left: 5px;
+  font-size: 14px;
+  margin-left: 6px;
 }
 
 .slots-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 18px;
+  gap: 8px;
+  padding: 12px 20px;
   background: #f9f9f9;
 }
 
 .slot-btn {
-  padding: 10px;
+  padding: 12px;
   background: #e1f5fe;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.2s;
+  transition: background var(--transition-speed);
   text-align: left;
 }
 .slot-btn.selected {
-  background: #03a9f4;
+  background: var(--primary-color);
   color: white;
 }
 .slot-btn:hover {
-  background: #b3e5fc;
+  background: var(--primary-light);
 }
 
 .appointment-form {
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 20px;
-  background: #fdfdfd;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  padding: 24px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
   margin-bottom: 30px;
+}
+
+.appointment-form h3 {
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: var(--primary-dark);
 }
 
 .appointment-form label {
   display: flex;
   flex-direction: column;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   font-size: 14px;
 }
 
 .appointment-form input {
   padding: 10px;
-  border: 1px solid #aaa;
+  border: 1px solid #bbb;
   border-radius: 6px;
   margin-top: 6px;
   font-size: 14px;
+  transition: border var(--transition-speed);
+}
+.appointment-form input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+.phone-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.phone-input-wrapper span {
+  background-color: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #444;
+  text-align: center;
+  min-width: 50px;
+  display: inline-block;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.phone-input-wrapper input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border 0.3s;
+}
+.phone-input-wrapper input:focus {
+  border-color: var(--primary-color);
+  outline: none;
 }
 
 .privacy {
-  font-size: 12px;
+  background-color: #f5f5f5;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
   color: #555;
-  margin-bottom: 12px;
+  text-align: center;
+  margin-bottom: 16px;
+  border: 1px solid #ddd;
 }
 
 .form-buttons {
@@ -144,10 +214,10 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--transition-speed);
 }
 .form-buttons button:first-child {
-  background-color: #0288d1;
+  background-color: var(--primary-color);
   color: white;
 }
 .form-buttons button:first-child:disabled {
