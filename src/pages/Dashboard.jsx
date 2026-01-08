@@ -160,22 +160,15 @@ export default function Dashboard() {
       });
       setAppointmentsByDay(Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date)));
 
-      // Faturamento
+      // Faturamento: apenas consultas confirmadas que já passaram
       let revenue = 0;
       filteredAppointments.forEach((a) => {
-        if (a.status === "Confirmado") {
-          console.log(
-            "CONFIRMADO:",
-            a.patientName,
-            "WhatsApp:",
-            a.patientWhatsapp,
-            "Preço encontrado:",
-            priceMap[a.patientWhatsapp]
-          );
-          revenue += priceMap[a.patientWhatsapp] || 0;
+        const appointmentDate = new Date(a.date);
+        if (a.status === "Confirmado" && appointmentDate <= today) {
+          const value = a.value !== undefined ? a.value : priceMap[a.patientWhatsapp] || 0;
+          revenue += value;
         }
       });
-
 
       let totalValue = 0;
       patientSnap.docs.forEach((d) => (totalValue += d.data().price || 0));

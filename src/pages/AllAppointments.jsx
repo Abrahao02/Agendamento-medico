@@ -15,7 +15,7 @@ export default function AllAppointments() {
   const [changed, setChanged] = useState(false);            // Detecta alterações
   const navigate = useNavigate();
 
-  const todayStr = new Date().toISOString().slice(0,10);
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   // Redireciona caso não esteja logado
   useEffect(() => {
@@ -90,12 +90,15 @@ export default function AllAppointments() {
     setDateFilter(filter);
   };
 
-  // Filtragem por data para badges
+  const today = new Date();
   const dateFilteredAppointments = appointments.filter(app => {
-    if (dateFilter === "Futuros" && app.date < todayStr) return false;
-    if (dateFilter === "Passados" && app.date >= todayStr) return false;
+    const appDate = new Date(app.date);
+
+    if (dateFilter === "Futuros" && appDate < today) return false;
+    if (dateFilter === "Passados" && appDate >= today) return false;
     return true;
   });
+
 
   // Contagem dinâmica para badges
   const counts = {

@@ -77,7 +77,6 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
   const location = useLocation()
-  console.log(user);
 
   useEffect(() => {
     if (location.hash === "#plans") {
