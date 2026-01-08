@@ -9,7 +9,6 @@ import {
   getDocs,
   doc,
   setDoc,
-  updateDoc,
   addDoc,
   deleteDoc,
   serverTimestamp,
@@ -19,12 +18,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
 import formatDate from "../utils/formatDate";
-import {
-  FaClock,
-  FaCalendarDay,
-  FaTimes,
-  FaCheckCircle,
-} from "react-icons/fa";
+import { FaClock, FaCalendarDay, FaTimes } from "react-icons/fa";
 
 import "./Availability.css";
 
@@ -53,7 +47,6 @@ export default function Availability() {
 
   const [error, setError] = useState("");
   const [loadingData, setLoadingData] = useState(true);
-  const [changed, setChanged] = useState(false);
 
   const formatLocalDate = (date) => {
     const y = date.getFullYear();
@@ -84,11 +77,9 @@ export default function Availability() {
         const availSnap = await getDocs(
           query(collection(db, "availability"), where("doctorId", "==", user.uid))
         );
-
         const appSnap = await getDocs(
           query(collection(db, "appointments"), where("doctorId", "==", user.uid))
         );
-
         const patientSnap = await getDocs(
           query(collection(db, "patients"), where("doctorId", "==", user.uid))
         );
@@ -108,7 +99,6 @@ export default function Availability() {
 
   /* 📌 Seleção de data */
   const handleSelectDate = (date) => {
-    if (changed && !window.confirm("Você tem alterações não salvas. Deseja continuar?")) return;
     setSelectedDate(formatLocalDate(date));
     setCalendarValue(date);
   };
@@ -125,7 +115,6 @@ export default function Availability() {
       .map(a => a.time);
 
     setSlots([...new Set([...dayAvail, ...dayApps])].sort());
-    setChanged(false);
     setError("");
   }, [selectedDate, availability, appointments]);
 
@@ -140,14 +129,28 @@ export default function Availability() {
       if (!window.confirm(`Cancelar consulta de ${appointment.patientName}?`)) return;
       await deleteDoc(doc(db, "appointments", appointment.id));
       setAppointments(prev => prev.filter(a => a.id !== appointment.id));
+    } else {
+      // remover slot direto do availability
+      const availabilityId = `${user.uid}_${selectedDate}`;
+      const dayAvail = availability.find(a => a.date === selectedDate);
+      const newSlots = (dayAvail?.slots || []).filter(s => s !== slot);
+      await setDoc(doc(db, "availability", availabilityId), {
+        doctorId: user.uid,
+        date: selectedDate,
+        slots: newSlots,
+      });
+      setAvailability(prev => [
+        ...prev.filter(a => a.date !== selectedDate),
+        { id: availabilityId, doctorId: user.uid, date: selectedDate, slots: newSlots },
+      ]);
     }
 
     setSlots(prev => prev.filter(s => s !== slot));
-    setChanged(true);
+    setError("");
   };
 
   /* ➕ Slot */
-  const handleAddSlot = () => {
+  const handleAddSlot = async () => {
     if (!newSlot || slots.includes(newSlot)) {
       setError("Horário inválido ou duplicado.");
       return;
@@ -156,46 +159,25 @@ export default function Availability() {
     const updatedSlots = [...slots, newSlot].sort();
     setSlots(updatedSlots);
 
-    // Atualiza availability para refletir imediatamente no calendário
-    setAvailability(prev => {
-      const otherDays = prev.filter(a => a.date !== selectedDate);
-      const currentDay = prev.find(a => a.date === selectedDate);
-
-      const newDay = {
-        id: currentDay?.id || `${user.uid}_${selectedDate}`,
-        doctorId: user.uid,
-        date: selectedDate,
-        slots: updatedSlots.filter(
-          s => !appointments.some(a => a.date === selectedDate && a.time === s)
-        ),
-      };
-
-      return [...otherDays, newDay];
-    });
-
-    setChanged(true);
-    setError("");
-  };
-
-
-  /* 💾 Save availability */
-  const handleSave = async () => {
-    const freeSlots = slots.filter(
+    const availabilityId = `${user.uid}_${selectedDate}`;
+    const dayAvail = availability.find(a => a.date === selectedDate);
+    const freeSlots = updatedSlots.filter(
       s => !appointments.some(a => a.date === selectedDate && a.time === s)
     );
 
-    await setDoc(
-      doc(db, "availability", `${user.uid}_${selectedDate}`),
-      {
-        doctorId: user.uid,
-        date: selectedDate,
-        slots: freeSlots,
-      },
-      { merge: true }
-    );
+    await setDoc(doc(db, "availability", availabilityId), {
+      doctorId: user.uid,
+      date: selectedDate,
+      slots: freeSlots,
+    });
 
-    setChanged(false);
-    alert("Alterações salvas!");
+    setAvailability(prev => [
+      ...prev.filter(a => a.date !== selectedDate),
+      { id: availabilityId, doctorId: user.uid, date: selectedDate, slots: freeSlots },
+    ]);
+
+    setNewSlot("12:00");
+    setError("");
   };
 
   /* 📅 Marcar consulta (LIVRE) */
@@ -216,6 +198,8 @@ export default function Availability() {
         .replace(/\s+/g, "-")
         .replace(/[^a-z0-9-]/g, "") || "doctor";
 
+    const appointmentValue = patient.price || 0;
+
     const newAppointment = {
       doctorId: user.uid,
       doctorSlug,
@@ -224,6 +208,7 @@ export default function Availability() {
       patientWhatsapp: patient.whatsapp,
       date: selectedDate,
       time: selectedTime,
+      value: appointmentValue,
       status: "Confirmado",
       updatedAt: serverTimestamp(),
     };
@@ -231,12 +216,13 @@ export default function Availability() {
     const ref = await addDoc(collection(db, "appointments"), newAppointment);
 
     setAppointments(prev => [...prev, { id: ref.id, ...newAppointment }]);
+    setSlots(prev => [...prev, selectedTime].sort());
     setSelectedPatient("");
     setSelectedTime("");
     setError("");
   };
 
-  /* 🟥🟩 BADGES DO CALENDÁRIO (MANTIDOS) */
+  /* 🟥🟩 BADGES DO CALENDÁRIO */
   const tileContent = ({ date, view }) => {
     if (view !== "month") return null;
 
@@ -309,17 +295,21 @@ export default function Availability() {
               </button>
             </div>
 
-            {mode === "add" ? (
+            {mode === "add" && (
               <div className="add-slot">
                 <input type="time" value={newSlot} onChange={e => setNewSlot(e.target.value)} />
                 <button onClick={handleAddSlot}>Adicionar</button>
               </div>
-            ) : (
+            )}
+
+            {mode === "book" && (
               <div className="book-slot">
                 <select value={selectedPatient} onChange={e => setSelectedPatient(e.target.value)}>
                   <option value="">Paciente</option>
                   {patients.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
+                    <option key={p.id} value={p.id}>
+                      {p.name} — R$ {p.price || 0}
+                    </option>
                   ))}
                 </select>
 
@@ -331,14 +321,6 @@ export default function Availability() {
                 </select>
 
                 <button onClick={handleBookAppointment}>Confirmar</button>
-              </div>
-            )}
-
-            {changed && (
-              <div className="save-changes">
-                <button onClick={handleSave}>
-                  <FaCheckCircle /> Salvar Alterações
-                </button>
               </div>
             )}
 
