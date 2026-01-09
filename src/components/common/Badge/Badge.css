@@ -1,0 +1,313 @@
+@import url('../../../styles/variables.css');
+
+/* ========================================
+   BADGE BASE
+   ======================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  font-family: var(--font-family-base);
+  font-weight: var(--font-semibold);
+  text-align: center;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  line-height: 1;
+}
+
+/* ========================================
+   BADGE SIZES
+   ======================================== */
+
+.badge-sm {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--text-xs);
+  min-height: 20px;
+}
+
+.badge-md {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--text-sm);
+  min-height: 24px;
+}
+
+.badge-lg {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--text-base);
+  min-height: 28px;
+}
+
+/* ========================================
+   BADGE VARIANTS - SOLID
+   ======================================== */
+
+.badge-primary {
+  background: var(--color-secondary);
+  color: var(--text-inverse);
+}
+
+.badge-secondary {
+  background: var(--gray-600);
+  color: var(--text-inverse);
+}
+
+.badge-success {
+  background: var(--success-500);
+  color: var(--text-inverse);
+}
+
+.badge-warning {
+  background: var(--warning-500);
+  color: var(--gray-900);
+}
+
+.badge-danger {
+  background: var(--danger-500);
+  color: var(--text-inverse);
+}
+
+.badge-info {
+  background: var(--info-500);
+  color: var(--text-inverse);
+}
+
+.badge-gray {
+  background: var(--gray-200);
+  color: var(--gray-700);
+}
+
+/* ========================================
+   BADGE VARIANTS - OUTLINE
+   ======================================== */
+
+.badge-outline {
+  background: transparent;
+  border: 1.5px solid currentColor;
+}
+
+.badge-outline.badge-primary {
+  color: var(--color-secondary);
+}
+
+.badge-outline.badge-secondary {
+  color: var(--gray-600);
+}
+
+.badge-outline.badge-success {
+  color: var(--success-600);
+}
+
+.badge-outline.badge-warning {
+  color: var(--warning-600);
+}
+
+.badge-outline.badge-danger {
+  color: var(--danger-600);
+}
+
+.badge-outline.badge-info {
+  color: var(--info-600);
+}
+
+.badge-outline.badge-gray {
+  color: var(--gray-600);
+}
+
+/* ========================================
+   BADGE SHAPES
+   ======================================== */
+
+.badge-pill {
+  border-radius: var(--radius-full);
+}
+
+/* ========================================
+   BADGE DOT
+   ======================================== */
+
+.badge-dot {
+  padding: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  min-height: unset;
+}
+
+.badge-dot-indicator {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+}
+
+/* Dot com tamanhos */
+.badge-dot.badge-sm {
+  width: 6px;
+  height: 6px;
+}
+
+.badge-dot.badge-md {
+  width: 8px;
+  height: 8px;
+}
+
+.badge-dot.badge-lg {
+  width: 10px;
+  height: 10px;
+}
+
+/* ========================================
+   BADGE WITH ICON
+   ======================================== */
+
+.badge-icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1em;
+}
+
+/* ========================================
+   BADGE REMOVABLE
+   ======================================== */
+
+.badge-removable {
+  padding-right: var(--spacing-xs);
+}
+
+.badge-remove {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  margin-left: var(--spacing-xs);
+  font-size: 1.2em;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.badge-remove:hover {
+  opacity: 1;
+}
+
+.badge-remove:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 1px;
+  border-radius: var(--radius-sm);
+}
+
+/* ========================================
+   BADGE GROUP
+   ======================================== */
+
+.badge-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+/* ========================================
+   BADGE ANIMATIONS
+   ======================================== */
+
+.badge-pulse {
+  animation: badgePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Badge com animação de entrada */
+.badge-enter {
+  animation: badgeEnter var(--transition-base) ease-out;
+}
+
+@keyframes badgeEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ========================================
+   BADGE CONTEXTS
+   ======================================== */
+
+/* Badge em Card Header */
+.card-header .badge {
+  margin-left: auto;
+}
+
+/* Badge em tabelas */
+td .badge,
+th .badge {
+  display: inline-flex;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .badge-sm {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+  }
+
+  .badge-md {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+  }
+
+  .badge-lg {
+    font-size: 0.9rem;
+    padding: 4px 10px;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .badge-pulse,
+  .badge-enter {
+    animation: none;
+  }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+
+@media print {
+  .badge {
+    border: 1px solid currentColor;
+    background: transparent !important;
+    color: var(--black) !important;
+  }
+
+  .badge-remove {
+    display: none;
+  }
+}

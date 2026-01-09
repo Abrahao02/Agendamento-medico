@@ -214,10 +214,6 @@ export default function Dashboard() {
     return Array.from(years).sort((a, b) => b - a);
   }, [currentYear]);
 
-  if (loading || loadingData) {
-  }
-
-  // Remover DashboardLayout aqui
   return (
     <div className="dashboard-content">
       {/* Public Link */}

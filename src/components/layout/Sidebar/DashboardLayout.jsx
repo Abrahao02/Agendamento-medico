@@ -1,193 +1,416 @@
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, Link } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../../../services/firebase";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
 
-// Ícones do react-icons
-import { FiSettings, FiHome, FiCalendar, FiClock, FiBookOpen, FiUser, FiLogOut, FiMenu } from "react-icons/fi";
+// Ícones
+import {
+  FiSettings,
+  FiHome,
+  FiCalendar,
+  FiClock,
+  FiBookOpen,
+  FiUser,
+  FiLogOut,
+  FiMenu
+} from "react-icons/fi";
 
 import "./DashboardLayout.css";
 
-const APPOINTMENT_LIMIT = 10;
-const PLAN_LABELS = { free: "Gratuito", pro: "PRO" };
+// ========================================
+// CONSTANTES
+// ========================================
 
-export default function DashboardLayout() {
+const APPOINTMENT_LIMIT = 10;
+const PLAN_LABELS = {
+  free: "Gratuito",
+  pro: "PRO"
+};
+
+const MENU_ITEMS = [
+  { to: "/dashboard", icon: FiHome, text: "Home", end: true },
+  { to: "/dashboard/appointments", icon: FiCalendar, text: "Agenda do dia" },
+  { to: "/dashboard/availability", icon: FiClock, text: "Agenda do mês" },
+  { to: "/dashboard/allappointments", icon: FiBookOpen, text: "Todos agendamentos" },
+  { to: "/dashboard/clients", icon: FiUser, text: "Clientes" },
+  { to: "/dashboard/settings", icon: FiSettings, text: "Configurações" }
+];
+
+// ========================================
+// HOOKS CUSTOMIZADOS
+// ========================================
+
+/**
+ * Hook para gerenciar o estado responsivo da sidebar
+ */
+function useSidebarState() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [doctorName, setDoctorName] = useState("");
-  const [plan, setPlan] = useState("free");
-  const [appointmentsThisMonth, setAppointmentsThisMonth] = useState(0);
-  const [isLimitReached, setIsLimitReached] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth > 768);
 
   useEffect(() => {
     const handleResize = () => {
       const desktop = window.innerWidth > 768;
       setIsDesktop(desktop);
-      if (!desktop) setSidebarOpen(false);
+
+      // Em mobile, sidebar sempre começa fechada
+      if (!desktop) {
+        setSidebarOpen(false);
+      }
     };
+
     window.addEventListener("resize", handleResize);
+    handleResize(); // Executar na montagem
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (u) => {
-      if (!u) return (window.location.href = "/login");
-      setUser(u);
+  const toggleSidebar = useCallback(() => {
+    setSidebarOpen(prev => !prev);
+  }, []);
 
-      const snap = await getDoc(doc(db, "doctors", u.uid));
-      if (snap.exists()) {
-        const data = snap.data();
-        setDoctorName(data.name || u.email);
-        setPlan(data.plan || "free");
+  const closeSidebar = useCallback(() => {
+    setSidebarOpen(false);
+  }, []);
+
+  return {
+    sidebarOpen,
+    isDesktop,
+    toggleSidebar,
+    closeSidebar
+  };
+}
+
+/**
+ * Hook para gerenciar dados do usuário e plano
+ */
+function useUserData() {
+  const [user, setUser] = useState(null);
+  const [doctorName, setDoctorName] = useState("");
+  const [plan, setPlan] = useState("free");
+  const [appointmentsThisMonth, setAppointmentsThisMonth] = useState(0);
+  const [isLimitReached, setIsLimitReached] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      if (!currentUser) {
+        window.location.href = "/login";
+        return;
       }
 
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const start = `${year}-${month}-01`;
-      const end = `${year}-${month}-31`;
+      setUser(currentUser);
+      setLoading(true);
 
-      const appSnap = await getDocs(
-        query(collection(db, "appointments"), where("doctorId", "==", u.uid))
-      );
+      try {
+        // Buscar dados do médico
+        const doctorDoc = await getDoc(doc(db, "doctors", currentUser.uid));
 
-      const appointments = appSnap.docs.map((d) => d.data());
-      const attendedThisMonth = appointments.filter(
-        (a) => a.status === "Confirmado" && a.date >= start && a.date <= end
-      ).length;
+        if (doctorDoc.exists()) {
+          const data = doctorDoc.data();
+          setDoctorName(data.name || currentUser.email);
+          setPlan(data.plan || "free");
 
-      setAppointmentsThisMonth(attendedThisMonth);
-      setIsLimitReached(
-        (snap.exists() ? snap.data().plan || "free" : "free") === "free" &&
-        attendedThisMonth >= APPOINTMENT_LIMIT
-      );
+          // Calcular consultas do mês
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, "0");
+          const startDate = `${year}-${month}-01`;
+          const endDate = `${year}-${month}-31`;
+
+          const appointmentsSnapshot = await getDocs(
+            query(
+              collection(db, "appointments"),
+              where("doctorId", "==", currentUser.uid)
+            )
+          );
+
+          const appointments = appointmentsSnapshot.docs.map(d => d.data());
+          const confirmedThisMonth = appointments.filter(
+            appointment =>
+              appointment.status === "Confirmado" &&
+              appointment.date >= startDate &&
+              appointment.date <= endDate
+          ).length;
+
+          setAppointmentsThisMonth(confirmedThisMonth);
+
+          const userPlan = data.plan || "free";
+          setIsLimitReached(
+            userPlan === "free" && confirmedThisMonth >= APPOINTMENT_LIMIT
+          );
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do usuário:", error);
+      } finally {
+        setLoading(false);
+      }
     });
 
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    window.location.href = "/login";
+  return {
+    user,
+    doctorName,
+    plan,
+    appointmentsThisMonth,
+    isLimitReached,
+    loading
+  };
+}
+
+// ========================================
+// COMPONENTES
+// ========================================
+
+/**
+ * Componente do item de menu
+ */
+function MenuItem({ item, isDesktop, closeSidebar }) {
+  const Icon = item.icon;
+
+  const handleClick = () => {
+    if (!isDesktop) {
+      closeSidebar();
+    }
   };
 
-  const menuItems = [
-    { to: "/dashboard", icon: <FiHome />, text: "Home" },
-    { to: "/dashboard/appointments", icon: <FiCalendar />, text: "Agenda do dia" },
-    { to: "/dashboard/availability", icon: <FiClock />, text: "Agenda do mês" },
-    { to: "/dashboard/allappointments", icon: <FiBookOpen />, text: "Todos agendamentos" },
-    { to: "/dashboard/clients", icon: <FiUser />, text: "Clientes" },
-    { to: "/dashboard/settings", icon: <FiSettings />, text: "Configurações" }
-  ];
+  return (
+    <li role="none">
+      <NavLink
+        to={item.to}
+        end={item.end}
+        className="menu-link"
+        role="menuitem"
+        aria-label={item.text}
+        onClick={handleClick}
+      >
+        <span className="icon" aria-hidden="true">
+          <Icon />
+        </span>
+        <span className="text fade-slide">{item.text}</span>
+      </NavLink>
+    </li>
+  );
+}
 
-  // Função para calcular consultas restantes
-  function remainingAppointments(limit, used) {
-    return limit - used;
+/**
+ * Componente da caixa do plano
+ */
+function PlanBox({ plan, appointmentsThisMonth, isLimitReached, sidebarOpen }) {
+  const remainingAppointments = APPOINTMENT_LIMIT - appointmentsThisMonth;
+
+  if (!sidebarOpen) return null;
+
+  return (
+    <div
+      className={`plan-box ${isLimitReached ? "limit-reached" : ""}`}
+      role="region"
+      aria-label="Informações do plano"
+    >
+      <span className="plan-badge">
+        Plano {PLAN_LABELS[plan]}
+      </span>
+
+      <p>
+        {plan === "free" ? (
+          <>
+            Você ainda possui:{" "}
+            <strong className="remaining-appointments">
+              {remainingAppointments}
+            </strong>{" "}
+            {remainingAppointments === 1 ? "consulta" : "consultas"}
+          </>
+        ) : (
+          <>✨ Consultas ilimitadas</>
+        )}
+      </p>
+
+      {plan === "free" && (
+        <div className="plan-actions">
+          <a
+            href="https://mpago.la/1TYVDfE"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pro-subscribe-btn"
+            aria-label="Assinar plano PRO"
+          >
+            <span>Assinar PRO</span> <br />
+            <span className="plan-payment-info">
+              Pix, Cartão ou Boleto
+            </span>
+          </a>
+
+          <a
+            href="/#plans"
+            className="free-plan-btn"
+            aria-label="Conhecer todos os planos"
+          >
+            Conhecer planos
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Componente da Sidebar
+ */
+function Sidebar({
+  sidebarOpen,
+  toggleSidebar,
+  closeSidebar,
+  isDesktop,
+  user,
+  doctorName,
+  plan,
+  appointmentsThisMonth,
+  isLimitReached,
+  handleLogout
+}) {
+  return (
+    <nav
+      className={`sidebar ${sidebarOpen ? "open" : "compact"}`}
+      aria-label="Menu principal"
+    >
+      {/* Header */}
+      <div className="sidebar-header">
+        <button
+          className="hamburger-btn"
+          onClick={toggleSidebar}
+          aria-expanded={sidebarOpen}
+          aria-label={sidebarOpen ? "Encolher menu" : "Expandir menu"}
+          title={sidebarOpen ? "Encolher menu" : "Expandir menu"}
+        >
+          <FiMenu />
+        </button>
+
+        {sidebarOpen && (
+          <h2 className="fade-slide">
+            {user ? `Olá, ${doctorName}` : "Bem-vindo"}
+          </h2>
+        )}
+      </div>
+
+      {/* Menu Items */}
+      <ul className="menu" role="menu">
+        {MENU_ITEMS.map(item => (
+          <MenuItem
+            key={item.to}
+            item={item}
+            isDesktop={isDesktop}
+            closeSidebar={closeSidebar}
+          />
+        ))}
+      </ul>
+
+      {/* Plan Box */}
+      {user && (
+        <PlanBox
+          plan={plan}
+          appointmentsThisMonth={appointmentsThisMonth}
+          isLimitReached={isLimitReached}
+          sidebarOpen={sidebarOpen}
+        />
+      )}
+
+      {/* Logout Button */}
+      {sidebarOpen && (
+        <button
+          onClick={handleLogout}
+          className="logout-btn"
+          aria-label="Sair da conta"
+        >
+          <FiLogOut />
+          Sair
+        </button>
+      )}
+    </nav>
+  );
+}
+
+// ========================================
+// COMPONENTE PRINCIPAL
+// ========================================
+
+export default function DashboardLayout() {
+  const {
+    sidebarOpen,
+    isDesktop,
+    toggleSidebar,
+    closeSidebar
+  } = useSidebarState();
+
+  const {
+    user,
+    doctorName,
+    plan,
+    appointmentsThisMonth,
+    isLimitReached,
+    loading
+  } = useUserData();
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await signOut(auth);
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
+  }, []);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="dashboard-layout">
+        <div className="loading-container">
+          <p>Carregando...</p>
+        </div>
+      </div>
+    );
   }
-
 
   return (
     <div className="dashboard-layout">
-      {/* SIDEBAR */}
-      <nav className={`sidebar ${sidebarOpen ? "open" : "compact"}`} aria-hidden={false}>
-        <div className="sidebar-header">
-          {/* Botão hamburguer topo para desktop */}
-          <button
-            className="hamburger-btn"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            title={sidebarOpen ? "Encolher menu" : "Expandir menu"}
-          >
-            <FiMenu />
-          </button>
+      {/* Sidebar */}
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        toggleSidebar={toggleSidebar}
+        closeSidebar={closeSidebar}
+        isDesktop={isDesktop}
+        user={user}
+        doctorName={doctorName}
+        plan={plan}
+        appointmentsThisMonth={appointmentsThisMonth}
+        isLimitReached={isLimitReached}
+        handleLogout={handleLogout}
+      />
 
-          {/* Nome do médico */}
-          {sidebarOpen && <h2 className="fade-slide">{user ? `Olá, ${doctorName}` : "Bem-vindo"}</h2>}
-        </div>
-
-        <ul className="menu" role="menu" aria-label="Navegação principal">
-          {menuItems.map((item) => (
-            <li key={item.to} role="none">
-              <NavLink
-                to={item.to}
-                end
-                className="menu-link"
-                role="menuitem"
-                aria-label={item.text}
-                onClick={() => { if (!isDesktop) setSidebarOpen(false); }}
-              >
-                <span className="icon" aria-hidden="true">{item.icon}</span>
-                <span className="text fade-slide">{item.text}</span>
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-
-        <button onClick={handleLogout} className="logout-btn" aria-hidden={!sidebarOpen}>
-          <FiLogOut /> Sair
-        </button>
-        
-        {/* Plan box */}
-        {user && (
-          <>
-            <div className={`plan-box ${isLimitReached ? "limit-reached" : ""}`} aria-hidden={!sidebarOpen}>
-              <span className="plan-badge">Plano {PLAN_LABELS[plan]}</span>
-              <p>
-                {plan === "free" ? (
-                  <span>
-                    Você ainda possui: <strong className="remaining-appointments">{remainingAppointments(APPOINTMENT_LIMIT, appointmentsThisMonth)}</strong> consultas.
-                  </span>
-                ) : (
-                  <>✨ Consultas ilimitadas</>
-                )}
-              </p>
-
-              {plan === "free" && (
-                <div className="plan-actions">
-                  {/* Assinar PRO */}
-                  <a
-                    href="https://mpago.la/1TYVDfE"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="pro-subscribe-btn"
-                  >
-                    Assinar PRO <br />
-                  </a>
-
-                  {/* Conhecer planos */}
-                  <a
-                    href="/#plans"
-                    className="free-plan-btn"
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    Conhecer planos
-                  </a>
-                </div>
-              )}
-            </div>
-
-
-          </>
-        )}
-      </nav>
-
-      {/* BOTÃO FIXO MOBILE */}
+      {/* Botão Hambúrguer Mobile Fixo */}
       {!isDesktop && (
         <>
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={toggleSidebar}
             aria-expanded={sidebarOpen}
+            aria-label="Abrir menu"
             className="hamburger-fixed"
             title="Abrir menu"
           >
             <FiMenu />
           </button>
-          <div className={`sidebar-overlay ${sidebarOpen ? "open" : ""}`} onClick={() => setSidebarOpen(false)} />
+
+          {/* Overlay */}
+          <div
+            className={`sidebar-overlay ${sidebarOpen ? "open" : ""}`}
+            onClick={closeSidebar}
+            aria-hidden="true"
+          />
         </>
       )}
 
+      {/* Main Content */}
       <main className="dashboard-content">
         <Outlet />
       </main>

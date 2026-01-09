@@ -1,4 +1,5 @@
 import { db } from "./firebase"
+import { generateSlug } from "../utils/generateSlug"
 import { 
   doc, 
   setDoc, 
@@ -11,22 +12,34 @@ import {
   serverTimestamp
 } from "firebase/firestore"
 
+
+
+// Gerar slug disponível
+export async function generateAvailableSlug(name) {
+  const baseSlug = generateSlug(name)
+  let slug = baseSlug
+  let count = 2
+
+  while (!(await isSlugAvailable(slug))) {
+    slug = `${baseSlug}-${count}`
+    count++
+  }
+
+  return slug
+}
+
 // Criar doctor
-export const createDoctor = async ({ uid, name, email, whatsapp, slug }) => {
+export const createDoctor = async ({ uid, name, email, whatsapp }) => {
+  const slug = await generateAvailableSlug(name)
+
   await setDoc(doc(db, "doctors", uid), {
     uid,
     name,
     email,
     whatsapp,
     slug,
-
-    // 🔐 Plano SaaS
     plan: "free",
-
-    // 📊 Controle futuro
     appointmentsThisMonth: 0,
-
-    // 🕒 Auditoria
     createdAt: serverTimestamp()
   })
 }

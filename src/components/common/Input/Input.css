@@ -1,0 +1,317 @@
+@import url('../../../styles/variables.css');
+
+/* ========================================
+   INPUT WRAPPER
+   ======================================== */
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.input-wrapper-full-width {
+  width: 100%;
+}
+
+/* ========================================
+   INPUT LABEL
+   ======================================== */
+
+.input-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  display: block;
+}
+
+.input-required {
+  color: var(--danger-500);
+  margin-left: var(--spacing-xs);
+}
+
+/* ========================================
+   INPUT CONTAINER
+   ======================================== */
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* ========================================
+   INPUT BASE
+   ======================================== */
+
+.input,
+.textarea {
+  width: 100%;
+  font-family: var(--font-family-base);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-base);
+  outline: none;
+}
+
+.input:hover,
+.textarea:hover {
+  border-color: var(--border-dark);
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ========================================
+   INPUT SIZES
+   ======================================== */
+
+.input-sm {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--text-sm);
+  min-height: 36px;
+}
+
+.input-md {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--text-base);
+  min-height: 44px;
+}
+
+.input-lg {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  font-size: var(--text-lg);
+  min-height: 52px;
+}
+
+/* ========================================
+   TEXTAREA
+   ======================================== */
+
+.textarea {
+  padding: var(--spacing-md) var(--spacing-lg);
+  resize: vertical;
+  min-height: 100px;
+  line-height: var(--leading-relaxed);
+}
+
+.textarea-full-width {
+  width: 100%;
+}
+
+/* ========================================
+   INPUT WITH ICONS
+   ======================================== */
+
+.input-icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  font-size: var(--text-lg);
+}
+
+.input-icon-left {
+  left: var(--spacing-md);
+}
+
+.input-icon-right {
+  right: var(--spacing-md);
+  pointer-events: auto;
+}
+
+.input-with-left-icon {
+  padding-left: calc(var(--spacing-lg) * 2.5);
+}
+
+.input-with-right-icon {
+  padding-right: calc(var(--spacing-lg) * 2.5);
+}
+
+/* ========================================
+   INPUT STATES
+   ======================================== */
+
+/* Error State */
+.input-error,
+.textarea-error {
+  border-color: var(--danger-500);
+}
+
+.input-error:focus,
+.textarea-error:focus {
+  border-color: var(--danger-500);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Disabled State */
+.input-disabled,
+.input:disabled,
+.textarea:disabled {
+  background: var(--gray-100);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Full Width */
+.input-full-width,
+.textarea-full-width {
+  width: 100%;
+}
+
+/* ========================================
+   INPUT MESSAGES
+   ======================================== */
+
+.input-message {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.input-error-message {
+  color: var(--danger-600);
+  font-weight: var(--font-medium);
+}
+
+.input-helper-text {
+  color: var(--text-secondary);
+}
+
+/* ========================================
+   INPUT GROUP
+   ======================================== */
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* Input Group - Horizontal */
+.input-group-horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.input-group-horizontal .input-wrapper {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* ========================================
+   INPUT VARIANTS
+   ======================================== */
+
+/* Search Input */
+.input-search {
+  padding-left: calc(var(--spacing-lg) * 2.5);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.35-4.35'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: var(--spacing-md) center;
+}
+
+/* Number Input - Remove setas */
+.input[type="number"]::-webkit-inner-spin-button,
+.input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Date Input */
+.input[type="date"],
+.input[type="time"],
+.input[type="datetime-local"] {
+  cursor: pointer;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .input-sm {
+    min-height: 40px;
+  }
+
+  .input-md {
+    min-height: 48px;
+  }
+
+  .input-lg {
+    min-height: 56px;
+  }
+
+  .input-group-horizontal {
+    flex-direction: column;
+  }
+
+  .input-group-horizontal .input-wrapper {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+.input:focus-visible,
+.textarea:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .textarea {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+
+@media print {
+  .input,
+  .textarea {
+    border: 1px solid var(--gray-400);
+    box-shadow: none;
+  }
+}
+
+/* ========================================
+   DARK MODE (OPCIONAL)
+   ======================================== */
+
+[data-theme="dark"] .input,
+[data-theme="dark"] .textarea {
+  background: var(--gray-800);
+  border-color: var(--gray-600);
+  color: var(--gray-100);
+}
+
+[data-theme="dark"] .input:focus,
+[data-theme="dark"] .textarea:focus {
+  border-color: var(--color-secondary);
+}

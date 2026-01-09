@@ -120,9 +120,17 @@ export default function LandingPage() {
             </p>
 
             <div className="hero-buttons">
-              <a href="#plans" className="btn btn-primary">
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  document
+                    .getElementById("plans")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
                 Ver planos <ArrowRight size={18} />
-              </a>
+              </button>
+
               <a href="#features" className="btn btn-outline">
                 Como funciona
               </a>
@@ -267,7 +275,7 @@ export default function LandingPage() {
               <span>+55</span> <span>21</span> <span>99437</span> <span>7887</span>
             </div>
           </div>
-          
+
           {/* Email */}
           <div className="footer-section">
             <MessageCircle size={18} />

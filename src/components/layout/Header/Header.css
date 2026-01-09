@@ -1,6 +1,12 @@
 /* src/components/layout/Header/Header.css */
 @import '../../../styles/variables.css';
 
+/* ===== Reset defensivo para links ===== */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
 /* ========== Header Container ========== */
 .header {
   position: fixed;
@@ -34,12 +40,13 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
   font-weight: var(--font-bold);
   font-size: var(--text-2xl);
   color: var(--white);
   transition: var(--transition-base);
-  z-index: 1;
 }
 
 .header.scrolled .logo {
@@ -55,24 +62,26 @@
   letter-spacing: -0.02em;
 }
 
-/* ========== Navigation Links ========== */
+/* ========== Navigation Buttons ========== */
 .nav-links {
   display: flex;
   align-items: center;
   gap: var(--spacing-2xl);
 }
 
-.nav-links a {
-  text-decoration: none;
+.nav-links button {
+  background: none;
+  border: none;
+  cursor: pointer;
   color: rgba(255, 255, 255, 0.95);
   font-weight: var(--font-medium);
   font-size: var(--text-base);
-  transition: var(--transition-base);
   position: relative;
   padding: var(--spacing-xs) 0;
+  transition: var(--transition-base);
 }
 
-.nav-links a::after {
+.nav-links button::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -83,15 +92,15 @@
   transition: width var(--transition-base);
 }
 
-.nav-links a:hover::after {
+.nav-links button:hover::after {
   width: 100%;
 }
 
-.header.scrolled .nav-links a {
+.header.scrolled .nav-links button {
   color: var(--text-primary);
 }
 
-.header.scrolled .nav-links a:hover {
+.header.scrolled .nav-links button:hover {
   color: var(--color-secondary);
 }
 
@@ -103,13 +112,14 @@
 }
 
 .btn-login {
-  text-decoration: none;
+  background: none;
+  border: 2px solid transparent;
+  cursor: pointer;
   color: var(--white);
   font-weight: var(--font-semibold);
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-md);
   transition: var(--transition-base);
-  border: 2px solid transparent;
 }
 
 .btn-login:hover {
@@ -127,12 +137,13 @@
 }
 
 .btn-register {
-  text-decoration: none;
   background: var(--gradient-secondary);
   color: var(--white);
   font-weight: var(--font-semibold);
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
   transition: var(--transition-base);
   box-shadow: var(--shadow-sm);
 }
@@ -172,11 +183,6 @@
   content: '▼';
   font-size: 0.7em;
   opacity: 0.8;
-  transition: transform var(--transition-base);
-}
-
-.user-name:hover::after {
-  transform: translateY(2px);
 }
 
 /* ========== User Dropdown ========== */
@@ -192,19 +198,7 @@
   min-width: 200px;
   overflow: hidden;
   z-index: var(--z-dropdown);
-  animation: dropdownFadeIn 0.2s ease;
   border: 1px solid var(--border-light);
-}
-
-@keyframes dropdownFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .user-dropdown button {
@@ -219,7 +213,6 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  font-size: var(--text-base);
 }
 
 .user-dropdown button:hover {
@@ -231,11 +224,6 @@
   border-bottom: 1px solid var(--border-light);
 }
 
-.user-dropdown button svg {
-  width: 16px;
-  height: 16px;
-}
-
 /* ========== Mobile Menu Button ========== */
 .mobile-menu-btn {
   display: none;
@@ -245,19 +233,10 @@
   cursor: pointer;
   padding: var(--spacing-sm);
   border-radius: var(--radius-md);
-  transition: var(--transition-base);
-}
-
-.mobile-menu-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
 }
 
 .header.scrolled .mobile-menu-btn {
   color: var(--color-primary);
-}
-
-.header.scrolled .mobile-menu-btn:hover {
-  background: var(--primary-50);
 }
 
 /* ========== Mobile Menu ========== */
@@ -268,31 +247,22 @@
   left: 0;
   right: 0;
   background: var(--white);
-  padding: var(--spacing-xl) var(--spacing-xl);
+  padding: var(--spacing-xl);
   box-shadow: var(--shadow-lg);
   flex-direction: column;
   gap: var(--spacing-md);
   border-top: 1px solid var(--border-light);
-  animation: mobileMenuSlideDown 0.3s ease;
-}
-
-@keyframes mobileMenuSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .mobile-menu.open {
   display: flex;
 }
 
-.mobile-menu a {
-  text-decoration: none;
+.mobile-menu button {
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
   color: var(--text-primary);
   font-weight: var(--font-medium);
   padding: var(--spacing-md) var(--spacing-sm);
@@ -301,51 +271,9 @@
   border-radius: var(--radius-sm);
 }
 
-.mobile-menu a:hover {
+.mobile-menu button:hover {
   color: var(--color-secondary);
   background: var(--secondary-50);
-  border-bottom-color: var(--color-secondary);
-}
-
-.mobile-auth {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  padding-top: var(--spacing-md);
-  border-top: 1px solid var(--border-light);
-}
-
-.mobile-auth .btn-login {
-  color: var(--color-secondary);
-  text-align: center;
-  border: 2px solid var(--color-secondary);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-}
-
-.mobile-auth .btn-login:hover {
-  background: var(--secondary-50);
-}
-
-.mobile-auth .btn-register {
-  text-align: center;
-  display: block;
-}
-
-/* Mobile user dropdown */
-.mobile-auth .user-info {
-  width: 100%;
-}
-
-.mobile-auth .user-name {
-  width: 100%;
-  justify-content: center;
-}
-
-.mobile-auth .user-dropdown {
-  position: static;
-  margin-top: var(--spacing-sm);
-  box-shadow: var(--shadow-md);
 }
 
 /* ========== Responsive ========== */
@@ -362,36 +290,16 @@
   .header {
     padding: var(--spacing-md);
   }
-
-  .header-container {
-    gap: var(--spacing-md);
-  }
-
-  .logo {
-    font-size: var(--text-xl);
-  }
 }
 
 @media (max-width: 480px) {
   .logo-text {
     display: none;
   }
-
-  .logo-icon {
-    font-size: var(--text-2xl);
-  }
 }
 
 /* ========== Acessibilidade ========== */
-.user-name:focus-visible,
-.mobile-menu-btn:focus-visible,
-.btn-login:focus-visible,
-.btn-register:focus-visible {
+button:focus-visible {
   outline: 2px solid var(--color-secondary);
   outline-offset: 2px;
-}
-
-.user-dropdown button:focus-visible {
-  outline: 2px solid var(--color-secondary);
-  outline-offset: -2px;
 }

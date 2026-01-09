@@ -3,10 +3,15 @@ import { Menu, X, LogOut } from "lucide-react";
 import { auth, db } from "../../../services/firebase";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import "./Header.css";
 
+import useSmoothScroll from "../../../hooks/useSmoothScroll";
+
 export default function Header() {
+
+  const { scrollTo } = useSmoothScroll();
+
   const [user, setUser] = useState(null);
   const [doctorName, setDoctorName] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
@@ -52,30 +57,46 @@ export default function Header() {
     <header className={`header ${isScrolled ? "scrolled" : ""}`}>
       <div className="header-container">
         {/* Logo */}
-        <a href="/" className="logo">
+        <Link to="/" className="logo">
           <span className="logo-text">MedAgenda</span>
-        </a>
+        </Link>
 
         {/* Desktop nav */}
         <nav className={`nav-links ${isMobileMenuOpen ? "open" : ""}`}>
-          <a href="#features" onClick={() => setIsMobileMenuOpen(false)}>
+          <button
+            type="button"
+            onClick={() => {
+              scrollTo("features");
+              setIsMobileMenuOpen(false);
+            }}
+          >
             Funcionalidades
-          </a>
-          <a href="#plans" onClick={() => setIsMobileMenuOpen(false)}>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              scrollTo("plans");
+              setIsMobileMenuOpen(false);
+            }}
+          >
             Planos
-          </a>
+          </button>
+
         </nav>
 
         {/* Auth buttons / User info */}
         <div className="auth-buttons">
           {!user ? (
             <>
-              <a href="/login" className="btn-login">
+              <Link to="/login" className="btn-login">
                 Login
-              </a>
-              <a href="/register" className="btn-register">
+              </Link>
+
+              <Link to="/register" className="btn-register">
                 Cadastrar
-              </a>
+              </Link>
+
             </>
           ) : (
             <div className="user-info">
@@ -121,21 +142,35 @@ export default function Header() {
 
       {/* Mobile menu */}
       <div className={`mobile-menu ${isMobileMenuOpen ? "open" : ""}`}>
-        <a href="#features" onClick={() => setIsMobileMenuOpen(false)}>
+        <button
+          type="button"
+          onClick={() => {
+            scrollTo("features");
+            setIsMobileMenuOpen(false);
+          }}
+        >
           Funcionalidades
-        </a>
-        <a href="#plans" onClick={() => setIsMobileMenuOpen(false)}>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            scrollTo("plans");
+            setIsMobileMenuOpen(false);
+          }}
+        >
           Planos
-        </a>
+        </button>
 
         {!user ? (
           <div className="mobile-auth">
-            <a href="/login" className="btn-login">
+            <Link to="/login" className="btn-login">
               Login
-            </a>
-            <a href="/register" className="btn-register">
+            </Link>
+
+            <Link to="/register" className="btn-register">
               Cadastrar
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="mobile-auth user-info">
