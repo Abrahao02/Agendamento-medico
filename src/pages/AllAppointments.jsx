@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { auth, db } from "../services/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
@@ -8,30 +8,35 @@ import formatDate from "../utils/formatDate";
 
 export default function AllAppointments() {
   const [user, loading] = useAuthState(auth);
-  const [appointments, setAppointments] = useState([]);
-  const [statusFilter, setStatusFilter] = useState("Todos"); // Todos, Confirmado, Pendente, NaoCompareceu
-  const [dateFilter, setDateFilter] = useState("Todos");     // Todos, Futuros, Passados
-  const [saving, setSaving] = useState(false);
-  const [changed, setChanged] = useState(false);            // Detecta alterações
   const navigate = useNavigate();
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const [appointments, setAppointments] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("Todos");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [expandedPatients, setExpandedPatients] = useState(new Set());
+  const [changedIds, setChangedIds] = useState(new Set());
+  const [saving, setSaving] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Redireciona caso não esteja logado
+  // 🔐 Proteção de rota
   useEffect(() => {
     if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
 
-  // Buscar agendamentos
+  // 📥 Buscar agendamentos com loading state
   useEffect(() => {
-    const fetchAppointments = async () => {
-      if (!user) return;
-      try {
-        const appointmentsRef = collection(db, "appointments");
-        const q = query(appointmentsRef, where("doctorId", "==", user.uid));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (!user) return;
 
+    const fetchAppointments = async () => {
+      setLoadingData(true);
+      try {
+        const q = query(collection(db, "appointments"), where("doctorId", "==", user.uid));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Ordena por data e horário
         data.sort((a, b) => {
           if (a.date === b.date) return a.time.localeCompare(b.time);
           return a.date.localeCompare(b.date);
@@ -40,148 +45,288 @@ export default function AllAppointments() {
         setAppointments(data);
       } catch (err) {
         console.error("Erro ao buscar agendamentos:", err);
+      } finally {
+        setLoadingData(false);
       }
     };
 
     fetchAppointments();
   }, [user]);
 
-  // Alterar status de um agendamento
-  const handleStatusChange = (id, newStatus) => {
+  // 🔄 Toggle expandir paciente (usando Set para melhor performance)
+  const togglePatient = useCallback((patient) => {
+    setExpandedPatients(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(patient)) {
+        newSet.delete(patient);
+      } else {
+        newSet.add(patient);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // 🔄 Alterar status
+  const handleStatusChange = useCallback((id, newStatus) => {
     setAppointments(prev =>
       prev.map(app => (app.id === id ? { ...app, status: newStatus } : app))
     );
-    setChanged(true);
-  };
+    setChangedIds(prev => new Set([...prev, id]));
+  }, []);
 
-  // Salvar alterações
+  // 💾 Salvar alterações (apenas os modificados)
   const handleSave = async () => {
     setSaving(true);
     try {
-      const updates = appointments.map(async app => {
-        const appRef = doc(db, "appointments", app.id);
-        return updateDoc(appRef, { status: app.status });
-      });
+      const changedAppointments = appointments.filter(app => changedIds.has(app.id));
+      const updates = changedAppointments.map(app =>
+        updateDoc(doc(db, "appointments", app.id), { status: app.status })
+      );
       await Promise.all(updates);
-      alert("Alterações salvas com sucesso!");
-      setChanged(false);
+      setChangedIds(new Set());
+      // Toast notification seria melhor que alert
+      alert("✅ Alterações salvas com sucesso!");
     } catch (err) {
       console.error("Erro ao salvar alterações:", err);
-      alert("Erro ao salvar alterações.");
+      alert("❌ Erro ao salvar alterações.");
     } finally {
       setSaving(false);
     }
   };
 
-  // Confirmação antes de mudar filtros
-  const handleSelectStatusFilter = (filter) => {
-    if (changed) {
-      const confirmLeave = window.confirm("Você tem alterações não salvas. Deseja continuar sem salvar?");
-      if (!confirmLeave) return;
+  // 🔹 Resetar filtros
+  const resetFilters = useCallback(() => {
+    setStatusFilter("Todos");
+    setStartDate("");
+    setEndDate("");
+    setSearchTerm("");
+  }, []);
+
+  // 🔹 Filtragem otimizada com useMemo
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter(app => {
+      if (statusFilter !== "Todos" && app.status !== statusFilter) return false;
+      if (startDate && app.date < startDate) return false;
+      if (endDate && app.date > endDate) return false;
+      if (searchTerm) {
+        const search = searchTerm.toLowerCase();
+        const name = (app.referenceName || app.patientName || "").toLowerCase();
+        const phone = (app.patientWhatsapp || "").toLowerCase();
+        if (!name.includes(search) && !phone.includes(search)) return false;
+      }
+      return true;
+    });
+  }, [appointments, statusFilter, startDate, endDate, searchTerm]);
+
+  // 🔹 Lista de pacientes únicos com stats
+  const patientsData = useMemo(() => {
+    const patients = {};
+    
+    filteredAppointments.forEach(app => {
+      const patientName = app.referenceName?.trim() || app.patientName;
+      
+      if (!patients[patientName]) {
+        patients[patientName] = {
+          name: patientName,
+          appointments: [],
+          totalValue: 0,
+          statusCounts: {}
+        };
+      }
+      
+      patients[patientName].appointments.push(app);
+      patients[patientName].totalValue += app.value || 0;
+      patients[patientName].statusCounts[app.status] = 
+        (patients[patientName].statusCounts[app.status] || 0) + 1;
+    });
+
+    return Object.values(patients).sort((a, b) => 
+      a.name.localeCompare(b.name)
+    );
+  }, [filteredAppointments]);
+
+  // Expandir/colapsar todos
+  const toggleAll = useCallback((expand) => {
+    if (expand) {
+      setExpandedPatients(new Set(patientsData.map(p => p.name)));
+    } else {
+      setExpandedPatients(new Set());
     }
-    setStatusFilter(filter);
-  };
+  }, [patientsData]);
 
-  const handleSelectDateFilter = (filter) => {
-    if (changed) {
-      const confirmLeave = window.confirm("Você tem alterações não salvas. Deseja continuar sem salvar?");
-      if (!confirmLeave) return;
-    }
-    setDateFilter(filter);
-  };
+  if (loading || loadingData) {
+    return (
+      <div className="todos-appointments-container">
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Carregando agendamentos...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const today = new Date();
-  const dateFilteredAppointments = appointments.filter(app => {
-    const appDate = new Date(app.date);
-
-    if (dateFilter === "Futuros" && appDate < today) return false;
-    if (dateFilter === "Passados" && appDate >= today) return false;
-    return true;
-  });
-
-
-  // Contagem dinâmica para badges
-  const counts = {
-    Todos: dateFilteredAppointments.length,
-    Confirmado: dateFilteredAppointments.filter(a => a.status === "Confirmado").length,
-    Pendente: dateFilteredAppointments.filter(a => a.status === "Pendente").length,
-    NaoCompareceu: dateFilteredAppointments.filter(a => a.status === "Não Compareceu").length,
-  };
-
-  // Filtragem final combinando status + data
-  const filteredAppointments = dateFilteredAppointments.filter(app => {
-    if (statusFilter === "Todos") return true;
-    if (statusFilter === "Confirmado") return app.status === "Confirmado";
-    if (statusFilter === "Pendente") return app.status === "Pendente";
-    if (statusFilter === "NaoCompareceu") return app.status === "Não Compareceu";
-    return true;
-  });
-
-  if (loading) return <p>Carregando...</p>;
+  const totalAppointments = filteredAppointments.length;
+  const totalValue = filteredAppointments.reduce((sum, app) => sum + (app.value || 0), 0);
 
   return (
     <div className="todos-appointments-container">
-      <h2>Todos os Agendamentos</h2>
+      <header className="page-header">
+        <div>
+          <h2>Todos os Agendamentos</h2>
+          <p className="subtitle">
+            {totalAppointments} agendamento{totalAppointments !== 1 ? 's' : ''} • 
+            Total: <strong>R$ {totalValue.toFixed(2)}</strong>
+          </p>
+        </div>
+      </header>
 
-      {/* Filtro de datas */}
-      <div className="date-filter-buttons">
-        {["Todos", "Futuros", "Passados"].map(f => (
-          <button
-            key={f}
-            className={dateFilter === f ? "active" : ""}
-            onClick={() => handleSelectDateFilter(f)}
+      {/* 🔹 Filtros */}
+      <div className="filters-section">
+        <div className="filters-row">
+          <input
+            type="search"
+            placeholder="🔍 Buscar por nome ou telefone..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          
+          <select 
+            value={statusFilter} 
+            onChange={e => setStatusFilter(e.target.value)}
+            className="filter-select"
           >
-            {f}
+            <option value="Todos">📋 Todos</option>
+            <option value="Confirmado">✅ Confirmado</option>
+            <option value="Pendente">⏳ Pendente</option>
+            <option value="Não Compareceu">❌ Não Compareceu</option>
+            <option value="Msg enviada">💬 Msg enviada</option>
+          </select>
+        </div>
+
+        <div className="filters-row">
+          <input
+            type="date"
+            value={startDate}
+            onChange={e => setStartDate(e.target.value)}
+            className="date-input"
+            placeholder="Data inicial"
+          />
+          <input
+            type="date"
+            value={endDate}
+            onChange={e => setEndDate(e.target.value)}
+            className="date-input"
+            placeholder="Data final"
+          />
+          
+          <button className="btn-secondary" onClick={resetFilters}>
+            🔄 Resetar
           </button>
-        ))}
+        </div>
+
+        <div className="filters-row">
+          <button className="btn-link" onClick={() => toggleAll(true)}>
+            ▼ Expandir Todos
+          </button>
+          <button className="btn-link" onClick={() => toggleAll(false)}>
+            ▲ Colapsar Todos
+          </button>
+        </div>
       </div>
 
-      {/* Filtro de status com badges */}
-      <div className="filter-buttons">
-        {["Todos", "Confirmado", "Pendente", "NaoCompareceu"].map(f => (
-          <button
-            key={f}
-            className={statusFilter === f ? "active" : ""}
-            onClick={() => handleSelectStatusFilter(f)}
-          >
-            {f === "NaoCompareceu" ? "Não Compareceu" : f} ({counts[f]})
-          </button>
-        ))}
+      {/* 🔹 Lista de pacientes */}
+      <div className="patients-list">
+        {patientsData.length === 0 ? (
+          <div className="empty-state">
+            <span className="empty-icon">📭</span>
+            <p>Nenhum agendamento encontrado</p>
+            <button className="btn-secondary" onClick={resetFilters}>
+              Limpar filtros
+            </button>
+          </div>
+        ) : (
+          patientsData.map(patient => {
+            const isExpanded = expandedPatients.has(patient.name);
+
+            return (
+              <div key={patient.name} className="patient-card">
+                <button 
+                  className="patient-header" 
+                  onClick={() => togglePatient(patient.name)}
+                  aria-expanded={isExpanded}
+                >
+                  <div className="patient-info">
+                    <span className="patient-name">{patient.name}</span>
+                    <span className="patient-stats">
+                      {patient.appointments.length} consulta{patient.appointments.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="patient-meta">
+                    <span className="patient-total">R$ {patient.totalValue.toFixed(2)}</span>
+                    <span className="expand-icon">{isExpanded ? '▲' : '▼'}</span>
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="appointments-container">
+                    {patient.appointments.map(app => (
+                      <div
+                        key={app.id}
+                        className={`appointment-card ${changedIds.has(app.id) ? 'changed' : ''}`}
+                        data-status={app.status}
+                      >
+                        <div className="appointment-main">
+                          <div className="appointment-datetime">
+                            <span className="date">📅 {formatDate(app.date)}</span>
+                            <span className="time">🕐 {app.time}</span>
+                          </div>
+                          <div className="appointment-contact">
+                            <span className="phone">📱 {app.patientWhatsapp}</span>
+                          </div>
+                          <div className="appointment-value">
+                            <span className="value">💰 R$ {(app.value || 0).toFixed(2)}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="appointment-status">
+                          <select
+                            value={app.status}
+                            onChange={e => handleStatusChange(app.id, e.target.value)}
+                            className="status-select"
+                          >
+                            <option value="Pendente">⏳ Pendente</option>
+                            <option value="Confirmado">✅ Confirmado</option>
+                            <option value="Não Compareceu">❌ Não Compareceu</option>
+                            <option value="Msg enviada">💬 Msg enviada</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
 
-      {/* Lista de agendamentos */}
-      {filteredAppointments.length === 0 ? (
-        <p>Nenhum agendamento encontrado.</p>
-      ) : (
-        <ul className="appointments-list">
-          {filteredAppointments.map(app => (
-            <li
-              key={app.id}
-              className={`appointment-item ${app.status.toLowerCase().replace(" ", "-")}`}
+      {/* 🔹 Botão salvar (fixo no bottom) */}
+      {changedIds.size > 0 && (
+        <div className="save-bar">
+          <div className="save-bar-content">
+            <span className="changes-count">
+              {changedIds.size} alteraç{changedIds.size !== 1 ? 'ões' : 'ão'} não salva{changedIds.size !== 1 ? 's' : ''}
+            </span>
+            <button 
+              className="btn-primary" 
+              onClick={handleSave} 
+              disabled={saving}
             >
-              <span className="date">{formatDate(app.date)}</span>
-              <span className="time">{app.time}</span>
-              <span className="patient-name">{app.patientName}</span>
-              <span className="patient-whatsapp">{app.patientWhatsapp}</span>
-
-              <select
-                value={app.status}
-                onChange={e => handleStatusChange(app.id, e.target.value)}
-              >
-                <option value="Pendente">Pendente</option>
-                <option value="Confirmado">Confirmado</option>
-                <option value="Não Compareceu">Não Compareceu</option>
-              </select>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* Botão salvar só aparece se houver alterações */}
-      {changed && (
-        <button className="save-btn" onClick={handleSave} disabled={saving}>
-          {saving ? "Salvando..." : "Salvar Alterações"}
-        </button>
+              {saving ? '💾 Salvando...' : '💾 Salvar Alterações'}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
