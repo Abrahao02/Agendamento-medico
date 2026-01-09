@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./PublicScheduleSuccess.css";
-import formatDate from "../utils/formatDate";
+import formatDate from "../utils/formatters/formatDate";
 
 export default function PublicScheduleSuccess() {
   const location = useLocation();

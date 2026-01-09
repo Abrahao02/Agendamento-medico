@@ -1,5 +1,5 @@
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa"
-import { useLogin } from "../hooks/useLogin"
+import { useLogin } from "../hooks/auth/useLogin"
 import "./Login.css"
 
 export default function Login() {

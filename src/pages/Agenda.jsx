@@ -13,7 +13,7 @@ import {
 } from "firebase/firestore";
 
 import "./Agenda.css";
-import formatDate from "../utils/formatDate";
+import formatDate from "../utils/formatters/formatDate";
 
 // Ícones
 import { FiArrowLeft, FiArrowRight, FiSave, FiSmartphone } from "react-icons/fi";

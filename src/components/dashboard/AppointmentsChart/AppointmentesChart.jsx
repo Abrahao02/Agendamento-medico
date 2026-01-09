@@ -10,7 +10,7 @@ import {
   Legend,
   CartesianGrid,
 } from "recharts";
-import formatDate from "../../../utils/formatDate";
+import formatDate from "../../../utils/formatters/formatDate";
 import "./AppointmentsChart.css";
 
 const STATUS_COLORS = {

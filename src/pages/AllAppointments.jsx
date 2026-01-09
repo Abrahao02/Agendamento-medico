@@ -4,7 +4,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
 import "./AllAppointments.css";
-import formatDate from "../utils/formatDate";
+import formatDate from "../utils/formatters/formatDate";
 
 export default function AllAppointments() {
   const [user, loading] = useAuthState(auth);
@@ -121,29 +121,33 @@ export default function AllAppointments() {
   // 🔹 Lista de pacientes únicos com stats
   const patientsData = useMemo(() => {
     const patients = {};
-    
+
     filteredAppointments.forEach(app => {
+      const whatsapp = app.patientWhatsapp; // chave única
       const patientName = app.referenceName?.trim() || app.patientName;
-      
-      if (!patients[patientName]) {
-        patients[patientName] = {
-          name: patientName,
+
+      if (!patients[whatsapp]) {
+        patients[whatsapp] = {
+          name: patientName,  // pega o primeiro nome que aparecer
+          whatsapp,
           appointments: [],
           totalValue: 0,
           statusCounts: {}
         };
       }
-      
-      patients[patientName].appointments.push(app);
-      patients[patientName].totalValue += app.value || 0;
-      patients[patientName].statusCounts[app.status] = 
-        (patients[patientName].statusCounts[app.status] || 0) + 1;
+
+      patients[whatsapp].appointments.push(app);
+      patients[whatsapp].totalValue += app.value || 0;
+      patients[whatsapp].statusCounts[app.status] =
+        (patients[whatsapp].statusCounts[app.status] || 0) + 1;
     });
 
-    return Object.values(patients).sort((a, b) => 
+    // Ordena pelo nome do paciente
+    return Object.values(patients).sort((a, b) =>
       a.name.localeCompare(b.name)
     );
   }, [filteredAppointments]);
+
 
   // Expandir/colapsar todos
   const toggleAll = useCallback((expand) => {
@@ -174,7 +178,7 @@ export default function AllAppointments() {
         <div>
           <h2>Todos os Agendamentos</h2>
           <p className="subtitle">
-            {totalAppointments} agendamento{totalAppointments !== 1 ? 's' : ''} • 
+            {totalAppointments} agendamento{totalAppointments !== 1 ? 's' : ''} •
             Total: <strong>R$ {totalValue.toFixed(2)}</strong>
           </p>
         </div>
@@ -190,9 +194,9 @@ export default function AllAppointments() {
             onChange={e => setSearchTerm(e.target.value)}
             className="search-input"
           />
-          
-          <select 
-            value={statusFilter} 
+
+          <select
+            value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
             className="filter-select"
           >
@@ -219,7 +223,7 @@ export default function AllAppointments() {
             className="date-input"
             placeholder="Data final"
           />
-          
+
           <button className="btn-secondary" onClick={resetFilters}>
             🔄 Resetar
           </button>
@@ -230,7 +234,7 @@ export default function AllAppointments() {
             ▼ Expandir Todos
           </button>
           <button className="btn-link" onClick={() => toggleAll(false)}>
-            ▲ Colapsar Todos
+            ▲ Contrair Todos
           </button>
         </div>
       </div>
@@ -251,8 +255,8 @@ export default function AllAppointments() {
 
             return (
               <div key={patient.name} className="patient-card">
-                <button 
-                  className="patient-header" 
+                <button
+                  className="patient-header"
                   onClick={() => togglePatient(patient.name)}
                   aria-expanded={isExpanded}
                 >
@@ -288,7 +292,7 @@ export default function AllAppointments() {
                             <span className="value">💰 R$ {(app.value || 0).toFixed(2)}</span>
                           </div>
                         </div>
-                        
+
                         <div className="appointment-status">
                           <select
                             value={app.status}
@@ -318,9 +322,9 @@ export default function AllAppointments() {
             <span className="changes-count">
               {changedIds.size} alteraç{changedIds.size !== 1 ? 'ões' : 'ão'} não salva{changedIds.size !== 1 ? 's' : ''}
             </span>
-            <button 
-              className="btn-primary" 
-              onClick={handleSave} 
+            <button
+              className="btn-primary"
+              onClick={handleSave}
               disabled={saving}
             >
               {saving ? '💾 Salvando...' : '💾 Salvar Alterações'}

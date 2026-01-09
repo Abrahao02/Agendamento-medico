@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { PrivateRoute } from "../components/PrivateRoute";
-import LoadingFallback from "../components/LoadingFallback";
+import LoadingFallback from "../components/common/LoadingFallback";
+
 
 // ========================================
 // LAZY LOADING - Melhora performance inicial

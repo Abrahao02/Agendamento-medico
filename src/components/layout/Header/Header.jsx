@@ -6,7 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import "./Header.css";
 
-import useSmoothScroll from "../../../hooks/useSmoothScroll";
+import useSmoothScroll from "../../../hooks/common/useSmoothScroll";
 
 export default function Header() {
 
