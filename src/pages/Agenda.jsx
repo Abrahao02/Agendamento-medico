@@ -16,12 +16,7 @@ import "./Agenda.css";
 import formatDate from "../utils/formatDate";
 
 // Ícones
-import {
-  FiArrowLeft,
-  FiArrowRight,
-  FiSave,
-  FiSmartphone,
-} from "react-icons/fi";
+import { FiArrowLeft, FiArrowRight, FiSave, FiSmartphone } from "react-icons/fi";
 
 /**
  * 📱 Formata WhatsApp padrão BR
@@ -42,6 +37,9 @@ export default function Agenda() {
 
   // 🔹 config do WhatsApp do médico
   const [whatsappConfig, setWhatsappConfig] = useState(null);
+
+  // 🔹 Mapa appointmentId → referenceName atualizado
+  const [referenceNames, setReferenceNames] = useState({});
 
   const hasUnsavedChanges = useRef(false);
 
@@ -105,13 +103,37 @@ export default function Agenda() {
 
         setAppointments(data);
 
+        // Status inicial
         const initialStatus = {};
         data.forEach((a) => {
           initialStatus[a.id] = a.status || "Pendente";
         });
-
         setStatusUpdates(initialStatus);
         hasUnsavedChanges.current = false;
+
+        // 🔹 Busca referenceName atualizado para cada paciente
+        const fetchReferenceNames = async () => {
+          const names = {};
+          await Promise.all(
+            data.map(async (appt) => {
+              try {
+                const numbers = appt.patientWhatsapp.replace(/\D/g, "");
+                const patientId = `${user.uid}_${numbers}`;
+                const snap = await getDoc(doc(db, "patients", patientId));
+                if (snap.exists() && snap.data().referenceName?.trim() !== "") {
+                  names[appt.id] = snap.data().referenceName;
+                } else {
+                  names[appt.id] = appt.patientName;
+                }
+              } catch {
+                names[appt.id] = appt.patientName;
+              }
+            })
+          );
+          setReferenceNames(names);
+        };
+
+        fetchReferenceNames();
       } catch (err) {
         console.error("Erro ao buscar agendamentos:", err);
       }
@@ -141,13 +163,15 @@ export default function Agenda() {
   /**
    * 📱 Envia WhatsApp (mensagem personalizada) sem abrir várias abas
    */
-  const handleSendWhatsapp = (appt) => {
+  const handleSendWhatsapp = async (appt) => {
     if (!whatsappConfig) return;
 
     const { intro, body, footer, showValue } = whatsappConfig;
 
+    const patientDisplayName = referenceNames[appt.id] || appt.patientName;
+
     let message = `
-${intro || "Olá"} ${appt.patientName},
+${intro || "Olá"} ${patientDisplayName},
 
 ${body || "Sua sessão está agendada"}
 
@@ -165,15 +189,13 @@ Horário: ${appt.time}
 
     const phone = formatWhatsappNumber(appt.patientWhatsapp);
 
-    // Usando o mesmo nome de janela, assim não abre várias abas
     window.open(
       `https://wa.me/${phone}?text=${encodeURIComponent(message.trim())}`,
-      "whatsappWindow" // 👈 nome fixo da aba
+      "whatsappWindow"
     );
 
     handleStatusChange(appt.id, "Msg enviada");
   };
-
 
   // 📅 Navegação correta
   const goToPreviousDay = () =>
@@ -199,35 +221,34 @@ Horário: ${appt.time}
       <h2>Agenda</h2>
 
       <div className="date-navigation">
-        <button onClick={goToPreviousDay}>
+        <button className="btn-secondary" onClick={goToPreviousDay}>
           <FiArrowLeft /> Anterior
         </button>
 
         <span>{formatDate(currentDate)}</span>
 
-        <button onClick={goToNextDay}>
+        <button className="btn-secondary" onClick={goToNextDay}>
           Próximo <FiArrowRight />
         </button>
 
-        <button onClick={goToToday}>Hoje</button>
+        <button className="btn-primary" onClick={goToToday}>Hoje</button>
       </div>
 
-      {appointments.length === 0 && (
-        <p>Nenhum paciente agendado para este dia.</p>
-      )}
+      {appointments.length === 0 && <p>Nenhum paciente agendado para este dia.</p>}
 
       <ul className="appointments-list">
         {appointments.map((app) => (
-          <li key={app.id} className="slot-item">
+          <li key={app.id} className="slot-item" data-status={statusUpdates[app.id]}>
             <span className="time">{app.time}</span>
-            <span className="patient-name">{app.patientName}</span>
+            <span className="patient-name">
+              {referenceNames[app.id] || app.patientName}
+            </span>
             <span className="patient-whatsapp">{app.patientWhatsapp}</span>
 
             <select
+              className="status-select"
               value={statusUpdates[app.id]}
-              onChange={(e) =>
-                handleStatusChange(app.id, e.target.value)
-              }
+              onChange={(e) => handleStatusChange(app.id, e.target.value)}
             >
               <option value="Pendente">⏳ Pendente</option>
               <option value="Msg enviada">📩 Msg enviada</option>
@@ -235,8 +256,8 @@ Horário: ${appt.time}
               <option value="Não Compareceu">❌ Não Compareceu</option>
             </select>
 
-            <button onClick={() => handleSendWhatsapp(app)}>
-              <FiSmartphone />
+            <button className="btn-primary" onClick={() => handleSendWhatsapp(app)}>
+              <FiSmartphone /> WhatsApp
             </button>
           </li>
         ))}
@@ -244,11 +265,12 @@ Horário: ${appt.time}
 
       {hasUnsavedChanges.current && (
         <div className="save-changes">
-          <button disabled>
+          <button className="btn-secondary" disabled>
             <FiSave /> Alterações salvas automaticamente
           </button>
         </div>
       )}
     </div>
+
   );
 }

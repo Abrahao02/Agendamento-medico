@@ -17,7 +17,7 @@ export default function Patients() {
   const [patients, setPatients] = useState({});
   const [appointments, setAppointments] = useState([]);
   const [saving, setSaving] = useState(null);
-  const [newPatient, setNewPatient] = useState({ name: "", whatsapp: "", price: "" });
+  const [newPatient, setNewPatient] = useState({ name: "", referenceName: "", whatsapp: "", price: "" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -43,6 +43,7 @@ export default function Patients() {
           map[p.whatsapp] = {
             id: d.id,
             name: p.name,
+            referenceName: p.referenceName || "",
             whatsapp: p.whatsapp,
             price: p.price || 0,
             totalConsultas: 0
@@ -73,8 +74,16 @@ export default function Patients() {
     }));
   };
 
-  // 🔹 Salvar preço
-  const handleSavePrice = async (patient) => {
+  // 🔹 Alterar nome de referência
+  const handleReferenceNameChange = (whatsapp, value) => {
+    setPatients(prev => ({
+      ...prev,
+      [whatsapp]: { ...prev[whatsapp], referenceName: value }
+    }));
+  };
+
+  // 🔹 Salvar paciente (nome, referência e preço)
+  const handleSavePatient = async (patient) => {
     setSaving(patient.whatsapp);
     try {
       const id = patient.id || `${user.uid}_${patient.whatsapp}`;
@@ -83,28 +92,29 @@ export default function Patients() {
         {
           doctorId: user.uid,
           name: patient.name,
+          referenceName: patient.referenceName || "",
           whatsapp: patient.whatsapp,
           price: patient.price,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
       );
-      alert(`Valor salvo para ${patient.name}`);
+      alert(`Dados salvos para ${patient.name}`);
     } catch (err) {
       console.error(err);
-      alert("Erro ao salvar valor.");
+      alert("Erro ao salvar dados.");
     } finally {
       setSaving(null);
     }
   };
 
-  // 🔹 Máscara WhatsApp simplificada (DDD + número, máximo 11 dígitos)
+  // 🔹 Máscara WhatsApp simplificada
   const handleWhatsappChange = (value) => {
     let numbers = value.replace(/\D/g, "").slice(0, 11);
     let formatted = "";
     if (numbers.length > 0) formatted += `(${numbers.slice(0, 2)})`; // DDD
-    if (numbers.length > 2) formatted += ` ${numbers.slice(2, 7)}`;     // 5 primeiros dígitos
-    if (numbers.length > 7) formatted += `-${numbers.slice(7, 11)}`;    // últimos dígitos
+    if (numbers.length > 2) formatted += ` ${numbers.slice(2, 7)}`;   // 5 primeiros dígitos
+    if (numbers.length > 7) formatted += `-${numbers.slice(7, 11)}`;  // últimos dígitos
     setNewPatient(prev => ({ ...prev, whatsapp: formatted }));
   };
 
@@ -118,6 +128,7 @@ export default function Patients() {
     setError("");
 
     const name = newPatient.name.trim();
+    const referenceName = newPatient.referenceName.trim();
     const price = Number(newPatient.price || 0);
     const numbers = newPatient.whatsapp.replace(/\D/g, "");
 
@@ -143,6 +154,7 @@ export default function Patients() {
       await setDoc(doc(db, "patients", id), {
         doctorId: user.uid,
         name,
+        referenceName,
         whatsapp: numbers,
         price,
         createdAt: serverTimestamp()
@@ -150,10 +162,10 @@ export default function Patients() {
 
       setPatients(prev => ({
         ...prev,
-        [numbers]: { id, name, whatsapp: numbers, price, totalConsultas: 0 }
+        [numbers]: { id, name, referenceName, whatsapp: numbers, price, totalConsultas: 0 }
       }));
 
-      setNewPatient({ name: "", whatsapp: "", price: "" });
+      setNewPatient({ name: "", referenceName: "", whatsapp: "", price: "" });
       setError("");
       alert("Paciente cadastrado com sucesso!");
     } catch (err) {
@@ -162,7 +174,6 @@ export default function Patients() {
     }
   };
 
-  // 🔹 Transformar objeto em lista e ordenar por nome
   const list = Object.values(patients).sort((a, b) => a.name.localeCompare(b.name));
 
   if (loading) return <p>Carregando pacientes...</p>;
@@ -182,6 +193,12 @@ export default function Patients() {
         />
         <input
           type="text"
+          placeholder="Nome de referência"
+          value={newPatient.referenceName}
+          onChange={e => setNewPatient(prev => ({ ...prev, referenceName: e.target.value }))}
+        />
+        <input
+          type="text"
           placeholder="WhatsApp (DDD + número)"
           value={newPatient.whatsapp}
           onChange={e => handleWhatsappChange(e.target.value)}
@@ -198,12 +215,10 @@ export default function Patients() {
         {error && <p className="error">{error}</p>}
       </div>
 
-      {/* Total de pacientes */}
       <div className="patients-total">
         Total de Clientes: <strong>{list.length}</strong>
       </div>
 
-      {/* Lista de pacientes */}
       {list.length === 0 ? (
         <p>Nenhum paciente encontrado.</p>
       ) : (
@@ -221,7 +236,16 @@ export default function Patients() {
           <tbody>
             {list.map(p => (
               <tr key={p.whatsapp}>
-                <td>{p.name}</td>
+                <td>
+                  {p.name}
+                  <input
+                    type="text"
+                    placeholder="Nome de referência"
+                    value={p.referenceName}
+                    onChange={e => handleReferenceNameChange(p.whatsapp, e.target.value)}
+                    style={{ marginTop: "4px", width: "100%" }}
+                  />
+                </td>
                 <td className="whatsapp">{`(${p.whatsapp.slice(0,2)}) ${p.whatsapp.slice(2,7)}-${p.whatsapp.slice(7,11)}`}</td>
                 <td>
                   <input
@@ -236,7 +260,7 @@ export default function Patients() {
                 <td>
                   <button
                     className="save-btn"
-                    onClick={() => handleSavePrice(p)}
+                    onClick={() => handleSavePatient(p)}
                     disabled={saving === p.whatsapp}
                   >
                     {saving === p.whatsapp ? "Salvando..." : "Salvar"}

@@ -1,0 +1,144 @@
+/* src/components/dashboard/StatusSummary/StatusSummary.css */
+@import url('../../../styles/variables.css');
+
+.status-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.status-card {
+  background: var(--white);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid;
+  transition: var(--transition-base);
+  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+}
+
+.status-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.status-card.confirmed {
+  border-left-color: var(--success-500);
+}
+
+.status-card.pending {
+  border-left-color: var(--warning-500);
+}
+
+.status-card.missed {
+  border-left-color: var(--danger-500);
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.status-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.status-icon.confirmed {
+  background: var(--success-100);
+  color: var(--success-600);
+}
+
+.status-icon.pending {
+  background: var(--warning-100);
+  color: var(--warning-600);
+}
+
+.status-icon.missed {
+  background: var(--danger-100);
+  color: var(--danger-600);
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-count {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  line-height: 1;
+}
+
+.status-label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+}
+
+.status-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.8s ease;
+}
+
+.progress-fill.confirmed {
+  background: var(--success-500);
+}
+
+.progress-fill.pending {
+  background: var(--warning-500);
+}
+
+.progress-fill.missed {
+  background: var(--danger-500);
+}
+
+.progress-percentage {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  min-width: 35px;
+  text-align: right;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .status-summary {
+    grid-template-columns: 1fr;
+  }
+}

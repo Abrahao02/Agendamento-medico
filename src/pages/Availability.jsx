@@ -25,7 +25,7 @@ import "./Availability.css";
 const ALL_TIMES = [
   "08:00", "09:00", "10:00", "11:00",
   "12:00", "13:00", "14:00", "15:00",
-  "16:00", "17:00", "18:00",
+  "16:00", "17:00", "18:00", "19:00", "20:00",
 ];
 
 export default function Availability() {
@@ -126,11 +126,10 @@ export default function Availability() {
     const appointment = getAppointmentBySlot(slot);
 
     if (appointment) {
-      if (!window.confirm(`Cancelar consulta de ${appointment.patientName}?`)) return;
+      if (!window.confirm(`Cancelar consulta de ${appointment.referenceName || appointment.patientName}?`)) return;
       await deleteDoc(doc(db, "appointments", appointment.id));
       setAppointments(prev => prev.filter(a => a.id !== appointment.id));
     } else {
-      // remover slot direto do availability
       const availabilityId = `${user.uid}_${selectedDate}`;
       const dayAvail = availability.find(a => a.date === selectedDate);
       const newSlots = (dayAvail?.slots || []).filter(s => s !== slot);
@@ -206,6 +205,7 @@ export default function Availability() {
       patientId: patient.id,
       patientName: patient.name,
       patientWhatsapp: patient.whatsapp,
+      referenceName: patient.referenceName || null,
       date: selectedDate,
       time: selectedTime,
       value: appointmentValue,
@@ -240,6 +240,14 @@ export default function Availability() {
     );
   };
 
+  /* Pacientes ordenados alfabeticamente pelo referenceName ou name */
+  const patientsSorted = [...patients]
+    .sort((a, b) => {
+      const nameA = (a.referenceName || a.name).toLowerCase();
+      const nameB = (b.referenceName || b.name).toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+
   if (loading || loadingData) return <p>Carregando...</p>;
 
   const bookedTimes = appointments
@@ -272,7 +280,6 @@ export default function Availability() {
               <span className="legend-dot booked"></span> Ocupado
             </div>
           </div>
-
         </div>
 
         {selectedDate && (
@@ -283,11 +290,18 @@ export default function Availability() {
 
             {slots.map((slot, i) => {
               const app = getAppointmentBySlot(slot);
+              let displayName = null;
+
+              if (app) {
+                const patient = patients.find(p => p.id === app.patientId);
+                displayName = patient?.referenceName || app.patientName;
+              }
+
               return (
                 <div key={i} className={`slot-item ${app ? "booked" : "free"}`}>
                   <span>
                     <FaClock /> {slot}
-                    {app && <strong> — {app.patientName}</strong>}
+                    {app && <strong> — {displayName}</strong>}
                   </span>
                   <button
                     className="slot-item-remove"
@@ -299,11 +313,18 @@ export default function Availability() {
               );
             })}
 
+
             <div className="mode-toggle">
-              <button className={mode === "add" ? "active" : ""} onClick={() => setMode("add")}>
+              <button
+                className={mode === "add" ? "active" : ""}
+                onClick={() => setMode("add")}
+              >
                 Adicionar Horário
               </button>
-              <button className={mode === "book" ? "active" : ""} onClick={() => setMode("book")}>
+              <button
+                className={mode === "book" ? "active" : ""}
+                onClick={() => setMode("book")}
+              >
                 Marcar Consulta
               </button>
             </div>
@@ -319,9 +340,9 @@ export default function Availability() {
               <div className="book-slot">
                 <select value={selectedPatient} onChange={e => setSelectedPatient(e.target.value)}>
                   <option value="">Paciente</option>
-                  {patients.map(p => (
+                  {patientsSorted.map(p => (
                     <option key={p.id} value={p.id}>
-                      {p.name} — R$ {p.price || 0}
+                      {p.referenceName || p.name} — R$ {p.price || 0}
                     </option>
                   ))}
                 </select>

@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import DashboardLayout from "../pages/DashboardLayout"; // Novo layout com Navbar
 import Dashboard from "../pages/Dashboard";
 import Availability from "../pages/Availability";
 import Agenda from "../pages/Agenda";
@@ -12,6 +11,8 @@ import AllAppointments from "../pages/AllAppointments";
 import LandingPage from "../pages/LandingPage";
 import Patients from "../pages/Patients";
 import Settings from "../pages/Settings";
+import DashboardLayout from "../components/layout/Sidebar";
+
 
 
 export default function AppRoutes() {

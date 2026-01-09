@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 import heroImage from "../assets/hero-illustration.png";
-import Header from "./Header";
+import Header from "../components/layout/Header/Header";
 import "./LandingPage.css";
 
 import { auth } from "../services/firebase";
