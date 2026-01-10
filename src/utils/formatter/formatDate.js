@@ -1,3 +1,7 @@
+// ============================================
+// 📁 src/utils/formatter/formatDate.js
+// ============================================
+
 const pad = (n) => String(n).padStart(2, "0");
 
 export default function formatDate(input) {
