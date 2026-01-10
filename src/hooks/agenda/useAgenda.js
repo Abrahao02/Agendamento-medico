@@ -1,6 +1,17 @@
+// ============================================
+// 📁 src/hooks/useAgenda.js 
+// ============================================
 import { useState, useEffect, useRef } from "react";
+import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase/config";
-import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+
+// ✅ Services
+import * as PatientService from "../../services/firebase/patients.service";
+
+// ✅ Utils
+import { formatDateToQuery } from "../../utils/filters/dateFilters";
+import { sortAppointments } from "../../utils/filters/appointmentFilters";
+import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
 
 export default function useAgenda(user, currentDate) {
   const [appointments, setAppointments] = useState([]);
@@ -9,16 +20,11 @@ export default function useAgenda(user, currentDate) {
   const [patientStatus, setPatientStatus] = useState({});
   const hasUnsavedChanges = useRef(false);
 
-  const formatDateForQuery = (date) => {
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  };
+  const currentDateStr = formatDateToQuery(currentDate);
 
-  const currentDateStr = formatDateForQuery(currentDate);
-
-  // 🔹 Busca agendamentos
+  /* ==============================
+     🔄 BUSCAR AGENDAMENTOS
+  ============================== */
   useEffect(() => {
     if (!user) return;
 
@@ -29,43 +35,26 @@ export default function useAgenda(user, currentDate) {
           where("doctorId", "==", user.uid),
           where("date", "==", currentDateStr)
         );
+
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        data.sort((a, b) => a.time.localeCompare(b.time));
-        setAppointments(data);
+        const data = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+
+        const sorted = sortAppointments(data);
+        setAppointments(sorted);
 
         // Status inicial
         const initialStatus = {};
-        data.forEach(a => initialStatus[a.id] = a.status || "Pendente");
+        data.forEach((a) => {
+          initialStatus[a.id] = a.status || "Pendente";
+        });
         setStatusUpdates(initialStatus);
         hasUnsavedChanges.current = false;
 
-        // 🔹 Paciente novo ou existente
-        const names = {};
-        const status = {};
-        await Promise.all(
-          data.map(async (appt) => {
-            try {
-              const cleanNumber = appt.patientWhatsapp.replace(/\D/g, "");
-              const patientId = `${user.uid}_${cleanNumber}`;
-              const snap = await getDoc(doc(db, "patients", patientId));
-              if (snap.exists()) {
-                names[appt.id] = snap.data().referenceName || appt.patientName;
-                status[appt.id] = "existing";
-              } else {
-                names[appt.id] = appt.patientName;
-                status[appt.id] = "new";
-              }
-            } catch {
-              names[appt.id] = appt.patientName;
-              status[appt.id] = "new";
-            }
-          })
-        );
-
-        setReferenceNames(names);
-        setPatientStatus(status);
-
+        // Carregar dados dos pacientes
+        await loadPatientData(data);
       } catch (err) {
         console.error("Erro ao buscar agendamentos:", err);
       }
@@ -74,37 +63,99 @@ export default function useAgenda(user, currentDate) {
     fetchAppointments();
   }, [user, currentDateStr]);
 
+  /* ==============================
+     👤 CARREGAR DADOS DOS PACIENTES
+  ============================== */
+  const loadPatientData = async (appointmentsList) => {
+    const names = {};
+    const status = {};
+
+    await Promise.all(
+      appointmentsList.map(async (appt) => {
+        try {
+          const cleanNumber = cleanWhatsapp(appt.patientWhatsapp);
+
+          const result = await PatientService.getPatient(
+            user.uid,
+            cleanNumber
+          );
+
+          if (result.success) {
+            names[appt.id] =
+              result.data.referenceName ||
+              result.data.name ||
+              appt.patientName;
+
+            status[appt.id] = "existing";
+          } else {
+            names[appt.id] = appt.patientName;
+            status[appt.id] = "new";
+          }
+        } catch {
+          names[appt.id] = appt.patientName;
+          status[appt.id] = "new";
+        }
+      })
+    );
+
+    setReferenceNames(names);
+    setPatientStatus(status);
+  };
+
+  /* ==============================
+     🔁 ATUALIZAR STATUS CONSULTA
+  ============================== */
   const handleStatusChange = async (id, value) => {
-    setStatusUpdates(prev => ({ ...prev, [id]: value }));
+    setStatusUpdates((prev) => ({ ...prev, [id]: value }));
     hasUnsavedChanges.current = true;
+
     try {
-      await updateDoc(doc(db, "appointments", id), { status: value });
-      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: value } : a));
+      await updateDoc(doc(db, "appointments", id), {
+        status: value,
+      });
+
+      setAppointments((prev) =>
+        prev.map((a) =>
+          a.id === id ? { ...a, status: value } : a
+        )
+      );
     } catch (err) {
       console.error("Erro ao atualizar status:", err);
     }
   };
 
+  /* ==============================
+     ➕ ADICIONAR PACIENTE
+  ============================== */
   const handleAddPatient = async (appt) => {
-    try {
-      const cleanNumber = appt.patientWhatsapp.replace(/\D/g, "");
-      const patientId = `${user.uid}_${cleanNumber}`;
+    if (!user) {
+      return { success: false, error: "Usuário não autenticado" };
+    }
 
-      // Preencher campos extras
-      await setDoc(doc(db, "patients", patientId), {
-        name: appt.patientName || appt.referenceName || "Paciente",
-        referenceName: appt.patientName || appt.referenceName || "Paciente",
-        whatsapp: appt.patientWhatsapp,
-        doctorId: user.uid,
-        price: appt.value || 0, // se tiver um valor definido no agendamento
-        createdAt: new Date()
+    try {
+      const cleanNumber = cleanWhatsapp(appt.patientWhatsapp);
+
+      const result = await PatientService.createPatient(user.uid, {
+        name: appt.patientName || "Paciente",
+        referenceName: appt.patientName || "",
+        whatsapp: cleanNumber,
+        price: appt.value || 0,
+        status: "active",
       });
 
-      setPatientStatus(prev => ({ ...prev, [appt.id]: "existing" }));
-      alert("✅ Paciente adicionado com sucesso!");
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      setPatientStatus((prev) => ({
+        ...prev,
+        [appt.id]: "existing",
+      }));
+
+      return result;
     } catch (err) {
       console.error("Erro ao adicionar paciente:", err);
-      alert("❌ Erro ao adicionar paciente!");
+      return { success: false, error: err.message };
     }
   };
 
@@ -115,6 +166,6 @@ export default function useAgenda(user, currentDate) {
     patientStatus,
     hasUnsavedChanges,
     handleStatusChange,
-    handleAddPatient
+    handleAddPatient,
   };
 }

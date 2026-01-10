@@ -1,7 +1,7 @@
 // src/components/dashboard/UpcomingAppointments/UpcomingAppointments.jsx
 import React from "react";
 import { Calendar, Clock } from "lucide-react";
-import formatDate from "../../../utils/formatters/formatDate";
+import formatDate from "../../../utils/formatter/formatDate";
 import "./UpcomingAppointments.css";
 
 export default function UpcomingAppointments({ appointments = [] }) {

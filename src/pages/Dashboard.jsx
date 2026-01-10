@@ -14,13 +14,13 @@ import {
 import { useDashboard } from "../hooks/dashboard/useDashboard";
 
 // Components
-import DashboardLayout from "../components/layout/Sidebar";
 import PublicLinkCard from "../components/dashboard/PublicLinkCard";
-import DashboardFilters from "../components/dashboard/DashboardFilters";
+import Filters from "../components/common/Filters/Filters";
 import StatsCard from "../components/dashboard/StatsCard";
 import StatusSummary from "../components/dashboard/StatusSummary";
 import AppointmentsChart from "../components/dashboard/AppointmentsChart";
 import UpcomingAppointments from "../components/dashboard/UpcomingAppointments";
+import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
 
 import "./Dashboard.css";
 
@@ -59,13 +59,7 @@ export default function Dashboard() {
      LOADING STATE
   ============================== */
   if (loading || loadingData) {
-    return (
-      <div className="dashboard-content">
-        <div style={{ textAlign: "center", padding: "2rem" }}>
-          Carregando...
-        </div>
-      </div>
-    );
+    return <LoadingFallback message="Carregando agenda..." />
   }
 
   /* ==============================
@@ -81,12 +75,11 @@ export default function Dashboard() {
         <p>Acompanhe consultas, faturamento e disponibilidade em tempo real</p>
       </div>
 
-
       {/* Public Link */}
       <PublicLinkCard slug={doctorSlug} />
 
       {/* Filtros */}
-      <DashboardFilters
+      <Filters
         dateFrom={selectedDateFrom}
         dateTo={selectedDateTo}
         month={selectedMonth}
@@ -97,6 +90,12 @@ export default function Dashboard() {
         onYearChange={setSelectedYear}
         onReset={handleResetFilters}
         availableYears={availableYears}
+        
+        // Config: Dashboard não usa busca nem status
+        showSearch={false}
+        showStatus={false}
+        showDateRange={true}
+        showMonthYear={true}
       />
 
       {/* Stats Grid */}

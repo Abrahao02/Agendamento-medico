@@ -1,89 +1,52 @@
-import React, { useEffect, useState } from "react";
-import { auth, db } from "../services/firebase";
+import React, { useEffect } from "react";
+import { auth } from "../services/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import { useSettings } from "../hooks/settings/useSettings";
 
 import "./Settings.css";
 
 export default function Settings() {
-  const [user, loading] = useAuthState(auth);
+  const [user, authLoading] = useAuthState(auth);
   const navigate = useNavigate();
 
-  const [loadingSave, setLoadingSave] = useState(false);
+  const {
+    loading,
+    saving,
+    defaultValueSchedule,
+    whatsappConfig,
+    setDefaultValueSchedule,
+    updateWhatsappField,
+    saveSettings,
+    generatePreview,
+  } = useSettings(user);
 
-  // 💰 Valor padrão
-  const [defaultValueSchedule, setDefaultValueSchedule] = useState("");
-
-  // 💬 WhatsApp config
-  const [whatsappIntro, setWhatsappIntro] = useState("Olá");
-  const [whatsappBody, setWhatsappBody] = useState(
-    "Sua sessão está agendada"
-  );
-  const [whatsappFooter, setWhatsappFooter] = useState(
-    "Caso não possa comparecer, por favor avisar com antecedência. Obrigado!"
-  );
-  const [whatsappShowValue, setWhatsappShowValue] = useState(true);
-
-  // 🔐 Auth
+  // 🔐 Proteção de rota
   useEffect(() => {
-    if (!loading && !user) navigate("/login");
-  }, [user, loading, navigate]);
+    if (!authLoading && !user) {
+      navigate("/login");
+    }
+  }, [user, authLoading, navigate]);
 
-  // 📥 Buscar dados do médico
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchDoctor = async () => {
-      const snap = await getDoc(doc(db, "doctors", user.uid));
-      if (snap.exists()) {
-        const data = snap.data();
-
-        setDefaultValueSchedule(data.defaultValueSchedule || "");
-        setWhatsappIntro(data.whatsappConfig?.intro || "Olá");
-        setWhatsappBody(
-          data.whatsappConfig?.body || "Sua sessão está agendada"
-        );
-        setWhatsappFooter(
-          data.whatsappConfig?.footer ||
-            "Caso não possa comparecer, por favor avisar com antecedência. Obrigado!"
-        );
-        setWhatsappShowValue(
-          data.whatsappConfig?.showValue ?? true
-        );
-      }
-    };
-
-    fetchDoctor();
-  }, [user]);
-
-  // 💾 Salvar configurações
+  // 💾 Handler de salvar
   const handleSave = async () => {
-    if (!user) return;
+    const result = await saveSettings();
 
-    try {
-      setLoadingSave(true);
-
-      await updateDoc(doc(db, "doctors", user.uid), {
-        defaultValueSchedule: Number(defaultValueSchedule),
-        whatsappConfig: {
-          intro: whatsappIntro,
-          body: whatsappBody,
-          footer: whatsappFooter,
-          showValue: whatsappShowValue,
-        },
-      });
-
+    if (result.success) {
       alert("Configurações salvas com sucesso!");
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao salvar configurações");
-    } finally {
-      setLoadingSave(false);
+    } else {
+      alert(`Erro ao salvar: ${result.error || "Tente novamente"}`);
     }
   };
 
-  if (loading) return <p>Carregando...</p>;
+  // 🔄 Loading state
+  if (authLoading || loading) {
+    return (
+      <div className="settings-page">
+        <p>Carregando configurações...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="settings-page">
@@ -111,62 +74,47 @@ export default function Settings() {
         <label>Início da mensagem</label>
         <input
           type="text"
-          value={whatsappIntro}
-          onChange={(e) => setWhatsappIntro(e.target.value)}
+          value={whatsappConfig.intro}
+          onChange={(e) => updateWhatsappField("intro", e.target.value)}
         />
 
         <label>Texto principal</label>
         <textarea
           rows={3}
-          value={whatsappBody}
-          onChange={(e) => setWhatsappBody(e.target.value)}
+          value={whatsappConfig.body}
+          onChange={(e) => updateWhatsappField("body", e.target.value)}
         />
 
         <label>Texto final</label>
         <textarea
           rows={3}
-          value={whatsappFooter}
-          onChange={(e) => setWhatsappFooter(e.target.value)}
+          value={whatsappConfig.footer}
+          onChange={(e) => updateWhatsappField("footer", e.target.value)}
         />
 
         {/* ✅ Mostrar valor */}
         <label className="checkbox-label">
           <input
             type="checkbox"
-            checked={whatsappShowValue}
-            onChange={(e) =>
-              setWhatsappShowValue(e.target.checked)
-            }
+            checked={whatsappConfig.showValue}
+            onChange={(e) => updateWhatsappField("showValue", e.target.checked)}
           />
           Incluir valor da consulta na mensagem
         </label>
 
         {/* 👁 Preview */}
         <div className="whatsapp-preview">
-          <h4>Preview, exemplo:</h4>
+          <h4>Preview da mensagem:</h4>
           <div className="preview-box">
-            <p>
-              <strong>{whatsappIntro} João</strong>
-            </p>
-            <p>{whatsappBody}</p>
-            <p>
-              Data: 07/01/2026 <br />
-              Horário: 12:00 <br />
-              {whatsappShowValue && (
-                <>Valor: R$ {defaultValueSchedule}</>
-              )}
-            </p>
-            <p>{whatsappFooter}</p>
+            {generatePreview().split("\n").map((line, index) => (
+              <p key={index}>{line || <br />}</p>
+            ))}
           </div>
         </div>
       </section>
 
-      <button
-        className="save-btn"
-        onClick={handleSave}
-        disabled={loadingSave}
-      >
-        {loadingSave ? "Salvando..." : "Salvar configurações"}
+      <button className="save-btn" onClick={handleSave} disabled={saving}>
+        {saving ? "Salvando..." : "Salvar configurações"}
       </button>
     </div>
   );

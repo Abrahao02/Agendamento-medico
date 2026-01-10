@@ -1,6 +1,12 @@
+// ============================================
+// 📁 src/hooks/useLogin.js - REFATORADO
+// ============================================
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser, resetPassword } from "../../services/firebase/auth.service";
+
+// ✅ Import de util
+import { validateFormField } from "../../utils/validators/formValidation";
 
 export function useLogin() {
   const navigate = useNavigate();
@@ -25,15 +31,29 @@ export function useLogin() {
     setShowPassword(prev => !prev);
   }
 
+  // ✅ Validação usando util validateFormField
   function validateForm() {
-    if (!form.email.trim()) {
-      setError("Email é obrigatório.");
+    // Valida email
+    const emailValidation = validateFormField("email", form.email, { 
+      required: true, 
+      email: true 
+    });
+    
+    if (!emailValidation.valid) {
+      setError(emailValidation.error);
       return false;
     }
-    if (!form.password) {
-      setError("Senha é obrigatória.");
+
+    // Valida senha
+    const passwordValidation = validateFormField("password", form.password, { 
+      required: true 
+    });
+    
+    if (!passwordValidation.valid) {
+      setError(passwordValidation.error);
       return false;
     }
+
     setError("");
     return true;
   }
@@ -53,7 +73,6 @@ export function useLogin() {
 
     if (!user.emailVerified) {
       setError("Verifique seu email antes de fazer login. Um novo email de verificação foi enviado.");
-      // O loginUser não envia verificação, você pode chamar sendEmailVerification(user) aqui se quiser
       return;
     }
 
@@ -61,8 +80,14 @@ export function useLogin() {
   }
 
   async function handleForgotPassword() {
-    if (!form.email.trim()) {
-      setResetError("Digite seu email para redefinir a senha.");
+    // ✅ Valida email antes de enviar reset
+    const emailValidation = validateFormField("email", form.email, { 
+      required: true, 
+      email: true 
+    });
+    
+    if (!emailValidation.valid) {
+      setResetError(emailValidation.error || "Digite um email válido para redefinir a senha.");
       return;
     }
 

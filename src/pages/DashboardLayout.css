@@ -1,0 +1,646 @@
+@import url('../styles/variables.css');
+
+/* ========================================
+   DASHBOARD LAYOUT - MODERNIZADO
+   ======================================== */
+
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  font-family: var(--font-family-base);
+  background-color: var(--bg-secondary);
+}
+
+/* ========================================
+   SIDEBAR
+   ======================================== */
+
+.sidebar {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-lg);
+  transition: width var(--transition-base), transform var(--transition-slow);
+  overflow-x: hidden;
+  overflow-y: auto;
+  z-index: var(--z-fixed);
+  position: relative;
+  border-right: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* Estados da Sidebar */
+.sidebar.compact {
+  width: 80px;
+  align-items: center;
+  padding: var(--spacing-md);
+}
+
+.sidebar.open {
+  width: 280px;
+  align-items: stretch;
+}
+
+/* Scrollbar customizada para sidebar */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: var(--radius-full);
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+/* ========================================
+   SIDEBAR HEADER
+   ======================================== */
+
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sidebar-header h2 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ========================================
+   HAMBURGER BUTTON
+   ======================================== */
+
+.hamburger-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: var(--text-2xl);
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.hamburger-btn:hover {
+  background-color: var(--gray-100);
+  color: var(--color-secondary);
+  transform: scale(1.05);
+}
+
+.hamburger-btn:active {
+  transform: scale(0.95);
+}
+
+.sidebar.open .hamburger-btn {
+  align-self: flex-end;
+}
+
+/* ========================================
+   MENU NAVIGATION
+   ======================================== */
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+  /* Removido flex-grow: 1 para evitar movimento do plan box */
+  margin-bottom: var(--spacing-xl);
+}
+
+.menu-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: var(--color-secondary);
+  transform: scaleY(0);
+  transition: transform var(--transition-fast);
+}
+
+.menu-link:hover {
+  background-color: var(--secondary-50);
+  color: var(--color-secondary);
+  transform: translateX(2px);
+}
+
+.menu-link:hover::before {
+  transform: scaleY(1);
+}
+
+.menu-link.active {
+  background: var(--gradient-secondary);
+  color: var(--text-inverse);
+  font-weight: var(--font-semibold);
+  box-shadow: var(--shadow-secondary);
+}
+
+.menu-link.active::before {
+  transform: scaleY(1);
+  background: var(--text-inverse);
+}
+
+/* Ícones do Menu */
+.icon {
+  font-size: var(--text-xl);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Texto do Menu */
+.text {
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.compact .text {
+  display: none;
+  opacity: 0;
+}
+
+/* ========================================
+   PLAN BOX - MODERNIZADO
+   ======================================== */
+
+.plan-box {
+  margin-top: auto;
+  background: var(--gradient-primary);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  color: var(--text-inverse);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  box-shadow: var(--shadow-primary);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0; /* Impede que o plan box diminua */
+}
+
+.plan-box::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.plan-box:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.plan-box:hover::before {
+  opacity: 1;
+}
+
+/* Plan Box - Limite Atingido */
+.plan-box.limit-reached {
+  background: linear-gradient(135deg, var(--danger-600) 0%, var(--danger-700) 100%);
+  border-color: var(--danger-400);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: var(--shadow-primary);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--danger-500);
+  }
+}
+
+/* Plan Badge */
+.plan-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--text-inverse);
+  color: var(--primary-800);
+  font-weight: var(--font-bold);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: var(--shadow-md);
+}
+
+/* Plan Description */
+.plan-box p {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.remaining-appointments {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
+  color: var(--text-inverse);
+  display: block;
+  margin: var(--spacing-xs) 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   PLAN ACTIONS
+   ======================================== */
+
+.plan-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+/* Botão PRO */
+.pro-subscribe-btn {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-bold);
+  font-size: var(--text-sm);
+  color: var(--primary-800);
+  background: var(--text-inverse);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-decoration: none;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.pro-subscribe-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: var(--gradient-accent);
+  transform: translate(-50%, -50%);
+  transition: width var(--transition-base), height var(--transition-base);
+}
+
+.pro-subscribe-btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.pro-subscribe-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-inverse);
+}
+
+.pro-subscribe-btn span {
+  position: relative;
+  z-index: 1;
+}
+
+.plan-payment-info {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: var(--spacing-xs);
+}
+
+/* Botão Planos */
+.free-plan-btn {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: var(--text-inverse);
+  background: transparent;
+  display: block;
+  width: 100%;
+  padding: calc(var(--spacing-md) - 2px);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-decoration: none;
+  text-align: center;
+}
+
+.free-plan-btn:hover {
+  background: var(--text-inverse);
+  color: var(--primary-800);
+  border-color: var(--text-inverse);
+  transform: translateY(-2px);
+}
+
+/* ========================================
+   LOGOUT BUTTON
+   ======================================== */
+
+.logout-btn {
+  margin-top: var(--spacing-md);
+  background: var(--gradient-accent);
+  color: var(--text-inverse);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  box-shadow: var(--shadow-md);
+  flex-shrink: 0; /* Impede que o botão diminua */
+}
+
+.logout-btn:hover {
+  background: linear-gradient(135deg, var(--danger-600) 0%, var(--danger-700) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+.sidebar.compact .logout-btn,
+.sidebar.compact .plan-box {
+  display: none;
+}
+
+.sidebar.open .plan-box,
+.sidebar.open .logout-btn {
+  display: flex;
+}
+
+/* ========================================
+   MAIN CONTENT
+   ======================================== */
+
+.dashboard-content {
+  flex: 1;
+  padding: var(--spacing-2xl);
+  background-color: var(--bg-secondary);
+  transition: margin-left var(--transition-base);
+  min-height: 100vh;
+  overflow-x: hidden;
+  margin-left: 280px; /* Espaço para sidebar aberta */
+}
+
+/* Ajuste quando sidebar está compacta */
+.dashboard-layout:has(.sidebar.compact) .dashboard-content {
+  margin-left: 80px;
+}
+
+/* ========================================
+   ANIMAÇÕES
+   ======================================== */
+
+.fade-slide {
+  animation: fadeSlide var(--transition-base) ease-out;
+}
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ========================================
+   RESPONSIVO - MOBILE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    transform: translateX(-100%);
+    box-shadow: none;
+    overflow-y: auto; /* Permite scroll */
+    overflow-x: hidden;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-2xl);
+  }
+
+  .dashboard-content {
+    margin-left: 0 !important; /* Remove margin em mobile */
+    padding: var(--spacing-lg);
+    padding-top: 70px;
+  }
+
+  /* Esconder botão hamburguer interno da sidebar em mobile */
+  .sidebar .hamburger-btn {
+    display: none;
+  }
+
+  /* Botão Hambúrguer Fixo Mobile (apenas esse) */
+  .hamburger-fixed {
+    position: fixed;
+    top: var(--spacing-md);
+    left: var(--spacing-md);
+    z-index: calc(var(--z-fixed) + 100);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    color: var(--color-secondary);
+    font-size: var(--text-2xl);
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .hamburger-fixed:hover {
+    background: var(--color-secondary);
+    color: var(--text-inverse);
+    transform: scale(1.05);
+  }
+
+  .hamburger-fixed:active {
+    transform: scale(0.95);
+  }
+
+  /* Overlay */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg-overlay);
+    z-index: calc(var(--z-fixed) - 1);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+  }
+
+  .sidebar.open ~ .sidebar-overlay,
+  .sidebar-overlay.open {
+    display: block;
+    opacity: 1;
+  }
+
+  /* Ajustes do menu mobile */
+  .menu-link {
+    padding: var(--spacing-md) var(--spacing-sm);
+    justify-content: flex-start;
+  }
+
+  /* Plan Box mobile */
+  .plan-box {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+  }
+
+  .remaining-appointments {
+    font-size: var(--text-2xl);
+  }
+}
+
+/* ========================================
+   RESPONSIVO - TABLET
+   ======================================== */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sidebar.open {
+    width: 240px;
+  }
+
+  .dashboard-content {
+    padding: var(--spacing-xl);
+  }
+}
+
+/* ========================================
+   ACESSIBILIDADE
+   ======================================== */
+
+/* Foco visível para navegação por teclado */
+.menu-link:focus-visible,
+.hamburger-btn:focus-visible,
+.logout-btn:focus-visible,
+.pro-subscribe-btn:focus-visible,
+.free-plan-btn:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+/* Reduzir movimento para usuários com preferência */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Alto contraste */
+@media (prefers-contrast: high) {
+  .menu-link {
+    border: 1px solid transparent;
+  }
+
+  .menu-link:hover,
+  .menu-link.active {
+    border-color: currentColor;
+  }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+
+@media print {
+  .sidebar,
+  .hamburger-fixed {
+    display: none;
+  }
+
+  .dashboard-content {
+    margin-left: 0;
+    padding: 0;
+  }
+}
+
+.btn.free-plan-btn {
+  background-color: transparent; /* ou a cor que quiser */
+  color: var(--text-inverse);
+  border: 2px solid white;
+}

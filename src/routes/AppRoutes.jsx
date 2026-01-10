@@ -16,7 +16,7 @@ const PublicSchedule = lazy(() => import("../pages/PublicSchedule"));
 const PublicScheduleSuccess = lazy(() => import("../pages/PublicScheduleSuccess"));
 
 // Layout
-const DashboardLayout = lazy(() => import("../components/layout/Sidebar"));
+const DashboardLayout = lazy(() => import("../pages/DashboardLayout"));
 
 // Páginas do Dashboard
 const Dashboard = lazy(() => import("../pages/Dashboard"));

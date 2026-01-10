@@ -1,31 +1,30 @@
-// src/hooks/dashboard/useDashboard.js
+// ============================================
+// 📁 src/hooks/useDashboard.js - REFATORADO
+// ============================================
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../services/firebase";
+import { filterAppointments } from "../../utils/filters/appointmentFilters";
+import { validateAvailability, filterAvailableSlots, countAvailableSlots } from "../../utils/filters/availabilityFilters";
+import { calculateAppointmentStats, calculateStatusSummary } from "../../utils/stats/appointmentStats";
+import { generateYearRange } from "../../utils/helpers/yearHelpers";
 
 export const useDashboard = (user) => {
   const today = new Date();
   const currentMonth = today.getMonth() + 1;
   const currentYear = today.getFullYear();
 
-  // Doctor data
   const [doctorSlug, setDoctorSlug] = useState("");
   const [loadingData, setLoadingData] = useState(true);
-
-  // Filters
   const [selectedDateFrom, setSelectedDateFrom] = useState("");
   const [selectedDateTo, setSelectedDateTo] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedYear, setSelectedYear] = useState(currentYear);
-
-  // Data
   const [appointments, setAppointments] = useState([]);
   const [availability, setAvailability] = useState([]);
   const [priceMap, setPriceMap] = useState({});
 
-  /* ==============================
-     FETCH DOCTOR DATA
-  ============================== */
+  // FETCH DOCTOR
   useEffect(() => {
     if (!user) return;
 
@@ -43,59 +42,34 @@ export const useDashboard = (user) => {
     fetchDoctor();
   }, [user]);
 
-  /* ==============================
-     FETCH ALL DATA
-  ============================== */
+  // FETCH ALL DATA
   useEffect(() => {
     if (!user) return;
 
     const fetchData = async () => {
       setLoadingData(true);
       try {
-        // 1. Fetch appointments
-        const appSnap = await getDocs(
-          query(collection(db, "appointments"), where("doctorId", "==", user.uid))
-        );
-        const appointmentsData = appSnap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
+        const [appSnap, patientSnap, availSnap] = await Promise.all([
+          getDocs(query(collection(db, "appointments"), where("doctorId", "==", user.uid))),
+          getDocs(query(collection(db, "patients"), where("doctorId", "==", user.uid))),
+          getDocs(query(collection(db, "availability"), where("doctorId", "==", user.uid)))
+        ]);
+
+        // Appointments
+        const appointmentsData = appSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
         setAppointments(appointmentsData);
 
-        // 2. Fetch patients (for prices)
-        const patientSnap = await getDocs(
-          query(collection(db, "patients"), where("doctorId", "==", user.uid))
-        );
+        // Patients (prices)
         const prices = {};
         patientSnap.docs.forEach((d) => {
           prices[d.data().whatsapp] = d.data().price || 0;
         });
         setPriceMap(prices);
 
-        // 3. Fetch availability (mesma lógica do PublicSchedule)
-        const availSnap = await getDocs(
-          query(collection(db, "availability"), where("doctorId", "==", user.uid))
-        );
-        
-        const availabilityData = availSnap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
-
-        const todayStr = new Date().toISOString().split("T")[0];
-        
-        // Filtra apenas datas futuras e com slots válidos
-        const validAvailability = availabilityData
-          .filter(day => 
-            day.date &&
-            typeof day.date === "string" &&
-            Array.isArray(day.slots) &&
-            day.slots.length > 0 &&
-            day.date >= todayStr
-          )
-          .sort((a, b) => a.date.localeCompare(b.date));
-
-        setAvailability(validAvailability);
+        // Availability - ✅ Usa util para validar
+        const availabilityData = availSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const validated = validateAvailability(availabilityData, true);
+        setAvailability(validated);
 
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
@@ -107,101 +81,50 @@ export const useDashboard = (user) => {
     fetchData();
   }, [user]);
 
-  /* ==============================
-     FILTERED AVAILABILITY
-     Remove horários já agendados
-  ============================== */
-  const filteredAvailability = useMemo(() => {
-    return availability.map(day => {
-      // Busca horários já agendados nessa data
-      const bookedSlots = appointments
-        .filter(a => a.date === day.date)
-        .map(a => a.time);
-
-      // Retorna apenas slots livres
-      return {
-        ...day,
-        slots: day.slots.filter(slot => !bookedSlots.includes(slot)),
-      };
-    }).filter(day => day.slots.length > 0);
-  }, [availability, appointments]);
-
-  /* ==============================
-     SLOTS OPEN COUNT
-     Conta apenas slots realmente disponíveis
-  ============================== */
-  const slotsOpen = useMemo(() => {
-    return filteredAvailability.reduce(
-      (sum, day) => sum + (day.slots?.length || 0), 
-      0
-    );
-  }, [filteredAvailability]);
-
-  /* ==============================
-     FILTERED APPOINTMENTS
-  ============================== */
+  // ✅ FILTERED APPOINTMENTS - Usa util
   const filteredAppointments = useMemo(() => {
-    let filtered = appointments;
-
-    if (selectedDateFrom && selectedDateTo) {
-      filtered = filtered.filter(
-        (a) => a.date >= selectedDateFrom && a.date <= selectedDateTo
-      );
-    } else if (selectedMonth && selectedYear) {
-      filtered = filtered.filter((a) => {
-        const [year, month] = a.date.split("-").map(Number);
-        return month === Number(selectedMonth) && year === Number(selectedYear);
-      });
-    }
-
-    return filtered;
+    return filterAppointments(appointments, {
+      startDate: selectedDateFrom,
+      endDate: selectedDateTo,
+      selectedMonth,
+      selectedYear
+    });
   }, [appointments, selectedDateFrom, selectedDateTo, selectedMonth, selectedYear]);
 
-  /* ==============================
-     STATS CALCULATION
-  ============================== */
+  // ✅ FILTERED AVAILABILITY - Usa utils
+  const filteredAvailability = useMemo(() => {
+    // Primeiro filtra por período
+    const inPeriod = filterAppointments(availability.map(day => ({ date: day.date })), {
+      startDate: selectedDateFrom,
+      endDate: selectedDateTo,
+      selectedMonth,
+      selectedYear
+    });
+
+    const filteredDates = new Set(inPeriod.map(d => d.date));
+    const availInPeriod = availability.filter(day => filteredDates.has(day.date));
+
+    // Depois remove slots agendados
+    return filterAvailableSlots(availInPeriod, appointments);
+  }, [availability, appointments, selectedDateFrom, selectedDateTo, selectedMonth, selectedYear]);
+
+  // ✅ SLOTS OPEN - Usa util
+  const slotsOpen = useMemo(() => {
+    return countAvailableSlots(filteredAvailability);
+  }, [filteredAvailability]);
+
+  // ✅ STATS - Usa util
   const stats = useMemo(() => {
-    let revenue = 0;
-    let attended = 0;
+    const calculated = calculateAppointmentStats(filteredAppointments, priceMap);
+    return { ...calculated, slotsOpen };
+  }, [filteredAppointments, priceMap, slotsOpen]);
 
-    filteredAppointments.forEach((a) => {
-      const appointmentDate = new Date(a.date);
-      if (a.status === "Confirmado" && appointmentDate <= today) {
-        attended++;
-        const value =
-          a.value !== undefined ? a.value : priceMap[a.patientWhatsapp] || 0;
-        revenue += value;
-      }
-    });
-
-    const totalValue = Object.values(priceMap).reduce((sum, price) => sum + price, 0);
-    const patientCount = Object.keys(priceMap).length;
-
-    return {
-      slotsOpen,
-      totalAppointments: filteredAppointments.length,
-      attendedAppointments: attended,
-      totalRevenue: revenue,
-      averageTicket: patientCount ? Math.round(totalValue / patientCount) : 0,
-    };
-  }, [filteredAppointments, priceMap, slotsOpen, today]);
-
-  /* ==============================
-     STATUS SUMMARY
-  ============================== */
+  // ✅ STATUS SUMMARY - Usa util
   const statusSummary = useMemo(() => {
-    const summary = { Confirmado: 0, Pendente: 0, "Não Compareceu": 0 };
-    filteredAppointments.forEach((a) => {
-      if (summary.hasOwnProperty(a.status)) {
-        summary[a.status]++;
-      }
-    });
-    return summary;
+    return calculateStatusSummary(filteredAppointments);
   }, [filteredAppointments]);
 
-  /* ==============================
-     CHART DATA
-  ============================== */
+  // CHART DATA
   const chartData = useMemo(() => {
     const byDay = {};
     filteredAppointments.forEach((a) => {
@@ -218,9 +141,7 @@ export const useDashboard = (user) => {
     return Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date));
   }, [filteredAppointments]);
 
-  /* ==============================
-     UPCOMING APPOINTMENTS
-  ============================== */
+  // UPCOMING APPOINTMENTS
   const upcomingAppointments = useMemo(() => {
     return filteredAppointments
       .filter((a) => new Date(`${a.date}T${a.time || "00:00"}:00`) >= today)
@@ -232,9 +153,6 @@ export const useDashboard = (user) => {
       .slice(0, 5);
   }, [filteredAppointments, today]);
 
-  /* ==============================
-     RESET FILTERS
-  ============================== */
   const handleResetFilters = useCallback(() => {
     setSelectedDateFrom("");
     setSelectedDateTo("");
@@ -242,28 +160,12 @@ export const useDashboard = (user) => {
     setSelectedYear(currentYear);
   }, [currentMonth, currentYear]);
 
-  /* ==============================
-     AVAILABLE YEARS
-  ============================== */
-  const availableYears = useMemo(() => {
-    const years = new Set();
-    years.add(currentYear);
-    years.add(currentYear - 1);
-    years.add(currentYear + 1);
-    return Array.from(years).sort((a, b) => b - a);
-  }, [currentYear]);
+  // ✅ YEARS - Usa util
+  const availableYears = useMemo(() => generateYearRange(1), []);
 
-  /* ==============================
-     RETURN
-  ============================== */
   return {
-    // Doctor
     doctorSlug,
-    
-    // Loading
     loadingData,
-    
-    // Filters
     selectedDateFrom,
     selectedDateTo,
     selectedMonth,
@@ -274,12 +176,8 @@ export const useDashboard = (user) => {
     setSelectedYear,
     handleResetFilters,
     availableYears,
-    
-    // Stats
     stats,
     statusSummary,
-    
-    // Charts
     chartData,
     upcomingAppointments,
   };

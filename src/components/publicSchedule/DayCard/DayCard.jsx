@@ -1,7 +1,7 @@
 // src/components/publicSchedule/DayCard/DayCard.jsx
 import React from "react";
 import { Calendar, ChevronDown, ChevronUp } from "lucide-react";
-import formatDate from "../../../utils/formatters/formatDate";
+import formatDate from "../../../utils/formatter/formatDate";
 import "./DayCard.css";
 
 export default function DayCard({

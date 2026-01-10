@@ -3,8 +3,8 @@ import React, { useState, forwardRef } from "react";
 import { User, Phone, Lock } from "lucide-react";
 import Input from "../../common/Input";
 import Button from "../../common/Button";
-import { formatWhatsapp } from "../../../utils/formatters/formatWhatsapp";
-import formatDate from "../../../utils/formatters/formatDate";
+import { formatWhatsapp } from "../../../utils/formatter/formatWhatsapp";
+import formatDate from "../../../utils/formatter/formatDate";
 import "./AppointmentForm.css";
 
 const AppointmentForm = forwardRef(

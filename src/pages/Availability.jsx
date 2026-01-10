@@ -10,7 +10,7 @@ import CalendarWrapper from "../components/availability/CalendarWrapper/Calendar
 import DayManagement from "../components/availability/DayManagement/DayManagement";
 import LoadingFallback from "../components/common/LoadingFallback";
 
-import formatDate from "../utils/formatters/formatDate";
+import formatDate from "../utils/formatter/formatDate";
 import "./Availability.css";
 
 export default function Availability() {

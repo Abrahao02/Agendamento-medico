@@ -7,7 +7,7 @@ import PasswordInput from "../components/common/PasswordInput"
 import PasswordChecklist from "../components/common/PasswordChecklist"
 
 import { useRegister } from "../hooks/auth/useRegister"
-import { formatWhatsapp } from "../utils/formatters/formatWhatsapp"
+import { formatWhatsapp } from "../utils/formatter/formatWhatsapp"
 
 import "./Register.css"
 

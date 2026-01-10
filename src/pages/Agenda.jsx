@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 import useAgenda from "../hooks/agenda/useAgenda";
 import DateNavigation from "../components/agenda/DateNavigation";
 import AppointmentList from "../components/agenda/AppointmentList";
-import formatDate from "../utils/formatters/formatDate";
+import formatDate from "../utils/formatter/formatDate";
+import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
 
 import "./Agenda.css";
 
@@ -30,7 +31,7 @@ export default function Agenda({ handleSendWhatsapp }) {
   const goToNext = () => setCurrentDate(d => { const newD = new Date(d); newD.setDate(d.getDate() + 1); return newD; });
   const goToToday = () => setCurrentDate(new Date());
 
-  if (loading) return <p>Carregando...</p>;
+  if (loading) return <LoadingFallback message="Carregando agenda..." />;
 
   return (
     <div className="calendar-availability-container">
