@@ -638,3 +638,9 @@
     padding: 0;
   }
 }
+
+.btn.free-plan-btn {
+  background-color: transparent; /* ou a cor que quiser */
+  color: var(--text-inverse);
+  border: 2px solid white;
+}

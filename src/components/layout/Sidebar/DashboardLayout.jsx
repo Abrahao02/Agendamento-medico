@@ -1,5 +1,6 @@
 import { Outlet, NavLink, Link } from "react-router-dom";
 import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 import { auth, db } from "../../../services/firebase";
 import { useState, useEffect, useCallback } from "react";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
@@ -17,6 +18,7 @@ import {
 } from "react-icons/fi";
 
 import "./DashboardLayout.css";
+import Button from "../../common/Button";
 
 // ========================================
 // CONSTANTES
@@ -199,9 +201,16 @@ function MenuItem({ item, isDesktop, closeSidebar }) {
  * Componente da caixa do plano
  */
 function PlanBox({ plan, appointmentsThisMonth, isLimitReached, sidebarOpen }) {
-  const remainingAppointments = APPOINTMENT_LIMIT - appointmentsThisMonth;
+  const navigate = useNavigate();
+  const remainingAppointments = 10 - appointmentsThisMonth;
 
   if (!sidebarOpen) return null;
+
+  // Função para rolar até a seção de planos na landing page
+  const handleScrollToPlans = (e) => {
+    e.preventDefault();
+    navigate("/#plans"); // Navega para / com hash #plans
+  };
 
   return (
     <div
@@ -210,7 +219,7 @@ function PlanBox({ plan, appointmentsThisMonth, isLimitReached, sidebarOpen }) {
       aria-label="Informações do plano"
     >
       <span className="plan-badge">
-        Plano {PLAN_LABELS[plan]}
+        Plano {plan === "free" ? "Gratuito" : "PRO"}
       </span>
 
       <p>
@@ -229,6 +238,7 @@ function PlanBox({ plan, appointmentsThisMonth, isLimitReached, sidebarOpen }) {
 
       {plan === "free" && (
         <div className="plan-actions">
+          {/* Botão para assinar PRO */}
           <a
             href="https://mpago.la/1TYVDfE"
             target="_blank"
@@ -242,13 +252,14 @@ function PlanBox({ plan, appointmentsThisMonth, isLimitReached, sidebarOpen }) {
             </span>
           </a>
 
-          <a
-            href="/#plans"
+          {/* Botão para conhecer planos */}
+          <Button
+            onClick={handleScrollToPlans}
             className="free-plan-btn"
             aria-label="Conhecer todos os planos"
           >
             Conhecer planos
-          </a>
+          </Button>
         </div>
       )}
     </div>
