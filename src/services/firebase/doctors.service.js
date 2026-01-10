@@ -56,7 +56,7 @@ async function generateUniqueSlug(baseSlug) {
 
 export async function createDoctor({ uid, name, email, whatsapp }) {
   try {
-    const baseSlug = generateBaseSlug(name);
+    const baseSlug = generateSlug(name);
     const uniqueSlug = await generateUniqueSlug(baseSlug);
 
     await setDoc(doc(db, COLLECTIONS.DOCTORS, uid), {
