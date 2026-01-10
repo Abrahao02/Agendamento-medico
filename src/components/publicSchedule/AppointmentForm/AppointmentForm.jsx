@@ -11,6 +11,7 @@ const AppointmentForm = forwardRef(
   ({ selectedSlot, onSubmit, onCancel, isSubmitting }, ref) => {
     const [patientName, setPatientName] = useState("");
     const [patientWhatsapp, setPatientWhatsapp] = useState("");
+    const [shake, setShake] = useState(false);
 
     const handleSubmit = (e) => {
       e.preventDefault();
@@ -54,11 +55,24 @@ const AppointmentForm = forwardRef(
                 type="tel"
                 required
                 placeholder="(11) 98888-8888"
-                value={formatWhatsapp(patientWhatsapp)}
-                onChange={(e) =>
-                  setPatientWhatsapp(e.target.value.replace(/\D/g, ""))
-                }
-                className="phone-field"
+                value={patientWhatsapp}
+                onChange={(e) => {
+                  const numbers = e.target.value.replace(/\D/g, "");
+
+                  if (numbers.length > 11) {
+                    // treme o input
+                    setShake(true);
+
+                    // volta ao normal depois de 300ms
+                    setTimeout(() => setShake(false), 300);
+
+                    return; // não atualiza o state
+                  }
+
+                  setPatientWhatsapp(numbers);
+                }}
+                onBlur={() => setPatientWhatsapp(formatWhatsapp(patientWhatsapp))}
+                className={`phone-field ${shake ? "shake" : ""}`}
                 autoComplete="tel"
               />
             </div>

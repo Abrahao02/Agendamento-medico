@@ -1,0 +1,189 @@
+/* src/components/availability/CalendarWrapper.css */
+
+/* ========== Calendar Container ========== */
+.calendar-wrapper {
+  flex: 1 1 480px;
+  max-width: 620px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-xl);
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+/* ========== React Calendar Customization ========== */
+.react-calendar {
+  width: 100%;
+  border: none;
+  font-family: var(--font-family-base);
+  font-size: var(--text-base);
+}
+
+/* Navigation */
+.react-calendar__navigation {
+  display: flex;
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-xs);
+}
+
+.react-calendar__navigation button {
+  min-width: 44px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background: var(--bg-tertiary);
+}
+
+.react-calendar__navigation button:disabled {
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+/* Weekdays */
+.react-calendar__month-view__weekdays {
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: var(--text-sm);
+  padding-bottom: var(--spacing-sm);
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  padding: var(--spacing-sm);
+  text-align: center;
+}
+
+.react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+/* Tiles (Days) */
+.react-calendar__tile {
+  padding: var(--spacing-md) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  background: transparent;
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.react-calendar__tile:enabled:hover {
+  background: var(--secondary-50);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.react-calendar__tile:disabled {
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+/* Today's date */
+.react-calendar__tile--now {
+  background: var(--primary-50);
+  border: 2px solid var(--color-primary);
+  font-weight: var(--font-semibold);
+}
+
+.react-calendar__tile--now:enabled:hover {
+  background: var(--primary-100);
+}
+
+/* Active (selected) date */
+.react-calendar__tile--active {
+  background: var(--color-primary) !important;
+  color: var(--text-inverse) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.react-calendar__tile--active:enabled:hover {
+  background: var(--color-primary-hover) !important;
+}
+
+/* Weekend styling (optional) */
+.react-calendar__month-view__days__day--weekend {
+  color: var(--text-secondary);
+}
+
+/* Neighboring month days */
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+/* ========== Calendar Badges ========== */
+.calendar-badges {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.calendar-badges .badge {
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  color: var(--text-inverse);
+  line-height: 1;
+}
+
+.calendar-badges .badge.free {
+  background: var(--color-success);
+}
+
+.calendar-badges .badge.booked {
+  background: var(--gray-500);
+}
+
+/* ========== Animations ========== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 1024px) {
+  .calendar-wrapper {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .calendar-wrapper {
+    padding: var(--spacing-lg);
+  }
+
+  .react-calendar {
+    font-size: var(--text-sm);
+  }
+
+  .react-calendar__tile {
+    padding: var(--spacing-sm) var(--spacing-xs);
+  }
+
+  .calendar-badges .badge {
+    font-size: 0.65rem;
+    padding: 1px var(--spacing-xs);
+  }
+}

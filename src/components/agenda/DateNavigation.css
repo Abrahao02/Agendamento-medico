@@ -1,0 +1,54 @@
+/* ===========================
+   Date Navigation
+=========================== */
+
+.date-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+
+.date-navigation span {
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  min-width: 120px;
+  text-align: center;
+}
+
+.date-navigation button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-weight: var(--font-medium);
+  transition: var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.date-navigation .btn-primary {
+  background: var(--color-secondary);
+  color: var(--text-inverse);
+}
+
+.date-navigation .btn-primary:hover {
+  background: var(--color-secondary-hover);
+  box-shadow: var(--shadow-secondary);
+}
+
+.date-navigation .btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+
+.date-navigation .btn-secondary:hover {
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-xs);
+}

@@ -1,0 +1,26 @@
+/* ===========================
+   Appointment List
+=========================== */
+.appointments-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .appointments-list {
+    gap: var(--spacing-sm);
+    /* Menor espaçamento no mobile */
+    width: 100%;
+    /* Ocupa toda largura disponível */
+  }
+
+  .appointments-list li {
+    width: 100%;
+    /* Cada item ocupa linha inteira */
+  }
+}

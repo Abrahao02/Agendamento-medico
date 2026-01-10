@@ -38,8 +38,12 @@ export default function DayCard({
               className={`slot-btn ${
                 selectedSlotTime === slot ? "selected" : ""
               }`}
-              onClick={() => onSlotClick(day.id, day.date, slot)}
+              onClick={() => onSlotClick(day, slot)}
             >
+              {/* ✅ CORREÇÃO: passa day (objeto completo) e slot (horário)
+                  day = { id: "...", date: "2026-01-15", slots: [...] }
+                  slot = "12:00"
+              */}
               <span className="slot-time">{slot}</span>
             </button>
           ))}
