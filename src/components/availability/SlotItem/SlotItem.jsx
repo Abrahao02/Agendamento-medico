@@ -1,36 +1,46 @@
-// src/components/availability/SlotItem/SlotItem.jsx
 import React from 'react';
-import { X, UserX } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
+import { getStatusConfig } from '../../../constants/appointmentStatus';
 import './SlotItem.css';
 
 export default function SlotItem({ 
   slot, 
   isBooked, 
-  patientName, 
+  patientName,
+  status,
   onRemove, 
-  onCancel 
+  onDelete 
 }) {
+  const statusConfig = status ? getStatusConfig(status) : null;
+
   return (
-    <div className={`slot-item ${isBooked ? 'booked' : 'free'}`}>
+    <div className={`slot-item ${isBooked ? 'booked' : 'free'} ${statusConfig?.cssClass || ''}`}>
       <div className="slot-time">
         <span className="slot-time-text">{slot}</span>
         
         {isBooked && patientName && (
-          <span className="slot-name">{patientName}</span>
+          <div className="slot-details">
+            <span className="slot-name">{patientName}</span>
+            {statusConfig && (
+              <span className={`slot-status ${statusConfig.cssClass}`}>
+                {statusConfig.label}
+              </span>
+            )}
+          </div>
         )}
       </div>
 
       {isBooked ? (
         <button 
-          className="slot-action"
-          onClick={() => onCancel(slot)}
-          title="Cancelar agendamento"
+          className="slot-action slot-delete"
+          onClick={() => onDelete(slot)}
+          title="Excluir ou cancelar"
         >
-          <UserX size={16} />
+          <Trash2 size={16} />
         </button>
       ) : (
         <button 
-          className="slot-action slot-item-remove"
+          className="slot-action slot-remove"
           onClick={() => onRemove(slot)}
           title="Remover horário"
         >

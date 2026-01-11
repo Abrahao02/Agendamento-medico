@@ -1,7 +1,8 @@
-// src/pages/Availability/components/DayManagement.jsx
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { FaCalendarDay } from "react-icons/fa";
-import SlotItem from "../SlotItem/SlotItem"; // IMPORTA O COMPONENTE
+import SlotItem from "../SlotItem/SlotItem";
+import DayStats from "../DayStats/DayStats";
+import DeleteConfirmationModal from "../DeleteConfirmationModal/DeleteConfirmationModal";
 import "./DayManagement.css";
 
 const ALL_TIMES = [
@@ -14,12 +15,14 @@ export default function DayManagement({
   date,
   formattedDate,
   availableSlots,
+  allSlots,
   appointments,
   patients,
   onAddSlot,
   onRemoveSlot,
   onBookAppointment,
-  onCancelAppointment,
+  onDeleteAppointment,
+  onMarkAsCancelled,
 }) {
   const [mode, setMode] = useState("add"); // "add" | "book"
   const [newSlot, setNewSlot] = useState("12:00");
@@ -28,14 +31,33 @@ export default function DayManagement({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+  // Refs para scroll suave
+  const formSectionRef = useRef(null);
+
+  /* ==============================
+     SCROLL SUAVE AO TROCAR MODO
+  ============================== */
+  useEffect(() => {
+    if (formSectionRef.current) {
+      formSectionRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
+  }, [mode]);
+
   /* ==============================
      COMBINED SLOTS (AVAIL + APPS)
   ============================== */
-  const allSlots = useMemo(() => {
+  const combinedSlots = useMemo(() => {
     const bookedTimes = appointments.map((a) => a.time);
-    const combined = [...new Set([...availableSlots, ...bookedTimes])];
+    const combined = [...new Set([...allSlots, ...bookedTimes])];
     return combined.sort();
-  }, [availableSlots, appointments]);
+  }, [allSlots, appointments]);
 
   /* ==============================
      GET APPOINTMENT BY SLOT
@@ -53,7 +75,7 @@ export default function DayManagement({
       return;
     }
 
-    if (allSlots.includes(newSlot)) {
+    if (combinedSlots.includes(newSlot)) {
       setError("Este horário já existe");
       return;
     }
@@ -73,7 +95,7 @@ export default function DayManagement({
   };
 
   /* ==============================
-     HANDLE REMOVE SLOT OR CANCEL
+     HANDLE REMOVE SLOT
   ============================== */
   const handleRemoveSlot = async (slot) => {
     setLoading(true);
@@ -84,22 +106,52 @@ export default function DayManagement({
     setLoading(false);
   };
 
-  const handleCancelAppointment = async (slot) => {
+  /* ==============================
+     HANDLE DELETE/CANCEL (MODAL)
+  ============================== */
+  const handleOpenModal = (slot) => {
     const appointment = getAppointmentBySlot(slot);
     if (!appointment) return;
 
     const patient = patients.find((p) => p.id === appointment.patientId);
     const displayName = patient?.referenceName || appointment.patientName;
 
-    if (!window.confirm(`Cancelar consulta de ${displayName}?`)) {
-      return;
-    }
+    setSelectedAppointment({
+      ...appointment,
+      displayName,
+    });
+    setModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedAppointment) return;
 
     setLoading(true);
-    const result = await onCancelAppointment(appointment.id);
-    if (!result.success) {
-      setError(result.error || "Erro ao cancelar consulta");
+    const result = await onDeleteAppointment(selectedAppointment.id);
+    
+    if (result.success) {
+      setModalOpen(false);
+      setSelectedAppointment(null);
+    } else {
+      setError(result.error || "Erro ao excluir consulta");
     }
+    
+    setLoading(false);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!selectedAppointment) return;
+
+    setLoading(true);
+    const result = await onMarkAsCancelled(selectedAppointment.id);
+    
+    if (result.success) {
+      setModalOpen(false);
+      setSelectedAppointment(null);
+    } else {
+      setError(result.error || "Erro ao marcar como cancelado");
+    }
+    
     setLoading(false);
   };
 
@@ -155,12 +207,18 @@ export default function DayManagement({
         <FaCalendarDay /> DIA {formattedDate}
       </h3>
 
+      {/* ESTATÍSTICAS DO DIA */}
+      <DayStats 
+        appointments={appointments} 
+        totalSlots={combinedSlots.length}
+      />
+
       {/* LISTA DE SLOTS */}
       <div className="slots-list">
-        {allSlots.length === 0 ? (
+        {combinedSlots.length === 0 ? (
           <p className="empty-message">Nenhum horário cadastrado</p>
         ) : (
-          allSlots.map((slot, i) => {
+          combinedSlots.map((slot, i) => {
             const appointment = getAppointmentBySlot(slot);
             let displayName = null;
 
@@ -175,8 +233,9 @@ export default function DayManagement({
                 slot={slot}
                 isBooked={!!appointment}
                 patientName={displayName}
+                status={appointment?.status}
                 onRemove={handleRemoveSlot}
-                onCancel={handleCancelAppointment}
+                onDelete={handleOpenModal}
               />
             );
           })
@@ -205,58 +264,75 @@ export default function DayManagement({
         </button>
       </div>
 
-      {/* ADD SLOT MODE */}
-      {mode === "add" && (
-        <div className="add-slot">
-          <input
-            type="time"
-            value={newSlot}
-            onChange={(e) => setNewSlot(e.target.value)}
-            disabled={loading}
-          />
-          <button onClick={handleAddSlot} disabled={loading}>
-            {loading ? "Adicionando..." : "Adicionar"}
-          </button>
-        </div>
-      )}
+      {/* ✨ FORMULÁRIO COM REF PARA SCROLL */}
+      <div ref={formSectionRef}>
+        {/* ADD SLOT MODE */}
+        {mode === "add" && (
+          <div className="add-slot">
+            <input
+              type="time"
+              value={newSlot}
+              onChange={(e) => setNewSlot(e.target.value)}
+              disabled={loading}
+            />
+            <button onClick={handleAddSlot} disabled={loading}>
+              {loading ? "Adicionando..." : "Adicionar"}
+            </button>
+          </div>
+        )}
 
-      {/* BOOK APPOINTMENT MODE */}
-      {mode === "book" && (
-        <div className="book-slot">
-          <select
-            value={selectedPatient}
-            onChange={(e) => setSelectedPatient(e.target.value)}
-            disabled={loading}
-          >
-            <option value="">Selecione o paciente</option>
-            {sortedPatients.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.referenceName || p.name} — R$ {p.price || 0}
-              </option>
-            ))}
-          </select>
+        {/* BOOK APPOINTMENT MODE */}
+        {mode === "book" && (
+          <div className="book-slot">
+            <select
+              value={selectedPatient}
+              onChange={(e) => setSelectedPatient(e.target.value)}
+              disabled={loading}
+            >
+              <option value="">Selecione o paciente</option>
+              {sortedPatients.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.referenceName || p.name} — R$ {p.price || 0}
+                </option>
+              ))}
+            </select>
 
-          <select
-            value={selectedTime}
-            onChange={(e) => setSelectedTime(e.target.value)}
-            disabled={loading}
-          >
-            <option value="">Selecione o horário</option>
-            {availableTimesForBooking.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+            <select
+              value={selectedTime}
+              onChange={(e) => setSelectedTime(e.target.value)}
+              disabled={loading}
+            >
+              <option value="">Selecione o horário</option>
+              {availableTimesForBooking.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
 
-          <button onClick={handleBookAppointment} disabled={loading}>
-            {loading ? "Confirmando..." : "Confirmar"}
-          </button>
-        </div>
-      )}
+            <button onClick={handleBookAppointment} disabled={loading}>
+              {loading ? "Confirmando..." : "Confirmar"}
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* ERROR MESSAGE */}
       {error && <p className="error-message">{error}</p>}
+
+      {/* DELETE/CANCEL MODAL */}
+      <DeleteConfirmationModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedAppointment(null);
+        }}
+        onConfirmDelete={handleConfirmDelete}
+        onConfirmCancel={handleConfirmCancel}
+        patientName={selectedAppointment?.displayName}
+        time={selectedAppointment?.time}
+        loading={loading}
+      />
     </div>
   );
 }

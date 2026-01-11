@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 // Hook
 import { useAvailability } from "../hooks/appointments/useAvailability";
@@ -9,55 +9,34 @@ import CalendarWrapper from "../components/availability/CalendarWrapper/Calendar
 import DayManagement from "../components/availability/DayManagement/DayManagement";
 import ContentLoading from "../components/common/ContentLoading/ContentLoading";
 
+// Utils
 import formatDate from "../utils/formatter/formatDate";
+
 import "./Availability.css";
 
 export default function Availability() {
   const {
+    // Estado
     loading,
     error,
     patients,
+    selectedDate,
+    calendarValue,
+    
+    // Handlers
+    handleSelectDate,
+    handleAddSlot,
+    handleRemoveSlot,
+    handleBookAppointment,
+    deleteAppointment, // ✅ ADICIONADO
+    markAsCancelled,
+    
+    // Getters
     getAvailabilityForDate,
     getAllSlotsForDate,
     getAppointmentsForDate,
     getCalendarTileData,
-    addSlot,
-    removeSlot,
-    bookAppointment,
-    cancelAppointment,
-    markAsCancelled,
   } = useAvailability();
-
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [calendarValue, setCalendarValue] = useState(new Date());
-
-  /* ==============================
-     FORMAT DATE HELPER
-  ============================== */
-  const formatLocalDate = (date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  };
-
-  /* ==============================
-     SET INITIAL DATE (TODAY)
-  ============================== */
-  useEffect(() => {
-    const today = new Date();
-    setSelectedDate(formatLocalDate(today));
-    setCalendarValue(today);
-  }, []);
-
-  /* ==============================
-     CALENDAR: SELECT DATE
-  ============================== */
-  const handleSelectDate = (date) => {
-    const dateStr = formatLocalDate(date);
-    setSelectedDate(dateStr);
-    setCalendarValue(date);
-  };
 
   /* ==============================
      CALENDAR: TILE CONTENT (BADGES)
@@ -65,7 +44,7 @@ export default function Availability() {
   const tileContent = ({ date, view }) => {
     if (view !== "month") return null;
 
-    const dateStr = formatLocalDate(date);
+    const dateStr = date.toISOString().split('T')[0];
     const tileData = getCalendarTileData(dateStr);
 
     if (!tileData.hasFreeSlots && !tileData.hasBookedSlots) return null;
@@ -80,54 +59,6 @@ export default function Availability() {
         )}
       </div>
     );
-  };
-
-  /* ==============================
-     HANDLE ADD SLOT
-  ============================== */
-  const handleAddSlot = async (slot) => {
-    if (!selectedDate) {
-      return { success: false, error: "Nenhuma data selecionada" };
-    }
-    return await addSlot(selectedDate, slot);
-  };
-
-  /* ==============================
-     HANDLE REMOVE SLOT
-  ============================== */
-  const handleRemoveSlot = async (slot) => {
-    if (!selectedDate) {
-      return { success: false, error: "Nenhuma data selecionada" };
-    }
-    return await removeSlot(selectedDate, slot);
-  };
-
-  /* ==============================
-     HANDLE BOOK APPOINTMENT
-  ============================== */
-  const handleBookAppointment = async (patientId, time) => {
-    if (!selectedDate) {
-      return { success: false, error: "Nenhuma data selecionada" };
-    }
-    return await bookAppointment({
-      patientId,
-      date: selectedDate,
-      time,
-    });
-  };
-
-  /* ==============================
-     HANDLE CANCEL APPOINTMENT (DELETE)
-  ============================== */
-  const handleCancelAppointment = async (appointmentId) => {
-    return await cancelAppointment(appointmentId);
-  };
-
-  /* ==============================
-     HANDLE MARK AS CANCELLED (UPDATE STATUS)
-  ============================== */
-  const handleMarkAsCancelled = async (appointmentId) => {
-    return await markAsCancelled(appointmentId);
   };
 
   /* ==============================
@@ -187,8 +118,8 @@ export default function Availability() {
             onAddSlot={handleAddSlot}
             onRemoveSlot={handleRemoveSlot}
             onBookAppointment={handleBookAppointment}
-            onCancelAppointment={handleCancelAppointment}
-            onMarkAsCancelled={handleMarkAsCancelled}
+            onDeleteAppointment={deleteAppointment}
+            onMarkAsCancelled={markAsCancelled}
           />
         )}
       </div>

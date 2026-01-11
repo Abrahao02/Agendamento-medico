@@ -4,8 +4,18 @@ import { auth } from "../../services/firebase";
 // Services
 import { getDoctor } from "../../services/firebase/doctors.service";
 import { getAvailability, saveAvailability, removeAvailability } from "../../services/firebase/availability.service";
-import { getAppointmentsByDoctor, createAppointment, deleteAppointment } from "../../services/firebase/appointments.service";
+import { getAppointmentsByDoctor, createAppointment, deleteAppointment as deleteAppointmentService, updateAppointment } from "../../services/firebase/appointments.service";
 import { getPatients } from "../../services/firebase/patients.service";
+
+// Utils
+import { formatDateToQuery } from "../../utils/filters/dateFilters";
+import { validateAvailability } from "../../utils/filters/availabilityFilters";
+import { getBookedSlotsForDate } from "../../utils/appointments/getBookedSlots";
+import { hasAppointmentConflict } from "../../utils/appointments/hasConflict";
+import { sortAppointments } from "../../utils/filters/appointmentFilters";
+
+// Constants
+import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
 
 export const useAvailability = () => {
   // ==============================
@@ -26,6 +36,31 @@ export const useAvailability = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Estado da UI (movido do componente)
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [calendarValue, setCalendarValue] = useState(new Date());
+
+  /* ==============================
+     HELPERS INTERNOS
+  ============================== */
+  
+  /**
+   * Formata Date para YYYY-MM-DD
+   */
+  const formatLocalDate = useCallback((date) => {
+    if (!date) return "";
+    return formatDateToQuery(date);
+  }, []);
+
+  /**
+   * Inicializa com data de hoje
+   */
+  useEffect(() => {
+    const today = new Date();
+    setSelectedDate(formatLocalDate(today));
+    setCalendarValue(today);
+  }, [formatLocalDate]);
 
   /* ==============================
      LOAD INITIAL DATA
@@ -48,13 +83,17 @@ export const useAvailability = () => {
         if (doctorResult.success) setDoctor(doctorResult.data);
 
         if (availResult.success) {
-          const validAvailability = availResult.data
-            .filter(day => day.date && Array.isArray(day.slots))
-            .sort((a, b) => a.date.localeCompare(b.date));
+          // Valida e ordena availability
+          const validAvailability = validateAvailability(availResult.data, false);
           setAvailability(validAvailability);
         }
 
-        if (appointmentsResult.success) setAppointments(appointmentsResult.data);
+        if (appointmentsResult.success) {
+          // Ordena appointments por data/hora
+          const sortedAppointments = sortAppointments(appointmentsResult.data);
+          setAppointments(sortedAppointments);
+        }
+
         if (patientsResult.success) setPatients(patientsResult.data);
 
       } catch (err) {
@@ -69,47 +108,90 @@ export const useAvailability = () => {
   }, [user]);
 
   /* ==============================
-     GET AVAILABILITY FOR DATE
+     GETTERS - AVAILABILITY
   ============================== */
+
+  /**
+   * Retorna slots disponíveis (não agendados) para uma data
+   */
   const getAvailabilityForDate = useCallback((date) => {
     const dayAvailability = availability.find(a => a.date === date);
     if (!dayAvailability || !dayAvailability.slots) return [];
 
-    const bookedSlots = appointments
-      .filter(apt => apt.date === date)
-      .map(apt => apt.time);
+    // Usa util para pegar slots agendados
+    const bookedSlots = getBookedSlotsForDate(appointments, date);
 
-    return dayAvailability.slots.filter(slot => !bookedSlots.includes(slot)).sort();
+    return dayAvailability.slots
+      .filter(slot => !bookedSlots.includes(slot))
+      .sort();
   }, [availability, appointments]);
 
+  /**
+   * Retorna todos os slots (agendados ou não) para uma data
+   */
   const getAllSlotsForDate = useCallback((date) => {
     const dayAvailability = availability.find(a => a.date === date);
     return dayAvailability?.slots || [];
   }, [availability]);
 
+  /**
+   * Retorna appointments de uma data específica
+   */
   const getAppointmentsForDate = useCallback((date) => {
     return appointments
       .filter(apt => apt.date === date)
       .sort((a, b) => (a.time || "").localeCompare(b.time || ""));
   }, [appointments]);
 
-  const getBookedSlotsForDate = useCallback((date) => {
-    return appointments
-      .filter(apt => apt.date === date)
-      .map(apt => apt.time);
+  /**
+   * Retorna horários agendados de uma data
+   */
+  const getBookedSlotsForDateCached = useCallback((date) => {
+    return getBookedSlotsForDate(appointments, date);
   }, [appointments]);
 
+  /**
+   * Verifica se um slot está disponível
+   */
   const isSlotAvailable = useCallback((date, time) => {
     const dayAvailability = availability.find(a => a.date === date);
     if (!dayAvailability) return false;
 
+    // Usa util para verificar conflito
     return dayAvailability.slots.includes(time) &&
-      !appointments.some(a => a.date === date && a.time === time);
+      !hasAppointmentConflict(appointments, date, time);
   }, [availability, appointments]);
 
   /* ==============================
-     ADD SLOT
+     CALENDAR DATA
   ============================== */
+
+  /**
+   * Dados para renderizar badges no calendário
+   */
+  const getCalendarTileData = useCallback((dateStr) => {
+    const dayAvailability = availability.find(a => a.date === dateStr) || { slots: [] };
+    const dayAppointments = appointments.filter(a => a.date === dateStr);
+
+    const bookedTimes = getBookedSlotsForDate(appointments, dateStr);
+    const freeSlotsArray = dayAvailability.slots.filter(slot => !bookedTimes.includes(slot));
+
+    return {
+      hasFreeSlots: freeSlotsArray.length > 0,
+      hasBookedSlots: dayAppointments.length > 0,
+      freeCount: freeSlotsArray.length,
+      bookedCount: dayAppointments.length,
+      totalCount: dayAvailability.slots.length,
+    };
+  }, [availability, appointments]);
+
+  /* ==============================
+     ACTIONS - AVAILABILITY
+  ============================== */
+
+  /**
+   * Adiciona um slot de disponibilidade
+   */
   const addSlot = async (date, slot) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
@@ -144,15 +226,15 @@ export const useAvailability = () => {
     }
   };
 
-  /* ==============================
-     REMOVE SLOT
-  ============================== */
+  /**
+   * Remove um slot de disponibilidade
+   */
   const removeSlot = async (date, slot) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
     try {
-      const hasAppointment = appointments.some(a => a.date === date && a.time === slot);
-      if (hasAppointment) {
+      // Usa util para verificar conflito
+      if (hasAppointmentConflict(appointments, date, slot)) {
         throw new Error("Não é possível remover um horário com agendamento. Cancele o agendamento primeiro.");
       }
 
@@ -171,17 +253,53 @@ export const useAvailability = () => {
   };
 
   /* ==============================
-     BOOK APPOINTMENT
+     ACTIONS - APPOINTMENTS
   ============================== */
+
+  /**
+   * Cria um novo agendamento
+   * ✨ NOVO: Cria o slot automaticamente se não existir
+   */
   const bookAppointment = async ({ patientId, date, time }) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
     try {
-      const hasAppointment = appointments.some(a => a.date === date && a.time === time);
-      if (hasAppointment) throw new Error("Já existe um agendamento neste horário");
+      // Usa util para verificar conflito
+      if (hasAppointmentConflict(appointments, date, time)) {
+        throw new Error("Já existe um agendamento neste horário");
+      }
 
       const patient = patients.find(p => p.id === patientId);
       if (!patient) throw new Error("Paciente não encontrado");
+
+      // ✨ NOVO: Verifica se o slot existe, se não, cria automaticamente
+      const dayAvailability = availability.find(a => a.date === date);
+      const slotExists = dayAvailability?.slots?.includes(time);
+
+      if (!slotExists) {
+        console.log(`🔧 Criando slot ${time} automaticamente para ${date}`);
+        const slotResult = await saveAvailability(user.uid, date, time);
+        if (!slotResult.success) {
+          console.warn("Aviso: não foi possível criar o slot automaticamente");
+        } else {
+          // Atualiza estado local
+          setAvailability(prev => {
+            const existing = prev.find(a => a.date === date);
+            if (existing) {
+              return prev.map(a => 
+                a.date === date 
+                  ? { ...a, slots: [...a.slots, time].sort() } 
+                  : a
+              );
+            } else {
+              return [
+                ...prev, 
+                { id: `${user.uid}_${date}`, doctorId: user.uid, date, slots: [time] }
+              ].sort((a, b) => a.date.localeCompare(b.date));
+            }
+          });
+        }
+      }
 
       const appointmentData = {
         doctorId: user.uid,
@@ -191,13 +309,14 @@ export const useAvailability = () => {
         date,
         time,
         value: patient.price || doctor?.defaultValueSchedule || 0,
-        status: "Confirmado",
+        status: APPOINTMENT_STATUS.CONFIRMED,
       };
 
       const result = await createAppointment(appointmentData);
       if (!result.success) throw new Error(result.error);
 
-      setAppointments(prev => [...prev, { id: result.appointmentId, ...appointmentData }]);
+      const newAppointment = { id: result.appointmentId, ...appointmentData };
+      setAppointments(prev => sortAppointments([...prev, newAppointment]));
 
       return { success: true, appointmentId: result.appointmentId };
     } catch (err) {
@@ -205,12 +324,13 @@ export const useAvailability = () => {
     }
   };
 
-  /* ==============================
-     CANCEL APPOINTMENT (DELETE)
-  ============================== */
-  const cancelAppointment = async (appointmentId) => {
+  /**
+   * Deleta um agendamento (remove completamente)
+   * ✨ Mantém o slot na availability
+   */
+  const handleDeleteAppointment = async (appointmentId) => {
     try {
-      const result = await deleteAppointment(appointmentId);
+      const result = await deleteAppointmentService(appointmentId);
       if (!result.success) throw new Error(result.error);
 
       setAppointments(prev => prev.filter(a => a.id !== appointmentId));
@@ -221,23 +341,23 @@ export const useAvailability = () => {
     }
   };
 
-  /* ==============================
-     MARK AS CANCELLED (UPDATE STATUS)
-  ============================== */
+  /**
+   * Marca agendamento como cancelado (apenas status)
+   * ✨ Mantém o slot ocupado
+   */
   const markAsCancelled = async (appointmentId) => {
     try {
       const appointment = appointments.find(a => a.id === appointmentId);
       if (!appointment) throw new Error("Agendamento não encontrado");
 
-      // Importar updateAppointment do service
-      const { updateAppointment } = await import("../../services/firebase/appointments.service");
-      
-      const result = await updateAppointment(appointmentId, { status: "Cancelado" });
+      const result = await updateAppointment(appointmentId, { 
+        status: APPOINTMENT_STATUS.CANCELLED 
+      });
       if (!result.success) throw new Error(result.error);
 
       setAppointments(prev => prev.map(a => 
         a.id === appointmentId 
-          ? { ...a, status: "Cancelado" } 
+          ? { ...a, status: APPOINTMENT_STATUS.CANCELLED } 
           : a
       ));
 
@@ -248,41 +368,84 @@ export const useAvailability = () => {
   };
 
   /* ==============================
-     CALENDAR TILE DATA
+     UI HANDLERS (movidos do componente)
   ============================== */
-  const getCalendarTileData = useCallback((dateStr) => {
-    const dayAvailability = availability.find(a => a.date === dateStr) || { slots: [] };
-    const dayAppointments = appointments.filter(a => a.date === dateStr);
 
-    const bookedTimes = dayAppointments.map(a => a.time);
-    const freeSlotsArray = dayAvailability.slots.filter(slot => !bookedTimes.includes(slot));
+  /**
+   * Seleciona uma data no calendário
+   */
+  const handleSelectDate = useCallback((date) => {
+    const dateStr = formatLocalDate(date);
+    setSelectedDate(dateStr);
+    setCalendarValue(date);
+  }, [formatLocalDate]);
 
-    return {
-      hasFreeSlots: freeSlotsArray.length > 0,
-      hasBookedSlots: dayAppointments.length > 0,
-      freeCount: freeSlotsArray.length,
-      bookedCount: dayAppointments.length,
-      totalCount: dayAvailability.slots.length,
-    };
-  }, [availability, appointments]);
+  /**
+   * Adiciona slot com validação de data
+   */
+  const handleAddSlot = useCallback(async (slot) => {
+    if (!selectedDate) {
+      return { success: false, error: "Nenhuma data selecionada" };
+    }
+    return await addSlot(selectedDate, slot);
+  }, [selectedDate]);
+
+  /**
+   * Remove slot com validação de data
+   */
+  const handleRemoveSlot = useCallback(async (slot) => {
+    if (!selectedDate) {
+      return { success: false, error: "Nenhuma data selecionada" };
+    }
+    return await removeSlot(selectedDate, slot);
+  }, [selectedDate]);
+
+  /**
+   * Cria agendamento com validação de data
+   */
+  const handleBookAppointment = useCallback(async (patientId, time) => {
+    if (!selectedDate) {
+      return { success: false, error: "Nenhuma data selecionada" };
+    }
+    return await bookAppointment({
+      patientId,
+      date: selectedDate,
+      time,
+    });
+  }, [selectedDate, bookAppointment]);
 
   return {
+    // Estado
     loading,
     error,
     doctor,
     availability,
     appointments,
     patients,
-    addSlot,
-    removeSlot,
-    bookAppointment,
-    cancelAppointment,
+    
+    // Estado da UI
+    selectedDate,
+    calendarValue,
+    
+    // Handlers de UI
+    handleSelectDate,
+    handleAddSlot,
+    handleRemoveSlot,
+    handleBookAppointment,
+    
+    // Ações diretas
+    deleteAppointment: handleDeleteAppointment,
     markAsCancelled,
+    
+    // Getters ✅ CORRIGIDO - getAllSlotsForDate agora está incluído
     getAvailabilityForDate,
     getAllSlotsForDate,
     getAppointmentsForDate,
-    getBookedSlotsForDate,
+    getBookedSlotsForDate: getBookedSlotsForDateCached,
     isSlotAvailable,
     getCalendarTileData,
+    
+    // Helpers
+    formatLocalDate,
   };
 };
