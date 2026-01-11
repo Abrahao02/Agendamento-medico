@@ -1,6 +1,4 @@
-// ============================================
-// 📁 src/hooks/useAllAppointments.js - REFATORADO
-// ============================================
+// src/hooks/useAllAppointments.js
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { db } from "../../services/firebase/config";
 import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
@@ -39,8 +37,6 @@ export default function useAllAppointments(user) {
         );
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-        // ✅ Usa util para ordenar
         const sorted = sortAppointments(data);
         setAppointments(sorted);
       } catch (err) {
@@ -53,7 +49,7 @@ export default function useAllAppointments(user) {
     fetchAppointments();
   }, [user]);
 
-  // ✅ FILTRO PRINCIPAL - Usa util
+  // FILTRO PRINCIPAL
   const filteredAppointments = useMemo(() => {
     return filterAppointments(appointments, {
       statusFilter,
@@ -61,11 +57,11 @@ export default function useAllAppointments(user) {
       startDate,
       endDate,
       selectedMonth,
-      selectedYear
+      selectedYear,
     });
   }, [appointments, statusFilter, searchTerm, startDate, endDate, selectedMonth, selectedYear]);
 
-  // ✅ AGRUPA POR PACIENTE - Usa util
+  // AGRUPA POR PACIENTE
   const patientsData = useMemo(() => {
     return groupAppointmentsByPatient(filteredAppointments);
   }, [filteredAppointments]);
@@ -79,17 +75,20 @@ export default function useAllAppointments(user) {
     });
   }, []);
 
-  const toggleAll = useCallback((expand) => {
-    if (expand) {
-      setExpandedPatients(new Set(patientsData.map((p) => p.name)));
-    } else {
-      setExpandedPatients(new Set());
-    }
-  }, [patientsData]);
+  const toggleAll = useCallback(
+    (expand) => {
+      if (expand) {
+        setExpandedPatients(new Set(patientsData.map((p) => p.name)));
+      } else {
+        setExpandedPatients(new Set());
+      }
+    },
+    [patientsData]
+  );
 
   const handleStatusChange = useCallback((id, newStatus) => {
     setAppointments((prev) =>
-      prev.map((app) => app.id === id ? { ...app, status: newStatus } : app)
+      prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
     );
     setChangedIds((prev) => new Set([...prev, id]));
   }, []);
@@ -99,9 +98,7 @@ export default function useAllAppointments(user) {
     try {
       const updates = appointments
         .filter((app) => changedIds.has(app.id))
-        .map((app) =>
-          updateDoc(doc(db, "appointments", app.id), { status: app.status })
-        );
+        .map((app) => updateDoc(doc(db, "appointments", app.id), { status: app.status }));
 
       await Promise.all(updates);
       setChangedIds(new Set());
@@ -126,16 +123,11 @@ export default function useAllAppointments(user) {
   // STATS
   const stats = useMemo(() => {
     const totalAppointments = filteredAppointments.length;
-    const totalValue = filteredAppointments.reduce(
-      (sum, app) => sum + (app.value || 0),
-      0
-    );
+    const totalValue = filteredAppointments.reduce((sum, app) => sum + (app.value || 0), 0);
     const totalPatients = patientsData.length;
-
     return { totalAppointments, totalValue, totalPatients };
   }, [filteredAppointments, patientsData]);
 
-  // ✅ YEARS - Usa util
   const availableYears = useMemo(() => generateYearRange(1), []);
 
   return {

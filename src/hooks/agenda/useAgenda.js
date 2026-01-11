@@ -1,39 +1,61 @@
 import { useState, useEffect, useRef } from "react";
-import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../services/firebase/config";
+import { collection, query, where, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
 
-// ✅ Services
+// Services
 import * as PatientService from "../../services/firebase/patients.service";
 
-// ✅ Utils
+// Utils
 import { formatDateToQuery } from "../../utils/filters/dateFilters";
 import { sortAppointments } from "../../utils/filters/appointmentFilters";
 import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
+import formatDate from "../../utils/formatter/formatDate";
+
+// 📱 Formata WhatsApp padrão BR
+const formatWhatsappNumber = (number) => {
+  let clean = number.replace(/\D/g, "");
+  if (!clean.startsWith("55")) clean = "55" + clean;
+  return clean;
+};
 
 export default function useAgenda(currentDate) {
-  // ==============================
-  // AUTH (garantido pelo PrivateRoute)
-  // ==============================
   const user = auth.currentUser;
 
-  if (!user) {
-    console.warn("useAgenda foi usado sem usuário autenticado");
-  }
-
-  // ==============================
-  // STATE
-  // ==============================
   const [appointments, setAppointments] = useState([]);
   const [statusUpdates, setStatusUpdates] = useState({});
   const [referenceNames, setReferenceNames] = useState({});
   const [patientStatus, setPatientStatus] = useState({});
-  const hasUnsavedChanges = useRef(false);
+  const [whatsappConfig, setWhatsappConfig] = useState(null);
 
+  const hasUnsavedChanges = useRef(false);
   const currentDateStr = formatDateToQuery(currentDate);
 
-  // ==============================
-  // FETCH APPOINTMENTS
-  // ==============================
+  // ------------------------------
+  // Buscar config do médico
+  // ------------------------------
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchDoctorConfig = async () => {
+      const snap = await getDoc(doc(db, "doctors", user.uid));
+      if (snap.exists()) {
+        setWhatsappConfig(
+          snap.data().whatsappConfig || {
+            intro: "Olá",
+            body: "Sua sessão está agendada",
+            footer: "",
+            showValue: false,
+          }
+        );
+      }
+    };
+
+    fetchDoctorConfig();
+  }, [user]);
+
+  // ------------------------------
+  // Buscar agendamentos
+  // ------------------------------
   useEffect(() => {
     if (!user) return;
 
@@ -46,15 +68,11 @@ export default function useAgenda(currentDate) {
         );
 
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
 
+        const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
         const sorted = sortAppointments(data);
         setAppointments(sorted);
 
-        // Status inicial
         const initialStatus = {};
         data.forEach((a) => {
           initialStatus[a.id] = a.status || "Pendente";
@@ -62,7 +80,6 @@ export default function useAgenda(currentDate) {
         setStatusUpdates(initialStatus);
         hasUnsavedChanges.current = false;
 
-        // Carregar dados dos pacientes
         await loadPatientData(data);
       } catch (err) {
         console.error("Erro ao buscar agendamentos:", err);
@@ -72,9 +89,9 @@ export default function useAgenda(currentDate) {
     fetchAppointments();
   }, [user, currentDateStr]);
 
-  // ==============================
-  // CARREGAR DADOS DOS PACIENTES
-  // ==============================
+  // ------------------------------
+  // Carregar dados dos pacientes
+  // ------------------------------
   const loadPatientData = async (appointmentsList) => {
     const names = {};
     const status = {};
@@ -83,13 +100,11 @@ export default function useAgenda(currentDate) {
       appointmentsList.map(async (appt) => {
         try {
           const cleanNumber = cleanWhatsapp(appt.patientWhatsapp);
-
           const result = await PatientService.getPatient(user.uid, cleanNumber);
 
           if (result.success) {
             names[appt.id] =
               result.data.referenceName || result.data.name || appt.patientName;
-
             status[appt.id] = "existing";
           } else {
             names[appt.id] = appt.patientName;
@@ -106,16 +121,15 @@ export default function useAgenda(currentDate) {
     setPatientStatus(status);
   };
 
-  // ==============================
-  // ATUALIZAR STATUS CONSULTA
-  // ==============================
+  // ------------------------------
+  // Atualizar status
+  // ------------------------------
   const handleStatusChange = async (id, value) => {
     setStatusUpdates((prev) => ({ ...prev, [id]: value }));
     hasUnsavedChanges.current = true;
 
     try {
       await updateDoc(doc(db, "appointments", id), { status: value });
-
       setAppointments((prev) =>
         prev.map((a) => (a.id === id ? { ...a, status: value } : a))
       );
@@ -124,9 +138,9 @@ export default function useAgenda(currentDate) {
     }
   };
 
-  // ==============================
-  // ADICIONAR PACIENTE
-  // ==============================
+  // ------------------------------
+  // Adicionar paciente
+  // ------------------------------
   const handleAddPatient = async (appt) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
@@ -143,11 +157,7 @@ export default function useAgenda(currentDate) {
 
       if (!result.success) throw new Error(result.error);
 
-      setPatientStatus((prev) => ({
-        ...prev,
-        [appt.id]: "existing",
-      }));
-
+      setPatientStatus((prev) => ({ ...prev, [appt.id]: "existing" }));
       return result;
     } catch (err) {
       console.error("Erro ao adicionar paciente:", err);
@@ -155,16 +165,50 @@ export default function useAgenda(currentDate) {
     }
   };
 
-  // ==============================
-  // RETURN
-  // ==============================
+  // ------------------------------
+  // Enviar WhatsApp
+  // ------------------------------
+  const handleSendWhatsapp = (appt) => {
+    if (!whatsappConfig) return;
+
+    const { intro, body, footer, showValue } = whatsappConfig;
+
+    let message = `
+${intro || "Olá"} ${appt.patientName},
+
+${body || "Sua sessão está agendada"}
+
+Data: ${formatDate(appt.date)}
+Horário: ${appt.time}
+`;
+
+    if (showValue && appt.value) {
+      message += `\nValor: R$ ${appt.value}`;
+    }
+
+    if (footer) {
+      message += `\n\n${footer}`;
+    }
+
+    const phone = formatWhatsappNumber(appt.patientWhatsapp);
+
+    window.open(
+      `https://wa.me/${phone}?text=${encodeURIComponent(message.trim())}`,
+      "whatsappWindow"
+    );
+
+    handleStatusChange(appt.id, "Msg enviada");
+  };
+
   return {
     appointments,
     statusUpdates,
     referenceNames,
     patientStatus,
+    whatsappConfig,
     hasUnsavedChanges,
     handleStatusChange,
     handleAddPatient,
+    handleSendWhatsapp,
   };
 }

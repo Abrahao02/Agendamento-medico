@@ -1,33 +1,29 @@
+// ============================================
+// 📁 src/pages/Agenda.jsx - REFATORADO
+// ============================================
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../services/firebase/config";
 
 import useAgenda from "../hooks/agenda/useAgenda";
 import PageHeader from "../components/common/PageHeader/PageHeader";
 import DateNavigation from "../components/agenda/DateNavigation";
 import AppointmentList from "../components/agenda/AppointmentList";
 import formatDate from "../utils/formatter/formatDate";
-import ContentLoading from "../components/common/ContentLoading/ContentLoading";
 
 import "./Agenda.css";
 
-export default function Agenda({ handleSendWhatsapp }) {
-  const [user, loading] = useAuthState(auth);
-  const navigate = useNavigate();
+export default function Agenda() {
   const [currentDate, setCurrentDate] = useState(new Date());
-
-  if (!loading && !user) navigate("/login");
 
   const {
     appointments,
     statusUpdates,
     referenceNames,
     patientStatus,
+    whatsappConfig,
     hasUnsavedChanges,
     handleStatusChange,
     handleAddPatient,
+    handleSendWhatsapp,
   } = useAgenda(currentDate);
 
   const goToPrev = () =>
@@ -46,19 +42,14 @@ export default function Agenda({ handleSendWhatsapp }) {
 
   const goToToday = () => setCurrentDate(new Date());
 
-  if (loading) return <ContentLoading message="Carregando agenda..." />;
-
   return (
     <div className="calendar-availability-container">
-
-      {/* ✅ PageHeader reutilizável */}
       <PageHeader
         label="Gestão diária"
         title="Agenda do dia"
         description="Gerencie seus horários e consultas do dia"
       />
 
-      {/* Navegação de datas */}
       <DateNavigation
         currentDate={currentDate}
         onPrev={goToPrev}
@@ -67,7 +58,6 @@ export default function Agenda({ handleSendWhatsapp }) {
         formatDate={formatDate}
       />
 
-      {/* Lista de consultas */}
       <AppointmentList
         appointments={appointments}
         statusUpdates={statusUpdates}

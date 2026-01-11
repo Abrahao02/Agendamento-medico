@@ -1,6 +1,4 @@
-// ========================================
-// PatientCard.jsx
-// ========================================
+// src/components/allAppointments/PatientCard.jsx
 import React from "react";
 import formatDate from "../../utils/formatter/formatDate";
 import "./PatientCard.css";
@@ -13,9 +11,11 @@ export default function PatientCard({
   onStatusChange,
   onSendWhatsapp,
 }) {
-  const handleSendReport = () => {
+  const handleSendReport = (e) => {
+    e.stopPropagation();
     const messages = patient.appointments.map(
-      (app) => `${formatDate(app.date)} às ${app.time} - R$ ${(app.value || 0).toFixed(2)}`
+      (app) =>
+        `${formatDate(app.date)} às ${app.time} - R$ ${(app.value || 0).toFixed(2)}`
     );
     const text = `Seguem as datas e valores de suas consultas:\n${messages.join("\n")}`;
     onSendWhatsapp(patient.whatsapp, text);
@@ -23,34 +23,31 @@ export default function PatientCard({
 
   return (
     <div className="patient-card">
-      <button className="patient-header" onClick={onToggle}>
-        <div className="patient-info">
-          <div className="patient-details">
-            <h3>{patient.name}</h3>
-            <p className="patient-stats-text">
-              {patient.appointments.length} consulta
-              {patient.appointments.length !== 1 ? "s" : ""}
-            </p>
+      <div className="patient-header-container">
+        <button className="patient-header" onClick={onToggle}>
+          <div className="patient-info">
+            <div className="patient-details">
+              <h3>{patient.name}</h3>
+              <p className="patient-stats-text">
+                {patient.appointments.length} consulta
+                {patient.appointments.length !== 1 ? "s" : ""}
+              </p>
+            </div>
           </div>
-        </div>
+          <div className="patient-meta">
+            <span className="patient-total">R$ {patient.totalValue.toFixed(2)}</span>
+            <span className="expand-icon">{isExpanded ? "▲" : "▼"}</span>
+          </div>
+        </button>
 
-        <div className="patient-meta">
-          <span className="patient-total">
-            R$ {patient.totalValue.toFixed(2)}
-          </span>
-          <button
-            className="btn btn-ghost btn-small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSendReport();
-            }}
-            title="Enviar relatório por WhatsApp"
-          >
-            📤
-          </button>
-          <span className="expand-icon">{isExpanded ? "▲" : "▼"}</span>
-        </div>
-      </button>
+        <button
+          className="btn btn-ghost btn-whatsapp"
+          onClick={handleSendReport}
+          title="Enviar relatório por WhatsApp"
+        >
+          📤
+        </button>
+      </div>
 
       {isExpanded && (
         <div className="appointments-list">
@@ -70,9 +67,7 @@ export default function PatientCard({
                 <div className="appointment-contact">
                   <span>📱 {app.patientWhatsapp}</span>
                 </div>
-                <div className="appointment-value">
-                  R$ {(app.value || 0).toFixed(2)}
-                </div>
+                <div className="appointment-value">R$ {(app.value || 0).toFixed(2)}</div>
               </div>
 
               <div className="status-select-wrapper">

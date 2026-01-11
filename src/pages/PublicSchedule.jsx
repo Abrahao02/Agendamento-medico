@@ -1,7 +1,10 @@
-// src/pages/PublicSchedule/PublicSchedule.jsx
+// ============================================
+// 📁 src/pages/PublicSchedule.jsx - REFATORADO
+// ============================================
 import React, { useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, AlertCircle, MessageCircle } from "lucide-react";
+import { Calendar, AlertCircle } from "lucide-react";
+
 import { usePublicSchedule } from "../hooks/appointments/usePublicSchedule";
 
 import Card from "../components/common/Card";
@@ -9,6 +12,10 @@ import Badge from "../components/common/Badge";
 import DayCard from "../components/publicSchedule/DayCard";
 import AppointmentForm from "../components/publicSchedule/AppointmentForm/AppointmentForm";
 import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
+import PublicScheduleHeader from "../components/publicSchedule/PublicScheduleHeader/PublicScheduleHeader";
+import IntroCard from "../components/publicSchedule/IntroCard/IntroCard";
+import LimitReachedBanner from "../components/publicSchedule/LimitReachedBanner/LimitReachedBanner";
+import EmptyState from "../components/publicSchedule/EmptyState/EmptyState";
 
 import "./PublicSchedule.css";
 
@@ -31,12 +38,8 @@ export default function PublicSchedule() {
     createAppointment,
   } = usePublicSchedule(slug);
 
-  /* ==============================
-     HANDLE SLOT CLICK
-  ============================== */
   const handleSlotClick = (day, time) => {
     handleSlotSelect(day, time);
-    
     setTimeout(() => {
       formRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -45,19 +48,12 @@ export default function PublicSchedule() {
     }, 100);
   };
 
-  /* ==============================
-     HANDLE SUBMIT
-  ============================== */
   const handleSubmit = async (formData) => {
     setSubmitting(true);
-    
     try {
       const result = await createAppointment(formData);
-      
       if (result.success) {
-        navigate(`/public/${slug}/success`, {
-          state: result.data,
-        });
+        navigate(`/public/${slug}/success`, { state: result.data });
       } else {
         alert(result.error || "Erro ao agendar");
       }
@@ -69,23 +65,10 @@ export default function PublicSchedule() {
     }
   };
 
-  /* ==============================
-     HANDLE CANCEL
-  ============================== */
-  const handleCancel = () => {
-    handleSlotSelect(null);
-  };
+  const handleCancel = () => handleSlotSelect(null);
 
-  /* ==============================
-     LOADING
-  ============================== */
-  if (loading) {
-    return <LoadingFallback message="Carregando agenda..." />;
-  }
+  if (loading) return <LoadingFallback message="Carregando agenda..." />;
 
-  /* ==============================
-     ERROR
-  ============================== */
   if (error || !doctor) {
     return (
       <div className="public-schedule-container">
@@ -102,66 +85,13 @@ export default function PublicSchedule() {
     );
   }
 
-  /* ==============================
-     RENDER
-  ============================== */
   return (
     <div className="public-schedule-container">
-      {/* Header */}
-      <header className="schedule-header">
-        <div className="doctor-info">
-          <div className="doctor-avatar">
-            {doctor.name[0].toUpperCase()}
-          </div>
-          <div>
-            <h1>Agende sua consulta</h1>
-            <p className="doctor-name">Dr(a). {doctor.name}</p>
-          </div>
-        </div>
-      </header>
+      <PublicScheduleHeader doctor={doctor} />
+      <IntroCard />
 
-      {/* Intro Message */}
-      <Card className="intro-card">
-        <div className="intro-content">
-          <Calendar size={24} />
-          <div>
-            <h3>Como funciona</h3>
-            <p>
-              Escolha uma data e horário disponível abaixo, preencha seus dados
-              e pronto! Você receberá uma confirmação em breve.
-            </p>
-          </div>
-        </div>
-      </Card>
+      {limitReached && <LimitReachedBanner doctor={doctor} />}
 
-      {/* Limit Reached Banner */}
-      {limitReached && (
-        <Card className="limit-card">
-          <div className="limit-content">
-            <AlertCircle size={24} />
-            <div>
-              <h3>Agenda cheia este mês</h3>
-              <p>
-                Todos os horários do plano gratuito foram preenchidos. Entre em
-                contato pelo WhatsApp para verificar novas datas:
-              </p>
-              {doctor.whatsapp && (
-                <a
-                  href={`https://wa.me/${doctor.whatsapp}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="whatsapp-link"
-                >
-                  <MessageCircle size={18} />
-                  {doctor.whatsapp}
-                </a>
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Availability Status */}
       {!limitReached && (
         <div className="availability-status">
           <Badge variant={availability.length > 0 ? "success" : "warning"}>
@@ -172,7 +102,6 @@ export default function PublicSchedule() {
         </div>
       )}
 
-      {/* Days List */}
       {availability.length > 0 && !limitReached && (
         <div className="days-list">
           {availability.map((day) => (
@@ -189,7 +118,6 @@ export default function PublicSchedule() {
         </div>
       )}
 
-      {/* Appointment Form */}
       {selectedSlot && (
         <AppointmentForm
           ref={formRef}
@@ -200,29 +128,8 @@ export default function PublicSchedule() {
         />
       )}
 
-      {/* Empty State */}
       {!limitReached && availability.length === 0 && (
-        <Card className="empty-card">
-          <div className="empty-content">
-            <Calendar size={48} />
-            <h3>Sem horários disponíveis</h3>
-            <p>
-              Não há horários disponíveis no momento. Entre em contato para
-              mais informações.
-            </p>
-            {doctor.whatsapp && (
-              <a
-                href={`https://wa.me/${doctor.whatsapp}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-btn"
-              >
-                <MessageCircle size={18} />
-                Entrar em contato
-              </a>
-            )}
-          </div>
-        </Card>
+        <EmptyState doctor={doctor} />
       )}
     </div>
   );

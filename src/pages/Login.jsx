@@ -1,6 +1,9 @@
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa"
-import { useLogin } from "../hooks/auth/useLogin"
-import "./Login.css"
+// ============================================
+// 📁 src/pages/Login.jsx - REFATORADO
+// ============================================
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { useLogin } from "../hooks/auth/useLogin";
+import "./Login.css";
 
 export default function Login() {
   const {
@@ -13,7 +16,7 @@ export default function Login() {
     toggleShowPassword,
     handleLogin,
     handleForgotPassword
-  } = useLogin()
+  } = useLogin();
 
   return (
     <div className="login-container">
@@ -21,7 +24,6 @@ export default function Login() {
         <h2 className="login-title">Login</h2>
 
         <form onSubmit={handleLogin} className="login-form">
-          {/* Email */}
           <label>
             Email
             <div className="input-wrapper">
@@ -36,7 +38,6 @@ export default function Login() {
             </div>
           </label>
 
-          {/* Senha */}
           <label>
             Senha
             <div className="input-wrapper">
@@ -48,31 +49,49 @@ export default function Login() {
                 value={form.password}
                 onChange={handleChange}
               />
-              <button type="button" className="toggle-btn" onClick={toggleShowPassword}>
+              <button 
+                type="button" 
+                className="toggle-btn" 
+                onClick={toggleShowPassword}
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
           </label>
 
-          {/* Erros */}
           {error && <span className="error">{error}</span>}
 
-          {/* Botões */}
-          <button type="submit" className="submit-btn">Entrar</button>
-          <button type="button" className="submit-btn secondary" onClick={() => window.location.href = "/register"}>
+          <button type="submit" className="submit-btn">
+            Entrar
+          </button>
+          
+          <button 
+            type="button" 
+            className="submit-btn secondary" 
+            onClick={() => window.location.href = "/register"}
+          >
             Registrar-se
           </button>
 
-          {/* Esqueci minha senha como link */}
-          <span className="forgot-link" onClick={handleForgotPassword}>
+          <span 
+            className="forgot-link" 
+            onClick={handleForgotPassword}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleForgotPassword()}
+          >
             Esqueci minha senha
           </span>
 
-          {/* Mensagens de reset de senha */}
           {resetError && <span className="error">{resetError}</span>}
-          {resetEmailSent && <span className="success">Email de redefinição enviado! Verifique sua caixa de entrada.</span>}
+          {resetEmailSent && (
+            <span className="success">
+              Email de redefinição enviado! Verifique sua caixa de entrada.
+            </span>
+          )}
         </form>
       </div>
     </div>
-  )
+  );
 }

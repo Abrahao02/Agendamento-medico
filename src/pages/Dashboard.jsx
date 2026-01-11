@@ -1,11 +1,12 @@
+// ============================================
+// 📁 src/pages/Dashboard.jsx - MELHORADO
+// ============================================
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Users, DollarSign, Clock } from "lucide-react";
+import { Calendar, Users, DollarSign, Clock, UserPlus, TrendingUp } from "lucide-react";
 
-// Hook
 import { useDashboard } from "../hooks/dashboard/useDashboard";
 
-// Components
 import PageHeader from "../components/common/PageHeader/PageHeader";
 import PublicLinkCard from "../components/dashboard/PublicLinkCard";
 import Filters from "../components/common/Filters/Filters";
@@ -43,17 +44,14 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-content">
-      {/* Header */}
       <PageHeader
         label="Visão Geral"
         title="Painel de Controle"
         description="Acompanhe consultas, faturamento e disponibilidade em tempo real"
       />
 
-      {/* Public Link */}
       <PublicLinkCard slug={doctorSlug} />
 
-      {/* Filters */}
       <Filters
         dateFrom={selectedDateFrom}
         dateTo={selectedDateTo}
@@ -71,16 +69,8 @@ export default function Dashboard() {
         showMonthYear
       />
 
-      {/* Stats */}
+      {/* Stats Grid - Linha 1 */}
       <div className="stats-grid">
-        <StatsCard
-          icon={Clock}
-          value={stats.slotsOpen}
-          title="Horários disponíveis"
-          subtitle="Slots livres para agendamento"
-          color="blue"
-          onClick={() => navigate("/dashboard/availability")}
-        />
         <StatsCard
           icon={Calendar}
           value={stats.totalAppointments}
@@ -88,28 +78,62 @@ export default function Dashboard() {
           subtitle="No período selecionado"
           color="green"
           onClick={() => navigate("/dashboard/allappointments")}
+          comparison={stats.appointmentsComparison}
         />
+        
+        <StatsCard
+          icon={UserPlus}
+          value={stats.newPatients}
+          title="Novos pacientes"
+          subtitle="Primeiro agendamento"
+          color="blue"
+          onClick={() => navigate("/dashboard/clients")}
+          comparison={stats.newPatientsComparison}
+        />
+        
+        <StatsCard
+          icon={Clock}
+          value={stats.slotsOpen}
+          title="Horários disponíveis"
+          subtitle="Slots livres para agendamento"
+          color="purple"
+          onClick={() => navigate("/dashboard/availability")}
+        />
+        
+        <StatsCard
+          icon={TrendingUp}
+          value={`${stats.conversionRate}%`}
+          title="Taxa de conversão"
+          subtitle="Confirmados / Total"
+          color="amber"
+        />
+      </div>
+
+      {/* Stats Grid - Linha 2 */}
+      <div className="stats-grid stats-grid-secondary">
         <StatsCard
           icon={DollarSign}
           value={`R$ ${stats.totalRevenue.toFixed(2)}`}
           title="Faturamento previsto"
           subtitle="Consultas confirmadas"
-          color="amber"
+          color="green"
         />
+        
         <StatsCard
           icon={Users}
           value={`R$ ${stats.averageTicket}`}
           title="Ticket médio"
           subtitle="Por paciente"
-          color="purple"
+          color="blue"
         />
       </div>
 
-      {/* Status */}
+      {/* Status Summary */}
       <StatusSummary
-        confirmed={statusSummary.Confirmado}
-        pending={statusSummary.Pendente}
-        missed={statusSummary["Não Compareceu"]}
+        confirmed={statusSummary.confirmed}
+        pending={statusSummary.pending}
+        cancelled={statusSummary.cancelled}
+        percentages={statusSummary.percentages}
       />
 
       {/* Charts */}

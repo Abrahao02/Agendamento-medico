@@ -1,32 +1,43 @@
-// src/components/dashboard/StatusSummary/StatusSummary.jsx
+// ============================================
+// 📁 src/components/dashboard/StatusSummary/StatusSummary.jsx - MELHORADO
+// Agora com 3 grupos de status
+// ============================================
 import React from "react";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 import "./StatusSummary.css";
 
-export default function StatusSummary({ confirmed = 0, pending = 0, missed = 0 }) {
-  const total = confirmed + pending + missed;
+export default function StatusSummary({ 
+  confirmed = 0, 
+  pending = 0, 
+  cancelled = 0,
+  percentages = { confirmed: 0, pending: 0, cancelled: 0 }
+}) {
+  const total = confirmed + pending + cancelled;
 
   const items = [
     {
       icon: CheckCircle,
       count: confirmed,
       label: "Confirmados",
+      sublabel: "Agendamentos confirmados",
       color: "confirmed",
-      percentage: total > 0 ? Math.round((confirmed / total) * 100) : 0,
+      percentage: percentages.confirmed,
     },
     {
       icon: Clock,
       count: pending,
       label: "Pendentes",
+      sublabel: "Aguardando confirmação",
       color: "pending",
-      percentage: total > 0 ? Math.round((pending / total) * 100) : 0,
+      percentage: percentages.pending,
     },
     {
       icon: XCircle,
-      count: missed,
-      label: "Não compareceram",
-      color: "missed",
-      percentage: total > 0 ? Math.round((missed / total) * 100) : 0,
+      count: cancelled,
+      label: "Cancelados/Faltas",
+      sublabel: "Não compareceram ou cancelados",
+      color: "cancelled",
+      percentage: percentages.cancelled,
     },
   ];
 
@@ -35,7 +46,11 @@ export default function StatusSummary({ confirmed = 0, pending = 0, missed = 0 }
       {items.map((item, index) => {
         const Icon = item.icon;
         return (
-          <div key={item.label} className={`status-card ${item.color}`} style={{ animationDelay: `${index * 0.1}s` }}>
+          <div 
+            key={item.label} 
+            className={`status-card ${item.color}`} 
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
             <div className="status-header">
               <div className={`status-icon ${item.color}`}>
                 <Icon size={20} />
@@ -43,6 +58,7 @@ export default function StatusSummary({ confirmed = 0, pending = 0, missed = 0 }
               <div className="status-info">
                 <h4 className="status-count">{item.count}</h4>
                 <p className="status-label">{item.label}</p>
+                <p className="status-sublabel">{item.sublabel}</p>
               </div>
             </div>
             <div className="status-progress">

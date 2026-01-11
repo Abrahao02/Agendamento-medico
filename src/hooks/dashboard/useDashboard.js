@@ -1,3 +1,6 @@
+// ============================================
+// 📁 src/hooks/dashboard/useDashboard.js - MELHORADO
+// ============================================
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
@@ -13,27 +16,24 @@ import {
   calculateStatusSummary,
 } from "../../utils/stats/appointmentStats";
 import { generateYearRange } from "../../utils/helpers/yearHelpers";
+import { 
+  calculateNewPatientsStats,
+  calculateGroupedStats,
+  calculateConversionRate,
+  calculateMonthComparison 
+} from "../../utils/stats/enhancedStats";
 
 export const useDashboard = () => {
-  // ==============================
-  // AUTH (garantido pelo PrivateRoute)
-  // ==============================
   const user = auth.currentUser;
 
   if (!user) {
     console.warn("useDashboard usado sem usuário autenticado");
   }
 
-  // ==============================
-  // CONSTANTES
-  // ==============================
   const today = new Date();
   const currentMonth = today.getMonth() + 1;
   const currentYear = today.getFullYear();
 
-  // ==============================
-  // ESTADO
-  // ==============================
   const [doctorSlug, setDoctorSlug] = useState("");
   const [loadingData, setLoadingData] = useState(true);
 
@@ -46,9 +46,7 @@ export const useDashboard = () => {
   const [availability, setAvailability] = useState([]);
   const [priceMap, setPriceMap] = useState({});
 
-  // ==============================
   // FETCH DOCTOR
-  // ==============================
   useEffect(() => {
     if (!user) return;
 
@@ -66,9 +64,7 @@ export const useDashboard = () => {
     fetchDoctor();
   }, [user]);
 
-  // ==============================
-  // FETCH APPOINTMENTS, PATIENTS, AVAILABILITY
-  // ==============================
+  // FETCH DATA
   useEffect(() => {
     if (!user) return;
 
@@ -101,9 +97,7 @@ export const useDashboard = () => {
     fetchData();
   }, [user]);
 
-  // ==============================
   // COMPUTED VALUES
-  // ==============================
   const filteredAppointments = useMemo(() =>
     filterAppointments(appointments, {
       startDate: selectedDateFrom,
@@ -126,20 +120,61 @@ export const useDashboard = () => {
 
   const slotsOpen = useMemo(() => countAvailableSlots(filteredAvailability), [filteredAvailability]);
 
-  const stats = useMemo(() => ({ 
-    ...calculateAppointmentStats(filteredAppointments, priceMap), 
-    slotsOpen 
-  }), [filteredAppointments, priceMap, slotsOpen]);
+  // ✨ NOVAS ESTATÍSTICAS
+  const enhancedStats = useMemo(() => {
+    const basicStats = calculateAppointmentStats(filteredAppointments, priceMap);
+    const groupedStats = calculateGroupedStats(filteredAppointments);
+    const newPatientsStats = calculateNewPatientsStats(appointments, selectedMonth, selectedYear);
+    const conversionRate = calculateConversionRate(filteredAppointments);
+    
+    // Comparação com mês anterior
+    const prevMonth = selectedMonth === 1 ? 12 : selectedMonth - 1;
+    const prevYear = selectedMonth === 1 ? selectedYear - 1 : selectedYear;
+    
+    const previousMonthAppointments = filterAppointments(appointments, {
+      selectedMonth: prevMonth,
+      selectedYear: prevYear,
+    });
+    
+    const appointmentsComparison = calculateMonthComparison(
+      filteredAppointments,
+      previousMonthAppointments
+    );
+    
+    return {
+      ...basicStats,
+      slotsOpen,
+      groupedStats,
+      newPatients: newPatientsStats.current,
+      newPatientsComparison: newPatientsStats.comparison,
+      appointmentsComparison,
+      conversionRate,
+    };
+  }, [filteredAppointments, priceMap, slotsOpen, appointments, selectedMonth, selectedYear]);
 
-  const statusSummary = useMemo(() => 
-    calculateStatusSummary(filteredAppointments), 
-    [filteredAppointments]
-  );
+  const statusSummary = useMemo(() => {
+    const grouped = calculateGroupedStats(filteredAppointments);
+    return {
+      confirmed: grouped.confirmed,
+      pending: grouped.pending,
+      cancelled: grouped.cancelled,
+      percentages: grouped.percentages,
+    };
+  }, [filteredAppointments]);
 
   const chartData = useMemo(() => {
     const byDay = {};
     filteredAppointments.forEach(a => {
-      if (!byDay[a.date]) byDay[a.date] = { date: a.date, Confirmado: 0, Pendente: 0, "Não Compareceu": 0 };
+      if (!byDay[a.date]) {
+        byDay[a.date] = { 
+          date: a.date, 
+          Confirmado: 0, 
+          Pendente: 0, 
+          "Msg enviada": 0,
+          Cancelado: 0,
+          "Não Compareceu": 0 
+        };
+      }
       byDay[a.date][a.status]++;
     });
     return Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date));
@@ -154,9 +189,6 @@ export const useDashboard = () => {
 
   const availableYears = useMemo(() => generateYearRange(1), []);
 
-  // ==============================
-  // ACTIONS
-  // ==============================
   const resetFilters = useCallback(() => {
     setSelectedDateFrom("");
     setSelectedDateTo("");
@@ -164,28 +196,18 @@ export const useDashboard = () => {
     setSelectedYear(currentYear);
   }, [currentMonth, currentYear]);
 
-  // ==============================
-  // RETURN
-  // ==============================
   return {
-    // Estado
     loading: loadingData,
     doctorSlug,
-    
-    // Computed
-    stats,
+    stats: enhancedStats,
     statusSummary,
     chartData,
     upcomingAppointments,
     availableYears,
-    
-    // Filtros (estado)
     selectedDateFrom,
     selectedDateTo,
     selectedMonth,
     selectedYear,
-    
-    // Actions
     setSelectedDateFrom,
     setSelectedDateTo,
     setSelectedMonth,

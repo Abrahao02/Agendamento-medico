@@ -1,8 +1,8 @@
-// src/pages/AllAppointments/AllAppointments.jsx
-import React, { useEffect } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
+// ============================================
+// 📁 src/pages/AllAppointments.jsx - REFATORADO
+// ============================================
+import React from "react";
 import { auth } from "../services/firebase/config";
-import { useNavigate } from "react-router-dom";
 
 import useAllAppointments from "../hooks/agenda/useAllAppointments";
 import Filters from "../components/common/Filters/Filters";
@@ -13,14 +13,11 @@ import LoadingFallback from "../components/common/LoadingFallback/LoadingFallbac
 import "./AllAppointments.css";
 
 export default function AllAppointments() {
-  const [user, loading] = useAuthState(auth);
-  const navigate = useNavigate();
+  const user = auth.currentUser;
 
   const {
     patientsData,
     loadingData,
-
-    // Filters
     statusFilter,
     searchTerm,
     startDate,
@@ -35,27 +32,17 @@ export default function AllAppointments() {
     setSelectedYear,
     resetFilters,
     availableYears,
-
-    // UI
     expandedPatients,
     togglePatient,
     toggleAll,
-
-    // Save
     changedIds,
     saving,
     handleStatusChange,
     handleSave,
-
-    // Stats
     stats,
   } = useAllAppointments(user);
 
-  useEffect(() => {
-    if (!loading && !user) navigate("/login");
-  }, [user, loading, navigate]);
-
-  if (loading || loadingData) {
+  if (loadingData) {
     return <LoadingFallback message="Carregando agendamentos..." />;
   }
 
@@ -64,7 +51,15 @@ export default function AllAppointments() {
     { value: "Pendente", label: "Pendente" },
     { value: "Não Compareceu", label: "Não Compareceu" },
     { value: "Msg enviada", label: "Msg enviada" },
+    { value: "Cancelado", label: "Cancelado" },
   ];
+
+  const sendWhatsapp = (number, text) => {
+    const cleanNumber = number.replace(/\D/g, "");
+    const encodedText = encodeURIComponent(text);
+    const url = `https://wa.me/${cleanNumber}?text=${encodedText}`;
+    window.open(url, "_blank");
+  };
 
   const extraActions = (
     <>
@@ -119,13 +114,10 @@ export default function AllAppointments() {
           changedIds={changedIds}
           onTogglePatient={togglePatient}
           onStatusChange={handleStatusChange}
+          onSendWhatsapp={sendWhatsapp}
         />
 
-        <SaveChangesBar
-          changesCount={changedIds.size}
-          saving={saving}
-          onSave={handleSave}
-        />
+        <SaveChangesBar changesCount={changedIds.size} saving={saving} onSave={handleSave} />
       </div>
     </div>
   );

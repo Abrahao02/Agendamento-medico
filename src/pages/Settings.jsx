@@ -1,14 +1,14 @@
-import React, { useEffect } from "react";
+// ============================================
+// 📁 src/pages/Settings.jsx - REFATORADO
+// ============================================
+import React from "react";
 import { auth } from "../services/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useNavigate } from "react-router-dom";
 import { useSettings } from "../hooks/settings/useSettings";
 
 import "./Settings.css";
 
 export default function Settings() {
-  const [user, authLoading] = useAuthState(auth);
-  const navigate = useNavigate();
+  const user = auth.currentUser;
 
   const {
     loading,
@@ -21,14 +21,6 @@ export default function Settings() {
     generatePreview,
   } = useSettings(user);
 
-  // 🔐 Proteção de rota
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/login");
-    }
-  }, [user, authLoading, navigate]);
-
-  // 💾 Handler de salvar
   const handleSave = async () => {
     const result = await saveSettings();
 
@@ -39,8 +31,7 @@ export default function Settings() {
     }
   };
 
-  // 🔄 Loading state
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="settings-page">
         <p>Carregando configurações...</p>
@@ -92,7 +83,6 @@ export default function Settings() {
           onChange={(e) => updateWhatsappField("footer", e.target.value)}
         />
 
-        {/* ✅ Mostrar valor */}
         <label className="checkbox-label">
           <input
             type="checkbox"
@@ -102,7 +92,6 @@ export default function Settings() {
           Incluir valor da consulta na mensagem
         </label>
 
-        {/* 👁 Preview */}
         <div className="whatsapp-preview">
           <h4>Preview da mensagem:</h4>
           <div className="preview-box">

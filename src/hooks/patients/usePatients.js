@@ -1,16 +1,10 @@
-// ============================================
-// 📁 src/hooks/usePatients.js - REFATORADO
-// ============================================
 import { useState, useEffect } from "react";
 import { PatientService, AppointmentService } from "../../services/firebase";
-
-// ✅ Imports de utils
 import { formatWhatsapp } from "../../utils/formatter/formatWhatsapp";
 import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
 import { validateWhatsappLength } from "../../utils/whatsapp/validateWhatsappLength";
-import { generatePatientId } from "../../utils/patients/generatePatientId";
-import { calculatePatientStats } from "../../utils/patients/calculatePatientStats";
 import { validateFormField } from "../../utils/validators/formValidation";
+import { calculatePatientStats } from "../../utils/patients/calculatePatientStats";
 
 /**
  * Hook para gerenciar pacientes e suas consultas
@@ -18,24 +12,24 @@ import { validateFormField } from "../../utils/validators/formValidation";
  * @returns {Object} Estado e funções para gerenciar pacientes
  */
 export function usePatients(user) {
-  // 🔄 Estados de loading
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
 
-  // 📊 Dados
   const [patients, setPatients] = useState({});
   const [appointments, setAppointments] = useState([]);
 
-  // 📝 Formulário de novo paciente
   const [newPatient, setNewPatient] = useState({
     name: "",
     referenceName: "",
     whatsapp: "",
-    price: "",
+    price: 0,
   });
+
   const [error, setError] = useState("");
 
-  // 📥 Carregar dados iniciais
+  // Estado de edição por paciente
+  const [editingPatients, setEditingPatients] = useState({});
+
   useEffect(() => {
     if (!user) {
       setLoading(false);
@@ -44,26 +38,16 @@ export function usePatients(user) {
 
     const fetchData = async () => {
       setLoading(true);
-
       try {
-        // 1. Buscar appointments
-        const apptsResult = await AppointmentService.getAppointmentsByDoctor(
-          user.uid
-        );
+        const apptsResult = await AppointmentService.getAppointmentsByDoctor(user.uid);
         const appointmentsData = apptsResult.success ? apptsResult.data : [];
         setAppointments(appointmentsData);
 
-        // 2. Buscar pacientes
         const patientsResult = await PatientService.getPatients(user.uid);
-
         if (patientsResult.success) {
-          // Criar mapa de pacientes
           const patientsMap = {};
-
           patientsResult.data.forEach((patient) => {
-            // ✅ Usa util para calcular estatísticas do paciente
             const stats = calculatePatientStats(appointmentsData, patient.whatsapp);
-
             patientsMap[patient.whatsapp] = {
               id: patient.id,
               name: patient.name,
@@ -74,10 +58,8 @@ export function usePatients(user) {
               confirmed: stats.confirmed,
               pending: stats.pending,
               noShow: stats.noShow,
-              totalValue: stats.totalValue,
             };
           });
-
           setPatients(patientsMap);
         }
       } catch (err) {
@@ -90,64 +72,47 @@ export function usePatients(user) {
     fetchData();
   }, [user]);
 
-  // 🔄 Atualizar campo do novo paciente
   const updateNewPatientField = (field, value) => {
-    setNewPatient((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setNewPatient((prev) => ({ ...prev, [field]: value }));
   };
 
-  // ✅ 📱 Handler de WhatsApp - USA UTIL
   const handleWhatsappChange = (value) => {
     const formatted = formatWhatsapp(value);
     updateNewPatientField("whatsapp", formatted);
   };
 
-  // ✅ Verificar se WhatsApp já existe - USA UTIL
   const isWhatsappDuplicate = (formattedWhatsapp) => {
     const numbers = cleanWhatsapp(formattedWhatsapp);
     return patients[numbers] !== undefined;
   };
 
-  // 💰 Atualizar preço de paciente existente
   const updatePatientPrice = (whatsapp, value) => {
     setPatients((prev) => ({
       ...prev,
-      [whatsapp]: {
-        ...prev[whatsapp],
-        price: Number(value) || 0,
-      },
+      [whatsapp]: { ...prev[whatsapp], price: Number(value) || 0 },
     }));
   };
 
-  // 🏷️ Atualizar nome de referência
   const updatePatientReferenceName = (whatsapp, value) => {
     setPatients((prev) => ({
       ...prev,
-      [whatsapp]: {
-        ...prev[whatsapp],
-        referenceName: value,
-      },
+      [whatsapp]: { ...prev[whatsapp], referenceName: value },
     }));
   };
 
-  // 💾 Salvar paciente existente
   const savePatient = async (patient) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
-
     setSaving(patient.whatsapp);
 
     try {
-      const result = await PatientService.updatePatient(
-        user.uid,
-        patient.whatsapp,
-        {
-          name: patient.name,
-          referenceName: patient.referenceName || "",
-          price: patient.price,
-        }
-      );
+      const result = await PatientService.updatePatient(user.uid, patient.whatsapp, {
+        name: patient.name,
+        referenceName: patient.referenceName || "",
+        price: patient.price,
+      });
+
+      // Desabilita edição ao salvar
+      disableEditPatient(patient.whatsapp);
 
       return result;
     } catch (err) {
@@ -158,13 +123,10 @@ export function usePatients(user) {
     }
   };
 
-  // ✅ ➕ Adicionar novo paciente - USA UTILS
   const addPatient = async () => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
-
     setError("");
 
-    // ✅ Validação usando util
     const nameValidation = validateFormField("name", newPatient.name, { required: true });
     if (!nameValidation.valid) {
       setError(nameValidation.error);
@@ -175,25 +137,16 @@ export function usePatients(user) {
     const referenceName = newPatient.referenceName.trim();
     const price = Number(newPatient.price || 0);
 
-    // ✅ Limpa e valida WhatsApp usando utils
     const cleanedWhatsapp = cleanWhatsapp(newPatient.whatsapp);
     const whatsappValidation = validateWhatsappLength(cleanedWhatsapp);
-
     if (!whatsappValidation.valid) {
       setError(whatsappValidation.message);
       return { success: false, error: whatsappValidation.message };
     }
 
-    // ✅ Verifica duplicação
     if (isWhatsappDuplicate(newPatient.whatsapp)) {
       setError("WhatsApp já cadastrado.");
       return { success: false, error: "WhatsApp duplicado" };
-    }
-
-    // Valida preço
-    if (isNaN(price) || price < 0) {
-      setError("Preço inválido.");
-      return { success: false, error: "Preço inválido" };
     }
 
     try {
@@ -206,7 +159,6 @@ export function usePatients(user) {
       });
 
       if (result.success) {
-        // Atualizar estado local
         setPatients((prev) => ({
           ...prev,
           [cleanedWhatsapp]: {
@@ -219,12 +171,10 @@ export function usePatients(user) {
             confirmed: 0,
             pending: 0,
             noShow: 0,
-            totalValue: 0,
           },
         }));
 
-        // Limpar formulário
-        setNewPatient({ name: "", referenceName: "", whatsapp: "", price: "" });
+        setNewPatient({ name: "", referenceName: "", whatsapp: "", price: 0 });
         setError("");
       }
 
@@ -236,46 +186,37 @@ export function usePatients(user) {
     }
   };
 
-  // 📊 Obter lista ordenada de pacientes
-  const getPatientsList = () => {
-    return Object.values(patients).sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
+  // Edição de paciente
+  const enableEditPatient = (whatsapp) => {
+    setEditingPatients((prev) => ({ ...prev, [whatsapp]: true }));
+  };
+  const disableEditPatient = (whatsapp) => {
+    setEditingPatients((prev) => ({ ...prev, [whatsapp]: false }));
   };
 
-  // ✅ 📱 Formatar WhatsApp para exibição - USA UTIL
-  const formatWhatsappDisplay = (whatsapp) => {
-    return formatWhatsapp(whatsapp);
-  };
+  const getPatientsList = () => Object.values(patients).sort((a, b) => a.name.localeCompare(b.name));
+  const formatWhatsappDisplay = (whatsapp) => formatWhatsapp(whatsapp);
 
   return {
-    // Estados
     loading,
     saving,
     patients,
     appointments,
     newPatient,
     error,
-
-    // Listas computadas
+    editingPatients,
     patientsList: getPatientsList(),
     patientsCount: Object.keys(patients).length,
-
-    // Funções de formulário
     updateNewPatientField,
     handleWhatsappChange,
     isWhatsappDuplicate,
-    setError,
-
-    // Funções de edição
     updatePatientPrice,
     updatePatientReferenceName,
-
-    // Funções de CRUD
     savePatient,
     addPatient,
-
-    // Helpers
+    enableEditPatient,
+    disableEditPatient,
     formatWhatsappDisplay,
+    setError,
   };
 }

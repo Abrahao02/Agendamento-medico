@@ -58,6 +58,7 @@
   margin: 0;
 }
 
+
 /* Patient Meta */
 .patient-meta {
   display: flex;
@@ -136,17 +137,6 @@
 
 .appointment-card[data-status="Msg enviada"] {
   border-left: 4px solid var(--info-500);
-}
-.appointment-card[data-status="Cancelado"] {
-  border-left: 4px solid var(--color-danger);
-  opacity: 0.6;
-  background-color: var(--bg-light);
-}
-
-.appointment-card[data-status="Cancelado"] .appointment-date,
-.appointment-card[data-status="Cancelado"] .appointment-details {
-  text-decoration: line-through;
-  color: var(--text-secondary);
 }
 
 /* Appointment Date */
@@ -305,4 +295,30 @@
   .status-select-wrapper {
     min-width: auto;
   }
+}
+
+/* Container para header + botão */
+.patient-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--spacing-lg);
+  gap: var(--spacing-md);
+}
+
+/* Botão WhatsApp flutuando */
+.btn-whatsapp {
+  flex-shrink: 0;
+  background: var(--info-50);
+  color: var(--info-700);
+  border: 1px solid var(--info-300);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs) var(--spacing-md);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.btn-whatsapp:hover {
+  background: var(--info-100);
+  border-color: var(--info-500);
 }
