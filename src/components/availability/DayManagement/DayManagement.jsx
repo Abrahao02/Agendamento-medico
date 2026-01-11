@@ -1,8 +1,14 @@
+// ============================================
+// 📁 src/components/availability/DayManagement/DayManagement.jsx
+// ✅ VERSÃO FINAL CORRIGIDA
+// ============================================
+
 import { useState, useMemo, useRef, useEffect } from "react";
 import { FaCalendarDay } from "react-icons/fa";
 import SlotItem from "../SlotItem/SlotItem";
 import DayStats from "../DayStats/DayStats";
 import DeleteConfirmationModal from "../DeleteConfirmationModal/DeleteConfirmationModal";
+import { STATUS_GROUPS } from "../../../constants/appointmentStatus";
 import "./DayManagement.css";
 
 const ALL_TIMES = [
@@ -24,23 +30,18 @@ export default function DayManagement({
   onDeleteAppointment,
   onMarkAsCancelled,
 }) {
-  const [mode, setMode] = useState("add"); // "add" | "book"
+  const [mode, setMode] = useState("add");
   const [newSlot, setNewSlot] = useState("12:00");
   const [selectedPatient, setSelectedPatient] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
-  // Refs para scroll suave
   const formSectionRef = useRef(null);
 
-  /* ==============================
-     SCROLL SUAVE AO TROCAR MODO
-  ============================== */
   useEffect(() => {
     if (formSectionRef.current) {
       formSectionRef.current.scrollIntoView({
@@ -51,19 +52,37 @@ export default function DayManagement({
   }, [mode]);
 
   /* ==============================
-     COMBINED SLOTS (AVAIL + APPS)
+     ✅ FILTRAR APENAS APPOINTMENTS ATIVOS
+  ============================== */
+  const activeAppointments = useMemo(() => {
+    return appointments.filter(a => STATUS_GROUPS.ACTIVE.includes(a.status));
+  }, [appointments]);
+
+  /* ==============================
+     COMBINED SLOTS
+     ✅ Combina slots + appointments ATIVOS
   ============================== */
   const combinedSlots = useMemo(() => {
-    const bookedTimes = appointments.map((a) => a.time);
-    const combined = [...new Set([...allSlots, ...bookedTimes])];
+    const activeBookedTimes = activeAppointments.map((a) => a.time);
+    const combined = [...new Set([...allSlots, ...activeBookedTimes])];
     return combined.sort();
-  }, [allSlots, appointments]);
+  }, [allSlots, activeAppointments]);
 
   /* ==============================
      GET APPOINTMENT BY SLOT
+     ✅ CORRIGIDO: Prioriza appointments ATIVOS
   ============================== */
   const getAppointmentBySlot = (slot) => {
-    return appointments.find((a) => a.time === slot);
+    // Primeiro tenta encontrar um appointment ATIVO
+    const active = appointments.find(a => 
+      a.time === slot && STATUS_GROUPS.ACTIVE.includes(a.status)
+    );
+    
+    // Se encontrou ativo, retorna ele
+    if (active) return active;
+    
+    // Se não tem ativo, retorna cancelado (para mostrar histórico)
+    return appointments.find(a => a.time === slot);
   };
 
   /* ==============================
@@ -182,7 +201,7 @@ export default function DayManagement({
   /* ==============================
      AVAILABLE TIMES FOR BOOKING
   ============================== */
-  const bookedTimes = appointments.map((a) => a.time);
+  const bookedTimes = activeAppointments.map((a) => a.time);
   const availableTimesForBooking = ALL_TIMES.filter(
     (t) => !bookedTimes.includes(t)
   );
@@ -207,13 +226,12 @@ export default function DayManagement({
         <FaCalendarDay /> DIA {formattedDate}
       </h3>
 
-      {/* ESTATÍSTICAS DO DIA */}
       <DayStats 
-        appointments={appointments} 
+        appointments={appointments}
+        activeAppointments={activeAppointments}
         totalSlots={combinedSlots.length}
       />
 
-      {/* LISTA DE SLOTS */}
       <div className="slots-list">
         {combinedSlots.length === 0 ? (
           <p className="empty-message">Nenhum horário cadastrado</p>
@@ -242,7 +260,6 @@ export default function DayManagement({
         )}
       </div>
 
-      {/* MODE TOGGLE */}
       <div className="mode-toggle">
         <button
           className={mode === "add" ? "active" : ""}
@@ -264,9 +281,7 @@ export default function DayManagement({
         </button>
       </div>
 
-      {/* ✨ FORMULÁRIO COM REF PARA SCROLL */}
       <div ref={formSectionRef}>
-        {/* ADD SLOT MODE */}
         {mode === "add" && (
           <div className="add-slot">
             <input
@@ -281,7 +296,6 @@ export default function DayManagement({
           </div>
         )}
 
-        {/* BOOK APPOINTMENT MODE */}
         {mode === "book" && (
           <div className="book-slot">
             <select
@@ -317,10 +331,8 @@ export default function DayManagement({
         )}
       </div>
 
-      {/* ERROR MESSAGE */}
       {error && <p className="error-message">{error}</p>}
 
-      {/* DELETE/CANCEL MODAL */}
       <DeleteConfirmationModal
         isOpen={modalOpen}
         onClose={() => {

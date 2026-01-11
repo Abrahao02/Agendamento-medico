@@ -1,9 +1,12 @@
 // ============================================
 // 📁 src/utils/appointments/hasConflict.js
+// ✅ ATUALIZADO: Ignora appointments cancelados
 // ============================================
 
 /**
- * Verifica se já existe um agendamento no horário
+ * Verifica se já existe um agendamento ATIVO no horário
+ * ✅ Ignora appointments cancelados e não comparecidos
+ * 
  * @param {Array} appointments - Lista de appointments
  * @param {string} date - Data no formato YYYY-MM-DD
  * @param {string} time - Horário no formato HH:mm
@@ -11,19 +14,22 @@
  * 
  * @example
  * const appointments = [
- *   { date: "2026-01-15", time: "08:00" }
+ *   { date: "2026-01-15", time: "08:00", status: "Confirmado" },
+ *   { date: "2026-01-15", time: "09:00", status: "Cancelado" }
  * ];
  * 
  * hasAppointmentConflict(appointments, "2026-01-15", "08:00")
- * // true
+ * // true - horário ocupado
  * 
  * hasAppointmentConflict(appointments, "2026-01-15", "09:00")
- * // false
+ * // false - cancelado não bloqueia
  */
 export function hasAppointmentConflict(appointments, date, time) {
   if (!Array.isArray(appointments)) return false;
   
-  return appointments.some(
-    apt => apt.date === date && apt.time === time
+  return appointments.some(apt => 
+    apt.date === date && 
+    apt.time === time &&
+    STATUS_GROUPS.ACTIVE.includes(apt.status) // ✅ MUDANÇA PRINCIPAL
   );
 }

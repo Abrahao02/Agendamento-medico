@@ -7,6 +7,7 @@ export default function PatientCard({
   patient,
   isExpanded,
   changedIds,
+  lockedAppointments, // ✅ NOVO
   onToggle,
   onStatusChange,
   onSendWhatsapp,
@@ -51,41 +52,55 @@ export default function PatientCard({
 
       {isExpanded && (
         <div className="appointments-list">
-          {patient.appointments.map((app) => (
-            <div
-              key={app.id}
-              className={`appointment-card ${changedIds.has(app.id) ? "changed" : ""}`}
-              data-status={app.status}
-            >
-              <div className="appointment-date">
-                <span className="day">{formatDate(app.date, "day")}</span>
-                <span className="month">{formatDate(app.date, "month")}</span>
-                <span className="time">{app.time}</span>
-              </div>
-
-              <div className="appointment-details">
-                <div className="appointment-contact">
-                  <span>📱 {app.patientWhatsapp}</span>
+          {patient.appointments.map((app) => {
+            const isLocked = lockedAppointments.has(app.id); // ✅ NOVO
+            
+            return (
+              <div
+                key={app.id}
+                className={`appointment-card ${changedIds.has(app.id) ? "changed" : ""} ${isLocked ? "locked" : ""}`}
+                data-status={app.status}
+              >
+                <div className="appointment-date">
+                  <span className="day">{formatDate(app.date, "day")}</span>
+                  <span className="month">{formatDate(app.date, "month")}</span>
+                  <span className="time">{app.time}</span>
                 </div>
-                <div className="appointment-value">R$ {(app.value || 0).toFixed(2)}</div>
-              </div>
 
-              <div className="status-select-wrapper">
-                <select
-                  value={app.status}
-                  onChange={(e) => onStatusChange(app.id, e.target.value)}
-                  className="status-select"
-                  data-status={app.status}
-                >
-                  <option value="Pendente">Pendente</option>
-                  <option value="Confirmado">Confirmado</option>
-                  <option value="Não Compareceu">Não Compareceu</option>
-                  <option value="Msg enviada">Msg enviada</option>
-                  <option value="Cancelado">Cancelado</option>
-                </select>
+                <div className="appointment-details">
+                  <div className="appointment-contact">
+                    <span>📱 {app.patientWhatsapp}</span>
+                  </div>
+                  <div className="appointment-value">R$ {(app.value || 0).toFixed(2)}</div>
+                </div>
+
+                <div className="status-select-wrapper">
+                  {/* ✅ ATUALIZADO: Adiciona disabled e título quando bloqueado */}
+                  <select
+                    value={app.status}
+                    onChange={(e) => onStatusChange(app.id, e.target.value)}
+                    className="status-select"
+                    data-status={app.status}
+                    disabled={isLocked}
+                    title={isLocked ? "Horário reagendado - Status bloqueado" : ""}
+                  >
+                    <option value="Pendente">Pendente</option>
+                    <option value="Confirmado">Confirmado</option>
+                    <option value="Não Compareceu">Não Compareceu</option>
+                    <option value="Msg enviada">Msg enviada</option>
+                    <option value="Cancelado">Cancelado</option>
+                  </select>
+                  
+                  {/* ✅ NOVO: Indicador visual de bloqueio */}
+                  {isLocked && (
+                    <span className="locked-indicator" title="Horário reagendado">
+                      🔒
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

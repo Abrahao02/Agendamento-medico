@@ -1,3 +1,6 @@
+// ============================================
+// 📁 src/pages/Availability.jsx - VERSÃO CORRIGIDA
+// ============================================
 import React from "react";
 
 // Hook
@@ -28,7 +31,7 @@ export default function Availability() {
     handleAddSlot,
     handleRemoveSlot,
     handleBookAppointment,
-    deleteAppointment, // ✅ ADICIONADO
+    deleteAppointment,
     markAsCancelled,
     
     // Getters
@@ -40,6 +43,7 @@ export default function Availability() {
 
   /* ==============================
      CALENDAR: TILE CONTENT (BADGES)
+     ✅ CORRIGIDO: getCalendarTileData já considera apenas ativos
   ============================== */
   const tileContent = ({ date, view }) => {
     if (view !== "month") return null;

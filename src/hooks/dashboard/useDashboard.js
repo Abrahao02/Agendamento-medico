@@ -1,6 +1,8 @@
 // ============================================
-// 📁 src/hooks/dashboard/useDashboard.js - MELHORADO
+// 📁 src/hooks/dashboard/useDashboard.js - VERSÃO FINAL
+// ✅ ATUALIZADO: Considera apenas appointments ATIVOS nos cálculos
 // ============================================
+
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
@@ -13,7 +15,6 @@ import {
 } from "../../utils/filters/availabilityFilters";
 import {
   calculateAppointmentStats,
-  calculateStatusSummary,
 } from "../../utils/stats/appointmentStats";
 import { generateYearRange } from "../../utils/helpers/yearHelpers";
 import { 
@@ -22,6 +23,7 @@ import {
   calculateConversionRate,
   calculateMonthComparison 
 } from "../../utils/stats/enhancedStats";
+import { STATUS_GROUPS } from "../../constants/appointmentStatus";
 
 export const useDashboard = () => {
   const user = auth.currentUser;
@@ -97,7 +99,7 @@ export const useDashboard = () => {
     fetchData();
   }, [user]);
 
-  // COMPUTED VALUES
+  // ✅ APPOINTMENTS FILTRADOS (todos os status)
   const filteredAppointments = useMemo(() =>
     filterAppointments(appointments, {
       startDate: selectedDateFrom,
@@ -107,6 +109,7 @@ export const useDashboard = () => {
     }), [appointments, selectedDateFrom, selectedDateTo, selectedMonth, selectedYear]
   );
 
+  // ✅ AVAILABILITY FILTRADO (considera apenas appointments ATIVOS)
   const filteredAvailability = useMemo(() => {
     const inPeriod = filterAppointments(availability.map(d => ({ date: d.date })), {
       startDate: selectedDateFrom,
@@ -115,16 +118,28 @@ export const useDashboard = () => {
       selectedYear,
     });
     const filteredDates = new Set(inPeriod.map(d => d.date));
-    return filterAvailableSlots(availability.filter(d => filteredDates.has(d.date)), appointments);
+    
+    // ✅ filterAvailableSlots já considera apenas appointments ATIVOS
+    return filterAvailableSlots(
+      availability.filter(d => filteredDates.has(d.date)), 
+      appointments
+    );
   }, [availability, appointments, selectedDateFrom, selectedDateTo, selectedMonth, selectedYear]);
 
   const slotsOpen = useMemo(() => countAvailableSlots(filteredAvailability), [filteredAvailability]);
 
-  // ✨ NOVAS ESTATÍSTICAS
+  // ✅ ESTATÍSTICAS APRIMORADAS
   const enhancedStats = useMemo(() => {
+    // calculateAppointmentStats já filtra por STATUS_GROUPS.ACTIVE internamente
     const basicStats = calculateAppointmentStats(filteredAppointments, priceMap);
+    
+    // calculateGroupedStats mostra TODOS os status (incluindo cancelados)
     const groupedStats = calculateGroupedStats(filteredAppointments);
+    
+    // calculateNewPatientsStats considera apenas appointments ATIVOS
     const newPatientsStats = calculateNewPatientsStats(appointments, selectedMonth, selectedYear);
+    
+    // calculateConversionRate usa apenas appointments ATIVOS
     const conversionRate = calculateConversionRate(filteredAppointments);
     
     // Comparação com mês anterior
@@ -136,6 +151,7 @@ export const useDashboard = () => {
       selectedYear: prevYear,
     });
     
+    // calculateMonthComparison compara apenas appointments ATIVOS
     const appointmentsComparison = calculateMonthComparison(
       filteredAppointments,
       previousMonthAppointments
@@ -152,6 +168,7 @@ export const useDashboard = () => {
     };
   }, [filteredAppointments, priceMap, slotsOpen, appointments, selectedMonth, selectedYear]);
 
+  // ✅ RESUMO DE STATUS (mostra TODOS os status)
   const statusSummary = useMemo(() => {
     const grouped = calculateGroupedStats(filteredAppointments);
     return {
@@ -162,6 +179,7 @@ export const useDashboard = () => {
     };
   }, [filteredAppointments]);
 
+  // ✅ DADOS DO GRÁFICO (mostra TODOS os status)
   const chartData = useMemo(() => {
     const byDay = {};
     filteredAppointments.forEach(a => {
@@ -180,12 +198,18 @@ export const useDashboard = () => {
     return Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date));
   }, [filteredAppointments]);
 
-  const upcomingAppointments = useMemo(() =>
-    filteredAppointments
+  // ✅ PRÓXIMAS CONSULTAS (apenas appointments ATIVOS futuros)
+  const upcomingAppointments = useMemo(() => {
+    // Filtra apenas appointments ATIVOS
+    const activeAppointments = filteredAppointments.filter(a => 
+      STATUS_GROUPS.ACTIVE.includes(a.status)
+    );
+
+    return activeAppointments
       .filter(a => new Date(`${a.date}T${a.time || "00:00"}:00`) >= today)
       .sort((a, b) => new Date(`${a.date}T${a.time || "00:00"}:00`) - new Date(`${b.date}T${b.time || "00:00"}:00`))
-      .slice(0, 5)
-  , [filteredAppointments, today]);
+      .slice(0, 5);
+  }, [filteredAppointments, today]);
 
   const availableYears = useMemo(() => generateYearRange(1), []);
 

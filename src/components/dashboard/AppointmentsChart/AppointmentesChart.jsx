@@ -1,4 +1,8 @@
-// src/components/dashboard/AppointmentsChart/AppointmentsChart.jsx
+// ============================================
+// 📁 src/components/dashboard/AppointmentsChart/AppointmentsChart.jsx
+// ✅ ATUALIZADO: Mostra todos os status do sistema
+// ============================================
+
 import React from "react";
 import {
   ResponsiveContainer,
@@ -11,13 +15,8 @@ import {
   CartesianGrid,
 } from "recharts";
 import formatDate from "../../../utils/formatter/formatDate";
+import { APPOINTMENT_STATUS, STATUS_CONFIG } from "../../../constants/appointmentStatus";
 import "./AppointmentsChart.css";
-
-const STATUS_COLORS = {
-  Confirmado: "#16a34a",
-  Pendente: "#f59e0b",
-  "Não Compareceu": "#ef4444",
-};
 
 export default function AppointmentsChart({ data = [] }) {
   if (data.length === 0) {
@@ -64,23 +63,40 @@ export default function AppointmentsChart({ data = [] }) {
               wrapperStyle={{ paddingTop: "20px" }}
               iconType="circle"
             />
+            {/* ✅ Confirmado */}
             <Bar
-              dataKey="Confirmado"
+              dataKey={APPOINTMENT_STATUS.CONFIRMED}
               stackId="a"
-              fill={STATUS_COLORS.Confirmado}
+              fill={STATUS_CONFIG[APPOINTMENT_STATUS.CONFIRMED].chartColor}
               radius={[4, 4, 0, 0]}
               name="Confirmados"
             />
+            {/* ✅ Pendente */}
             <Bar
-              dataKey="Pendente"
+              dataKey={APPOINTMENT_STATUS.PENDING}
               stackId="a"
-              fill={STATUS_COLORS.Pendente}
+              fill={STATUS_CONFIG[APPOINTMENT_STATUS.PENDING].chartColor}
               name="Pendentes"
             />
+            {/* ✅ Msg enviada */}
             <Bar
-              dataKey="Não Compareceu"
+              dataKey={APPOINTMENT_STATUS.MESSAGE_SENT}
               stackId="a"
-              fill={STATUS_COLORS["Não Compareceu"]}
+              fill={STATUS_CONFIG[APPOINTMENT_STATUS.MESSAGE_SENT].chartColor}
+              name="Msg enviada"
+            />
+            {/* ✅ Cancelado */}
+            <Bar
+              dataKey={APPOINTMENT_STATUS.CANCELLED}
+              stackId="a"
+              fill={STATUS_CONFIG[APPOINTMENT_STATUS.CANCELLED].chartColor}
+              name="Cancelados"
+            />
+            {/* ✅ Não Compareceu */}
+            <Bar
+              dataKey={APPOINTMENT_STATUS.NO_SHOW}
+              stackId="a"
+              fill={STATUS_CONFIG[APPOINTMENT_STATUS.NO_SHOW].chartColor}
               name="Não compareceram"
             />
           </BarChart>

@@ -1,5 +1,5 @@
 // ============================================
-// 📁 src/pages/Agenda.jsx - REFATORADO
+// 📁 src/pages/Agenda.jsx - VERSÃO FINAL
 // ============================================
 import { useState } from "react";
 
@@ -21,6 +21,7 @@ export default function Agenda() {
     patientStatus,
     whatsappConfig,
     hasUnsavedChanges,
+    lockedAppointments, // ✅ NOVO
     handleStatusChange,
     handleAddPatient,
     handleSendWhatsapp,
@@ -63,6 +64,7 @@ export default function Agenda() {
         statusUpdates={statusUpdates}
         referenceNames={referenceNames}
         patientStatus={patientStatus}
+        lockedAppointments={lockedAppointments}
         onStatusChange={handleStatusChange}
         onAddPatient={handleAddPatient}
         onSendWhatsapp={handleSendWhatsapp}

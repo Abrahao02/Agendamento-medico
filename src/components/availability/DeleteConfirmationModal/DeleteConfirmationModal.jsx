@@ -127,7 +127,7 @@ export default function DeleteConfirmationModal({
             </p>
 
             <ul className="option-list">
-              <li>O horário permanecerá ocupado</li>
+              <li>O horário será liberado automaticamente</li>
               <li>Será contabilizado nas estatísticas</li>
               <li>Manterá o histórico do paciente</li>
             </ul>

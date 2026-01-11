@@ -1,3 +1,8 @@
+// ============================================
+// 📁 src/hooks/appointments/useAvailability.js
+// ✅ ATUALIZADO: removeSlot agora considera apenas appointments ATIVOS
+// ============================================
+
 import { useEffect, useState, useCallback } from "react";
 import { auth } from "../../services/firebase";
 
@@ -15,12 +20,9 @@ import { hasAppointmentConflict } from "../../utils/appointments/hasConflict";
 import { sortAppointments } from "../../utils/filters/appointmentFilters";
 
 // Constants
-import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
+import { APPOINTMENT_STATUS, STATUS_GROUPS } from "../../constants/appointmentStatus";
 
 export const useAvailability = () => {
-  // ==============================
-  // AUTH (garantido pelo PrivateRoute)
-  // ==============================
   const user = auth.currentUser;
 
   if (!user) {
@@ -37,25 +39,18 @@ export const useAvailability = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Estado da UI (movido do componente)
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarValue, setCalendarValue] = useState(new Date());
 
   /* ==============================
      HELPERS INTERNOS
   ============================== */
-  
-  /**
-   * Formata Date para YYYY-MM-DD
-   */
+
   const formatLocalDate = useCallback((date) => {
     if (!date) return "";
     return formatDateToQuery(date);
   }, []);
 
-  /**
-   * Inicializa com data de hoje
-   */
   useEffect(() => {
     const today = new Date();
     setSelectedDate(formatLocalDate(today));
@@ -83,13 +78,11 @@ export const useAvailability = () => {
         if (doctorResult.success) setDoctor(doctorResult.data);
 
         if (availResult.success) {
-          // Valida e ordena availability
           const validAvailability = validateAvailability(availResult.data, false);
           setAvailability(validAvailability);
         }
 
         if (appointmentsResult.success) {
-          // Ordena appointments por data/hora
           const sortedAppointments = sortAppointments(appointmentsResult.data);
           setAppointments(sortedAppointments);
         }
@@ -111,14 +104,11 @@ export const useAvailability = () => {
      GETTERS - AVAILABILITY
   ============================== */
 
-  /**
-   * Retorna slots disponíveis (não agendados) para uma data
-   */
   const getAvailabilityForDate = useCallback((date) => {
     const dayAvailability = availability.find(a => a.date === date);
     if (!dayAvailability || !dayAvailability.slots) return [];
 
-    // Usa util para pegar slots agendados
+    // ✅ getBookedSlotsForDate já filtra apenas appointments ativos
     const bookedSlots = getBookedSlotsForDate(appointments, date);
 
     return dayAvailability.slots
@@ -126,61 +116,53 @@ export const useAvailability = () => {
       .sort();
   }, [availability, appointments]);
 
-  /**
-   * Retorna todos os slots (agendados ou não) para uma data
-   */
   const getAllSlotsForDate = useCallback((date) => {
     const dayAvailability = availability.find(a => a.date === date);
     return dayAvailability?.slots || [];
   }, [availability]);
 
-  /**
-   * Retorna appointments de uma data específica
-   */
   const getAppointmentsForDate = useCallback((date) => {
     return appointments
       .filter(apt => apt.date === date)
       .sort((a, b) => (a.time || "").localeCompare(b.time || ""));
   }, [appointments]);
 
-  /**
-   * Retorna horários agendados de uma data
-   */
   const getBookedSlotsForDateCached = useCallback((date) => {
     return getBookedSlotsForDate(appointments, date);
   }, [appointments]);
 
-  /**
-   * Verifica se um slot está disponível
-   */
   const isSlotAvailable = useCallback((date, time) => {
     const dayAvailability = availability.find(a => a.date === date);
     if (!dayAvailability) return false;
 
-    // Usa util para verificar conflito
+    // ✅ hasAppointmentConflict já filtra apenas appointments ativos
     return dayAvailability.slots.includes(time) &&
       !hasAppointmentConflict(appointments, date, time);
   }, [availability, appointments]);
 
-  /* ==============================
-     CALENDAR DATA
-  ============================== */
-
   /**
    * Dados para renderizar badges no calendário
+   * ✅ CORRIGIDO: Considera apenas appointments ATIVOS
    */
   const getCalendarTileData = useCallback((dateStr) => {
     const dayAvailability = availability.find(a => a.date === dateStr) || { slots: [] };
-    const dayAppointments = appointments.filter(a => a.date === dateStr);
 
+    // ✅ FILTRA apenas appointments ATIVOS para essa data
+    const activeAppointmentsForDate = appointments.filter(a =>
+      a.date === dateStr && STATUS_GROUPS.ACTIVE.includes(a.status)
+    );
+
+    // ✅ Slots ocupados = apenas appointments ativos
     const bookedTimes = getBookedSlotsForDate(appointments, dateStr);
+
+    // ✅ Slots livres = slots cadastrados - appointments ativos
     const freeSlotsArray = dayAvailability.slots.filter(slot => !bookedTimes.includes(slot));
 
     return {
       hasFreeSlots: freeSlotsArray.length > 0,
-      hasBookedSlots: dayAppointments.length > 0,
+      hasBookedSlots: activeAppointmentsForDate.length > 0, // ✅ MUDANÇA PRINCIPAL
       freeCount: freeSlotsArray.length,
-      bookedCount: dayAppointments.length,
+      bookedCount: activeAppointmentsForDate.length, // ✅ MUDANÇA PRINCIPAL
       totalCount: dayAvailability.slots.length,
     };
   }, [availability, appointments]);
@@ -189,9 +171,6 @@ export const useAvailability = () => {
      ACTIONS - AVAILABILITY
   ============================== */
 
-  /**
-   * Adiciona um slot de disponibilidade
-   */
   const addSlot = async (date, slot) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
@@ -207,14 +186,14 @@ export const useAvailability = () => {
       setAvailability(prev => {
         const existing = prev.find(a => a.date === date);
         if (existing) {
-          return prev.map(a => 
-            a.date === date 
-              ? { ...a, slots: [...a.slots, slot].sort() } 
+          return prev.map(a =>
+            a.date === date
+              ? { ...a, slots: [...a.slots, slot].sort() }
               : a
           );
         } else {
           return [
-            ...prev, 
+            ...prev,
             { id: `${user.uid}_${date}`, doctorId: user.uid, date, slots: [slot] }
           ].sort((a, b) => a.date.localeCompare(b.date));
         }
@@ -228,14 +207,15 @@ export const useAvailability = () => {
 
   /**
    * Remove um slot de disponibilidade
+   * ✅ ATUALIZADO: Valida apenas contra appointments ATIVOS
    */
   const removeSlot = async (date, slot) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
     try {
-      // Usa util para verificar conflito
+      // ✅ MUDANÇA: hasAppointmentConflict já filtra apenas ativos
       if (hasAppointmentConflict(appointments, date, slot)) {
-        throw new Error("Não é possível remover um horário com agendamento. Cancele o agendamento primeiro.");
+        throw new Error("Não é possível remover um horário com agendamento ativo. Cancele o agendamento primeiro.");
       }
 
       const result = await removeAvailability(user.uid, date, slot);
@@ -258,47 +238,51 @@ export const useAvailability = () => {
 
   /**
    * Cria um novo agendamento
-   * ✨ NOVO: Cria o slot automaticamente se não existir
+   * ✅ Cria o slot automaticamente se não existir
    */
   const bookAppointment = async ({ patientId, date, time }) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
     try {
-      // Usa util para verificar conflito
+      // ✅ hasAppointmentConflict já filtra apenas ativos
       if (hasAppointmentConflict(appointments, date, time)) {
-        throw new Error("Já existe um agendamento neste horário");
+        throw new Error("Já existe um agendamento ativo neste horário");
       }
 
       const patient = patients.find(p => p.id === patientId);
       if (!patient) throw new Error("Paciente não encontrado");
 
-      // ✨ NOVO: Verifica se o slot existe, se não, cria automaticamente
+      // ✅ Verifica se o slot existe, se não, cria automaticamente
       const dayAvailability = availability.find(a => a.date === date);
       const slotExists = dayAvailability?.slots?.includes(time);
 
       if (!slotExists) {
         console.log(`🔧 Criando slot ${time} automaticamente para ${date}`);
+
         const slotResult = await saveAvailability(user.uid, date, time);
+
         if (!slotResult.success) {
-          console.warn("Aviso: não foi possível criar o slot automaticamente");
-        } else {
-          // Atualiza estado local
-          setAvailability(prev => {
-            const existing = prev.find(a => a.date === date);
-            if (existing) {
-              return prev.map(a => 
-                a.date === date 
-                  ? { ...a, slots: [...a.slots, time].sort() } 
-                  : a
-              );
-            } else {
-              return [
-                ...prev, 
-                { id: `${user.uid}_${date}`, doctorId: user.uid, date, slots: [time] }
-              ].sort((a, b) => a.date.localeCompare(b.date));
-            }
-          });
+          throw new Error(`Erro ao criar slot: ${slotResult.error}`);
         }
+
+        // Atualiza estado local
+        setAvailability(prev => {
+          const existing = prev.find(a => a.date === date);
+          if (existing) {
+            return prev.map(a =>
+              a.date === date
+                ? { ...a, slots: [...a.slots, time].sort() }
+                : a
+            );
+          } else {
+            return [
+              ...prev,
+              { id: `${user.uid}_${date}`, doctorId: user.uid, date, slots: [time] }
+            ].sort((a, b) => a.date.localeCompare(b.date));
+          }
+        });
+
+        console.log(`✅ Slot ${time} criado com sucesso`);
       }
 
       const appointmentData = {
@@ -326,7 +310,7 @@ export const useAvailability = () => {
 
   /**
    * Deleta um agendamento (remove completamente)
-   * ✨ Mantém o slot na availability
+   * ✅ Mantém o slot na availability
    */
   const handleDeleteAppointment = async (appointmentId) => {
     try {
@@ -343,21 +327,23 @@ export const useAvailability = () => {
 
   /**
    * Marca agendamento como cancelado (apenas status)
-   * ✨ Mantém o slot ocupado
+   * ✅ Mantém o slot ocupado no banco, mas libera na interface
    */
   const markAsCancelled = async (appointmentId) => {
     try {
       const appointment = appointments.find(a => a.id === appointmentId);
       if (!appointment) throw new Error("Agendamento não encontrado");
 
-      const result = await updateAppointment(appointmentId, { 
-        status: APPOINTMENT_STATUS.CANCELLED 
+      const result = await updateAppointment(appointmentId, {
+        status: APPOINTMENT_STATUS.CANCELLED
       });
       if (!result.success) throw new Error(result.error);
 
-      setAppointments(prev => prev.map(a => 
-        a.id === appointmentId 
-          ? { ...a, status: APPOINTMENT_STATUS.CANCELLED } 
+      // ✅ Atualiza estado local - o slot será automaticamente liberado
+      // porque os getters filtram por STATUS_GROUPS.ACTIVE
+      setAppointments(prev => prev.map(a =>
+        a.id === appointmentId
+          ? { ...a, status: APPOINTMENT_STATUS.CANCELLED }
           : a
       ));
 
@@ -368,21 +354,15 @@ export const useAvailability = () => {
   };
 
   /* ==============================
-     UI HANDLERS (movidos do componente)
+     UI HANDLERS
   ============================== */
 
-  /**
-   * Seleciona uma data no calendário
-   */
   const handleSelectDate = useCallback((date) => {
     const dateStr = formatLocalDate(date);
     setSelectedDate(dateStr);
     setCalendarValue(date);
   }, [formatLocalDate]);
 
-  /**
-   * Adiciona slot com validação de data
-   */
   const handleAddSlot = useCallback(async (slot) => {
     if (!selectedDate) {
       return { success: false, error: "Nenhuma data selecionada" };
@@ -390,9 +370,6 @@ export const useAvailability = () => {
     return await addSlot(selectedDate, slot);
   }, [selectedDate]);
 
-  /**
-   * Remove slot com validação de data
-   */
   const handleRemoveSlot = useCallback(async (slot) => {
     if (!selectedDate) {
       return { success: false, error: "Nenhuma data selecionada" };
@@ -400,9 +377,6 @@ export const useAvailability = () => {
     return await removeSlot(selectedDate, slot);
   }, [selectedDate]);
 
-  /**
-   * Cria agendamento com validação de data
-   */
   const handleBookAppointment = useCallback(async (patientId, time) => {
     if (!selectedDate) {
       return { success: false, error: "Nenhuma data selecionada" };
@@ -422,29 +396,29 @@ export const useAvailability = () => {
     availability,
     appointments,
     patients,
-    
+
     // Estado da UI
     selectedDate,
     calendarValue,
-    
+
     // Handlers de UI
     handleSelectDate,
     handleAddSlot,
     handleRemoveSlot,
     handleBookAppointment,
-    
+
     // Ações diretas
     deleteAppointment: handleDeleteAppointment,
     markAsCancelled,
-    
-    // Getters ✅ CORRIGIDO - getAllSlotsForDate agora está incluído
+
+    // Getters
     getAvailabilityForDate,
     getAllSlotsForDate,
     getAppointmentsForDate,
     getBookedSlotsForDate: getBookedSlotsForDateCached,
     isSlotAvailable,
     getCalendarTileData,
-    
+
     // Helpers
     formatLocalDate,
   };

@@ -52,3 +52,113 @@
     gap: 0.75rem;
   }
 }
+
+/* ✅ Item bloqueado */
+.slot-item.locked-item {
+  background-color: var(--bg-light);
+  opacity: 0.85;
+}
+
+/* ✅ Wrapper do select com ícone */
+.status-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 140px;
+}
+
+/* ✅ Select bloqueado */
+.status-select.locked-select {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.7;
+  color: var(--text-secondary);
+}
+
+/* ✅ Ícone de cadeado */
+.lock-icon {
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ✅ Mensagem de bloqueio (tooltip) */
+.locked-message {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0.5rem;
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: var(--shadow-md);
+  animation: fadeInTooltip 0.2s ease-out;
+  font-weight: var(--font-medium);
+}
+
+@keyframes fadeInTooltip {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ===========================
+   Responsivo - Mobile
+=========================== */
+@media (max-width: 1200px) {
+  .status-select-wrapper {
+    width: 100%;
+  }
+
+  .locked-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin-top: 0;
+    max-width: 90%;
+    white-space: normal;
+    text-align: center;
+    padding: 1rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+}
+
+/* ===========================
+   Acessibilidade
+=========================== */
+.status-select:disabled {
+  cursor: not-allowed;
+}
+
+.slot-item button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ===========================
+   Estados de hover para locked
+=========================== */
+.slot-item.locked-item:hover {
+  /* Menos destaque no hover para itens bloqueados */
+  box-shadow: var(--shadow-sm);
+}
+
+.status-select.locked-select:hover {
+  /* Remove efeito hover do select bloqueado */
+  border-color: var(--border-medium);
+}

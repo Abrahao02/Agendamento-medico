@@ -322,3 +322,72 @@
   background: var(--info-100);
   border-color: var(--info-500);
 }
+
+/* ✅ Adicione ao PatientCard.css existente */
+
+/* Appointment bloqueado */
+.appointment-card.locked {
+  opacity: 0.7;
+  background-color: #f8f9fa;
+  border-left: 3px solid #6c757d;
+}
+
+/* Select desabilitado */
+.status-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: #e9ecef;
+}
+
+/* Wrapper do status quando bloqueado */
+.appointment-card.locked .status-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Indicador de cadeado */
+.locked-indicator {
+  font-size: 1.2rem;
+  cursor: help;
+  animation: pulse-lock 2s ease-in-out infinite;
+}
+
+@keyframes pulse-lock {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Hover no appointment bloqueado mostra feedback visual */
+.appointment-card.locked:hover {
+  background-color: #f1f3f5;
+}
+
+/* Tooltip melhorado para locked appointments */
+.appointment-card.locked .status-select:disabled:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background-color: #333;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  margin-bottom: 5px;
+}
+
+/* Badge de status quando bloqueado */
+.appointment-card.locked .status-select[data-status="Cancelado"],
+.appointment-card.locked .status-select[data-status="Não Compareceu"] {
+  border: 2px solid #6c757d;
+}

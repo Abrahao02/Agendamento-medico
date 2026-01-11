@@ -1,15 +1,14 @@
 // ============================================
 // 📁 src/utils/filters/availabilityFilters.js
+// ✅ ATUALIZADO: Considera apenas appointments ATIVOS
 // ============================================
 
-// ✅ IMPORTAR getTodayString
 import { getTodayString } from "./dateFilters";
+import { STATUS_GROUPS } from "../../constants/appointmentStatus";
 
 /**
  * Remove slots já agendados da disponibilidade
- * @param {Array} availability - Lista de disponibilidades
- * @param {Array} appointments - Lista de appointments
- * @returns {Array} Availability com slots livres
+ * ✅ ATUALIZADO: Considera apenas appointments ATIVOS como ocupados
  */
 export const filterAvailableSlots = (availability, appointments) => {
   if (!Array.isArray(availability) || !Array.isArray(appointments)) {
@@ -18,9 +17,12 @@ export const filterAvailableSlots = (availability, appointments) => {
 
   return availability
     .map(day => {
-      // Busca horários já agendados nessa data
+      // ✅ Busca apenas horários ATIVOS agendados nessa data
       const bookedSlots = appointments
-        .filter(a => a.date === day.date)
+        .filter(a => 
+          a.date === day.date && 
+          STATUS_GROUPS.ACTIVE.includes(a.status) // ✅ MUDANÇA PRINCIPAL
+        )
         .map(a => a.time);
 
       // Retorna apenas slots livres
@@ -34,14 +36,11 @@ export const filterAvailableSlots = (availability, appointments) => {
 
 /**
  * Valida e filtra availability com critérios de qualidade
- * @param {Array} availability - Lista de disponibilidades
- * @param {boolean} futureOnly - Apenas datas futuras
- * @returns {Array} Availability válida e ordenada
  */
 export const validateAvailability = (availability, futureOnly = true) => {
   if (!Array.isArray(availability)) return [];
 
-  const today = getTodayString(); // ✅ Agora está importada
+  const today = getTodayString();
 
   return availability
     .filter(day => 
@@ -56,8 +55,6 @@ export const validateAvailability = (availability, futureOnly = true) => {
 
 /**
  * Conta total de slots disponíveis
- * @param {Array} availability - Lista de disponibilidades
- * @returns {number} Total de slots
  */
 export const countAvailableSlots = (availability) => {
   if (!Array.isArray(availability)) return 0;
@@ -70,10 +67,7 @@ export const countAvailableSlots = (availability) => {
 
 /**
  * Obtém slots disponíveis para uma data específica
- * @param {Array} availability - Lista de disponibilidades
- * @param {Array} appointments - Lista de appointments
- * @param {string} date - Data a buscar (YYYY-MM-DD)
- * @returns {Array} Lista de horários disponíveis
+ * ✅ ATUALIZADO: Considera apenas appointments ATIVOS
  */
 export const getAvailableSlotsForDate = (availability, appointments, date) => {
   if (!date) return [];
@@ -83,8 +77,12 @@ export const getAvailableSlotsForDate = (availability, appointments, date) => {
     return [];
   }
 
+  // ✅ Busca apenas appointments ATIVOS
   const bookedSlots = appointments
-    .filter(a => a.date === date)
+    .filter(a => 
+      a.date === date && 
+      STATUS_GROUPS.ACTIVE.includes(a.status)
+    )
     .map(a => a.time);
 
   return dayAvailability.slots

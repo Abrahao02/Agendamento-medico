@@ -9,6 +9,7 @@ export default function PatientsList({
   patientsData,
   expandedPatients,
   changedIds,
+  lockedAppointments, // ✅ NOVO
   onTogglePatient,
   onStatusChange,
   onSendWhatsapp,
@@ -31,6 +32,7 @@ export default function PatientsList({
           patient={patient}
           isExpanded={expandedPatients.has(patient.name)}
           changedIds={changedIds}
+          lockedAppointments={lockedAppointments} // ✅ NOVO
           onToggle={() => onTogglePatient(patient.name)}
           onStatusChange={onStatusChange}
           onSendWhatsapp={onSendWhatsapp}

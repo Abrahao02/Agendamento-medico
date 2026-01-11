@@ -1,8 +1,14 @@
+// ============================================
+// 📁 src/components/availability/DayStats/DayStats.jsx
+// ✅ ATUALIZADO: Calcula slots livres baseado em appointments ATIVOS
+// ============================================
+
 import { CheckCircle, Clock, XCircle, Calendar } from 'lucide-react';
 import { APPOINTMENT_STATUS, isStatusInGroup } from '../../../constants/appointmentStatus';
 import './DayStats.css';
 
-export default function DayStats({ appointments, totalSlots }) {
+export default function DayStats({ appointments, activeAppointments, totalSlots }) {
+  // Conta por grupo de status (usa TODOS os appointments)
   const confirmed = appointments.filter(a => 
     isStatusInGroup(a.status, 'CONFIRMED')
   ).length;
@@ -15,9 +21,12 @@ export default function DayStats({ appointments, totalSlots }) {
     isStatusInGroup(a.status, 'CANCELLED')
   ).length;
 
-  const freeSlots = totalSlots - appointments.length;
+  // ✅ MUDANÇA PRINCIPAL: Slots livres = total - appointments ATIVOS
+  const freeSlots = totalSlots - (activeAppointments?.length || 0);
+  
+  // ✅ Taxa de ocupação baseada em appointments ATIVOS
   const occupancyRate = totalSlots > 0 
-    ? Math.round((appointments.length / totalSlots) * 100) 
+    ? Math.round(((activeAppointments?.length || 0) / totalSlots) * 100) 
     : 0;
 
   const stats = [
@@ -73,7 +82,8 @@ export default function DayStats({ appointments, totalSlots }) {
           />
         </div>
         <div className="occupancy-legend">
-          <span>{appointments.length} agendados</span>
+          {/* ✅ Mostra apenas appointments ATIVOS no cálculo */}
+          <span>{activeAppointments?.length || 0} agendados</span>
           <span>{totalSlots} total</span>
         </div>
       </div>

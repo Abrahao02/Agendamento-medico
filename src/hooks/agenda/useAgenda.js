@@ -6,7 +6,7 @@ import { collection, query, where, getDocs, doc, updateDoc, getDoc } from "fireb
 import * as PatientService from "../../services/firebase/patients.service";
 
 // Constants
-import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
+import { APPOINTMENT_STATUS, STATUS_GROUPS } from "../../constants/appointmentStatus";
 
 // Utils
 import { formatDateToQuery } from "../../utils/filters/dateFilters";
@@ -29,6 +29,7 @@ export default function useAgenda(currentDate) {
   const [referenceNames, setReferenceNames] = useState({});
   const [patientStatus, setPatientStatus] = useState({});
   const [whatsappConfig, setWhatsappConfig] = useState(null);
+  const [lockedAppointments, setLockedAppointments] = useState(new Set()); // ✅ NOVO
 
   const hasUnsavedChanges = useRef(false);
   const currentDateStr = formatDateToQuery(currentDate);
@@ -78,11 +79,13 @@ export default function useAgenda(currentDate) {
 
         const initialStatus = {};
         data.forEach((a) => {
-          // Usa status padrão se não existir
           initialStatus[a.id] = a.status || APPOINTMENT_STATUS.PENDING;
         });
         setStatusUpdates(initialStatus);
         hasUnsavedChanges.current = false;
+
+        // ✅ NOVO: Identifica appointments que não podem mais mudar de status
+        identifyLockedAppointments(data);
 
         await loadPatientData(data);
       } catch (err) {
@@ -92,6 +95,33 @@ export default function useAgenda(currentDate) {
 
     fetchAppointments();
   }, [user, currentDateStr]);
+
+  // ✅ NOVA FUNÇÃO: Identifica appointments bloqueados
+  const identifyLockedAppointments = (appointmentsList) => {
+    const locked = new Set();
+
+    // Para cada appointment cancelado, verifica se o horário foi reagendado
+    appointmentsList.forEach((appt) => {
+      if (!STATUS_GROUPS.ACTIVE.includes(appt.status)) {
+        // É cancelado ou não compareceu
+        
+        // Busca se existe outro appointment ATIVO no mesmo horário
+        const hasActiveInSameSlot = appointmentsList.some(
+          other => 
+            other.id !== appt.id &&
+            other.time === appt.time &&
+            STATUS_GROUPS.ACTIVE.includes(other.status)
+        );
+
+        if (hasActiveInSameSlot) {
+          // Horário foi reagendado → Bloqueia o cancelado
+          locked.add(appt.id);
+        }
+      }
+    });
+
+    setLockedAppointments(locked);
+  };
 
   // ------------------------------
   // Carregar dados dos pacientes
@@ -126,20 +156,66 @@ export default function useAgenda(currentDate) {
   };
 
   // ------------------------------
-  // Atualizar status
+  // ✅ ATUALIZADO: Atualizar status com validação
   // ------------------------------
   const handleStatusChange = async (id, value) => {
+    // ❌ Bloqueia se o appointment está travado
+    if (lockedAppointments.has(id)) {
+      console.warn("⚠️ Este agendamento não pode ter o status alterado pois o horário já foi reagendado");
+      return {
+        success: false,
+        error: "Horário já foi reagendado. Status não pode ser alterado."
+      };
+    }
+
+    const currentAppointment = appointments.find(a => a.id === id);
+    
+    // ✅ Se está mudando PARA cancelado/não compareceu, verifica conflito
+    if (!STATUS_GROUPS.ACTIVE.includes(value)) {
+      const hasActiveInSameSlot = appointments.some(
+        other => 
+          other.id !== id &&
+          other.time === currentAppointment.time &&
+          STATUS_GROUPS.ACTIVE.includes(other.status)
+      );
+
+      if (hasActiveInSameSlot) {
+        console.warn("⚠️ Não é possível cancelar: horário já foi reagendado");
+        return {
+          success: false,
+          error: "Este horário já foi reagendado. Não é possível cancelar."
+        };
+      }
+    }
+
+    // ✅ Atualização permitida
     setStatusUpdates((prev) => ({ ...prev, [id]: value }));
     hasUnsavedChanges.current = true;
 
     try {
       await updateDoc(doc(db, "appointments", id), { status: value });
-      setAppointments((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, status: value } : a))
-      );
+      
+      setAppointments((prev) => {
+        const updated = prev.map((a) => (a.id === id ? { ...a, status: value } : a));
+        
+        // ✅ Recalcula appointments bloqueados após atualização
+        identifyLockedAppointments(updated);
+        
+        return updated;
+      });
+
+      return { success: true };
     } catch (err) {
       console.error("Erro ao atualizar status:", err);
+      return { success: false, error: err.message };
     }
+  };
+
+  // ------------------------------
+  // ✅ NOVA FUNÇÃO: Verifica se appointment está bloqueado
+  // ------------------------------
+  const isAppointmentLocked = (appointmentId) => {
+    return lockedAppointments.has(appointmentId);
   };
 
   // ------------------------------
@@ -210,8 +286,10 @@ Horário: ${appt.time}`;
     patientStatus,
     whatsappConfig,
     hasUnsavedChanges,
+    lockedAppointments,
     handleStatusChange,
     handleAddPatient,
     handleSendWhatsapp,
+    isAppointmentLocked,
   };
 }

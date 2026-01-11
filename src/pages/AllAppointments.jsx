@@ -40,6 +40,7 @@ export default function AllAppointments() {
     handleStatusChange,
     handleSave,
     stats,
+    lockedAppointments, // ✅ NOVO
   } = useAllAppointments(user);
 
   if (loadingData) {
@@ -112,6 +113,7 @@ export default function AllAppointments() {
           patientsData={patientsData}
           expandedPatients={expandedPatients}
           changedIds={changedIds}
+          lockedAppointments={lockedAppointments} // ✅ NOVO
           onTogglePatient={togglePatient}
           onStatusChange={handleStatusChange}
           onSendWhatsapp={sendWhatsapp}

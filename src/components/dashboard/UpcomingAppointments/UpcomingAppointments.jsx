@@ -1,7 +1,12 @@
-// src/components/dashboard/UpcomingAppointments/UpcomingAppointments.jsx
+// ============================================
+// 📁 src/components/dashboard/UpcomingAppointments/UpcomingAppointments.jsx
+// ✅ ATUALIZADO: Mostra apenas appointments ATIVOS
+// ============================================
+
 import React from "react";
 import { Calendar, Clock } from "lucide-react";
 import formatDate from "../../../utils/formatter/formatDate";
+import { STATUS_CONFIG } from "../../../constants/appointmentStatus";
 import "./UpcomingAppointments.css";
 
 export default function UpcomingAppointments({ appointments = [] }) {
@@ -16,16 +21,8 @@ export default function UpcomingAppointments({ appointments = [] }) {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Confirmado":
-        return "confirmed";
-      case "Pendente":
-        return "pending";
-      case "Não Compareceu":
-        return "missed";
-      default:
-        return "pending";
-    }
+    const config = STATUS_CONFIG[status];
+    return config?.cssClass || "pending";
   };
 
   if (appointments.length === 0) {
