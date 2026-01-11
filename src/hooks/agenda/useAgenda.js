@@ -5,6 +5,9 @@ import { collection, query, where, getDocs, doc, updateDoc, getDoc } from "fireb
 // Services
 import * as PatientService from "../../services/firebase/patients.service";
 
+// Constants
+import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
+
 // Utils
 import { formatDateToQuery } from "../../utils/filters/dateFilters";
 import { sortAppointments } from "../../utils/filters/appointmentFilters";
@@ -75,7 +78,8 @@ export default function useAgenda(currentDate) {
 
         const initialStatus = {};
         data.forEach((a) => {
-          initialStatus[a.id] = a.status || "Pendente";
+          // Usa status padrão se não existir
+          initialStatus[a.id] = a.status || APPOINTMENT_STATUS.PENDING;
         });
         setStatusUpdates(initialStatus);
         hasUnsavedChanges.current = false;
@@ -173,14 +177,12 @@ export default function useAgenda(currentDate) {
 
     const { intro, body, footer, showValue } = whatsappConfig;
 
-    let message = `
-${intro || "Olá"} ${appt.patientName},
+    let message = `${intro || "Olá"} ${appt.patientName},
 
 ${body || "Sua sessão está agendada"}
 
 Data: ${formatDate(appt.date)}
-Horário: ${appt.time}
-`;
+Horário: ${appt.time}`;
 
     if (showValue && appt.value) {
       message += `\nValor: R$ ${appt.value}`;
@@ -197,7 +199,8 @@ Horário: ${appt.time}
       "whatsappWindow"
     );
 
-    handleStatusChange(appt.id, "Msg enviada");
+    // Atualiza status para "Msg enviada" automaticamente
+    handleStatusChange(appt.id, APPOINTMENT_STATUS.MESSAGE_SENT);
   };
 
   return {

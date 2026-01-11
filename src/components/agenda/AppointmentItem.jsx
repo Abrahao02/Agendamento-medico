@@ -1,4 +1,5 @@
 import { FiSmartphone, FiUserPlus } from "react-icons/fi";
+import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
 import "./AppointmentItem.css";
 
 export default function AppointmentItem({
@@ -13,11 +14,14 @@ export default function AppointmentItem({
   return (
     <li className="slot-item" data-status={status}>
       <span className="time">{appt.time}</span>
-      <span className="patient-name">{patientName}</span>
-      <span className="patient-whatsapp">{appt.patientWhatsapp}</span>
+      
+      <div className="patient-info">
+        <span className="patient-name">{patientName}</span>
+        <span className="patient-whatsapp">{appt.patientWhatsapp}</span>
+      </div>
 
       {patientStatus === "new" && (
-        <span style={{color: "#f59e0b", fontWeight: "600", marginLeft: "0.5rem"}}>Novo paciente</span>
+        <span className="new-patient-badge">Novo paciente</span>
       )}
 
       <select
@@ -25,22 +29,24 @@ export default function AppointmentItem({
         value={status}
         onChange={(e) => onStatusChange(appt.id, e.target.value)}
       >
-        <option value="Pendente">Pendente</option>
-        <option value="Msg enviada">Msg enviada</option>
-        <option value="Confirmado">Confirmado</option>
-        <option value="Não Compareceu">Não Compareceu</option>
-        <option value="Cancelado">Cancelado</option>
+        <option value={APPOINTMENT_STATUS.PENDING}>Pendente</option>
+        <option value={APPOINTMENT_STATUS.MESSAGE_SENT}>Msg enviada</option>
+        <option value={APPOINTMENT_STATUS.CONFIRMED}>Confirmado</option>
+        <option value={APPOINTMENT_STATUS.NO_SHOW}>Não Compareceu</option>
+        <option value={APPOINTMENT_STATUS.CANCELLED}>Cancelado</option>
       </select>
 
-      <button className="btn-primary" onClick={() => onSendWhatsapp(appt)}>
-        <FiSmartphone /> WhatsApp
-      </button>
-
-      {patientStatus === "new" && (
-        <button className="btn-secondary" onClick={() => onAddPatient(appt)}>
-          <FiUserPlus /> Adicionar
+      <div className="slot-actions">
+        <button className="btn-primary" onClick={() => onSendWhatsapp(appt)}>
+          <FiSmartphone /> WhatsApp
         </button>
-      )}
+
+        {patientStatus === "new" && (
+          <button className="btn-secondary" onClick={() => onAddPatient(appt)}>
+            <FiUserPlus /> Adicionar
+          </button>
+        )}
+      </div>
     </li>
   );
 }
