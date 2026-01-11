@@ -1,9 +1,6 @@
-// ============================================
-// 📁 src/hooks/useAgenda.js 
-// ============================================
 import { useState, useEffect, useRef } from "react";
 import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
-import { db } from "../../services/firebase/config";
+import { auth, db } from "../../services/firebase/config";
 
 // ✅ Services
 import * as PatientService from "../../services/firebase/patients.service";
@@ -13,7 +10,19 @@ import { formatDateToQuery } from "../../utils/filters/dateFilters";
 import { sortAppointments } from "../../utils/filters/appointmentFilters";
 import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
 
-export default function useAgenda(user, currentDate) {
+export default function useAgenda(currentDate) {
+  // ==============================
+  // AUTH (garantido pelo PrivateRoute)
+  // ==============================
+  const user = auth.currentUser;
+
+  if (!user) {
+    console.warn("useAgenda foi usado sem usuário autenticado");
+  }
+
+  // ==============================
+  // STATE
+  // ==============================
   const [appointments, setAppointments] = useState([]);
   const [statusUpdates, setStatusUpdates] = useState({});
   const [referenceNames, setReferenceNames] = useState({});
@@ -22,9 +31,9 @@ export default function useAgenda(user, currentDate) {
 
   const currentDateStr = formatDateToQuery(currentDate);
 
-  /* ==============================
-     🔄 BUSCAR AGENDAMENTOS
-  ============================== */
+  // ==============================
+  // FETCH APPOINTMENTS
+  // ==============================
   useEffect(() => {
     if (!user) return;
 
@@ -63,9 +72,9 @@ export default function useAgenda(user, currentDate) {
     fetchAppointments();
   }, [user, currentDateStr]);
 
-  /* ==============================
-     👤 CARREGAR DADOS DOS PACIENTES
-  ============================== */
+  // ==============================
+  // CARREGAR DADOS DOS PACIENTES
+  // ==============================
   const loadPatientData = async (appointmentsList) => {
     const names = {};
     const status = {};
@@ -75,16 +84,11 @@ export default function useAgenda(user, currentDate) {
         try {
           const cleanNumber = cleanWhatsapp(appt.patientWhatsapp);
 
-          const result = await PatientService.getPatient(
-            user.uid,
-            cleanNumber
-          );
+          const result = await PatientService.getPatient(user.uid, cleanNumber);
 
           if (result.success) {
             names[appt.id] =
-              result.data.referenceName ||
-              result.data.name ||
-              appt.patientName;
+              result.data.referenceName || result.data.name || appt.patientName;
 
             status[appt.id] = "existing";
           } else {
@@ -102,35 +106,29 @@ export default function useAgenda(user, currentDate) {
     setPatientStatus(status);
   };
 
-  /* ==============================
-     🔁 ATUALIZAR STATUS CONSULTA
-  ============================== */
+  // ==============================
+  // ATUALIZAR STATUS CONSULTA
+  // ==============================
   const handleStatusChange = async (id, value) => {
     setStatusUpdates((prev) => ({ ...prev, [id]: value }));
     hasUnsavedChanges.current = true;
 
     try {
-      await updateDoc(doc(db, "appointments", id), {
-        status: value,
-      });
+      await updateDoc(doc(db, "appointments", id), { status: value });
 
       setAppointments((prev) =>
-        prev.map((a) =>
-          a.id === id ? { ...a, status: value } : a
-        )
+        prev.map((a) => (a.id === id ? { ...a, status: value } : a))
       );
     } catch (err) {
       console.error("Erro ao atualizar status:", err);
     }
   };
 
-  /* ==============================
-     ➕ ADICIONAR PACIENTE
-  ============================== */
+  // ==============================
+  // ADICIONAR PACIENTE
+  // ==============================
   const handleAddPatient = async (appt) => {
-    if (!user) {
-      return { success: false, error: "Usuário não autenticado" };
-    }
+    if (!user) return { success: false, error: "Usuário não autenticado" };
 
     try {
       const cleanNumber = cleanWhatsapp(appt.patientWhatsapp);
@@ -143,9 +141,7 @@ export default function useAgenda(user, currentDate) {
         status: "active",
       });
 
-      if (!result.success) {
-        throw new Error(result.error);
-      }
+      if (!result.success) throw new Error(result.error);
 
       setPatientStatus((prev) => ({
         ...prev,
@@ -159,6 +155,9 @@ export default function useAgenda(user, currentDate) {
     }
   };
 
+  // ==============================
+  // RETURN
+  // ==============================
   return {
     appointments,
     statusUpdates,

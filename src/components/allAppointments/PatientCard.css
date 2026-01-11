@@ -137,6 +137,17 @@
 .appointment-card[data-status="Msg enviada"] {
   border-left: 4px solid var(--info-500);
 }
+.appointment-card[data-status="Cancelado"] {
+  border-left: 4px solid var(--color-danger);
+  opacity: 0.6;
+  background-color: var(--bg-light);
+}
+
+.appointment-card[data-status="Cancelado"] .appointment-date,
+.appointment-card[data-status="Cancelado"] .appointment-details {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
 
 /* Appointment Date */
 .appointment-date {

@@ -1,84 +1,59 @@
-// src/pages/Dashboard/Dashboard.jsx
-import React, { useEffect } from "react";
-import { auth } from "../services/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Calendar,
-  Users,
-  DollarSign,
-  Clock,
-} from "lucide-react";
+import { Calendar, Users, DollarSign, Clock } from "lucide-react";
 
 // Hook
 import { useDashboard } from "../hooks/dashboard/useDashboard";
 
 // Components
+import PageHeader from "../components/common/PageHeader/PageHeader";
 import PublicLinkCard from "../components/dashboard/PublicLinkCard";
 import Filters from "../components/common/Filters/Filters";
 import StatsCard from "../components/dashboard/StatsCard";
 import StatusSummary from "../components/dashboard/StatusSummary";
 import AppointmentsChart from "../components/dashboard/AppointmentsChart";
 import UpcomingAppointments from "../components/dashboard/UpcomingAppointments";
-import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
+import ContentLoading from "../components/common/ContentLoading/ContentLoading";
 
 import "./Dashboard.css";
 
 export default function Dashboard() {
-  const [user, loading] = useAuthState(auth);
   const navigate = useNavigate();
 
-  // ✅ USA O HOOK CUSTOMIZADO
   const {
+    loading,
     doctorSlug,
-    loadingData,
-    selectedDateFrom,
-    selectedDateTo,
-    selectedMonth,
-    selectedYear,
-    setSelectedDateFrom,
-    setSelectedDateTo,
-    setSelectedMonth,
-    setSelectedYear,
-    handleResetFilters,
-    availableYears,
     stats,
     statusSummary,
     chartData,
     upcomingAppointments,
-  } = useDashboard(user);
+    selectedDateFrom,
+    selectedDateTo,
+    selectedMonth,
+    selectedYear,
+    availableYears,
+    setSelectedDateFrom,
+    setSelectedDateTo,
+    setSelectedMonth,
+    setSelectedYear,
+    resetFilters,
+  } = useDashboard();
 
-  /* ==============================
-     AUTH PROTECTION
-  ============================== */
-  useEffect(() => {
-    if (!loading && !user) navigate("/login");
-  }, [user, loading, navigate]);
+  if (loading) return <ContentLoading message="Carregando dashboard..." height={400} />;
 
-  /* ==============================
-     LOADING STATE
-  ============================== */
-  if (loading || loadingData) {
-    return <LoadingFallback message="Carregando agenda..." />
-  }
-
-  /* ==============================
-     RENDER
-  ============================== */
   return (
     <div className="dashboard-content">
-
       {/* Header */}
-      <div className="padrao-header">
-        <div className="label">Visão Geral</div>
-        <h2>Painel de Controle</h2>
-        <p>Acompanhe consultas, faturamento e disponibilidade em tempo real</p>
-      </div>
+      <PageHeader
+        label="Visão Geral"
+        title="Painel de Controle"
+        description="Acompanhe consultas, faturamento e disponibilidade em tempo real"
+      />
 
       {/* Public Link */}
       <PublicLinkCard slug={doctorSlug} />
 
-      {/* Filtros */}
+      {/* Filters */}
       <Filters
         dateFrom={selectedDateFrom}
         dateTo={selectedDateTo}
@@ -88,17 +63,15 @@ export default function Dashboard() {
         onDateToChange={setSelectedDateTo}
         onMonthChange={setSelectedMonth}
         onYearChange={setSelectedYear}
-        onReset={handleResetFilters}
+        onReset={resetFilters}
         availableYears={availableYears}
-        
-        // Config: Dashboard não usa busca nem status
         showSearch={false}
         showStatus={false}
-        showDateRange={true}
-        showMonthYear={true}
+        showDateRange
+        showMonthYear
       />
 
-      {/* Stats Grid */}
+      {/* Stats */}
       <div className="stats-grid">
         <StatsCard
           icon={Clock}
@@ -132,14 +105,14 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Status Summary */}
+      {/* Status */}
       <StatusSummary
         confirmed={statusSummary.Confirmado}
         pending={statusSummary.Pendente}
         missed={statusSummary["Não Compareceu"]}
       />
 
-      {/* Charts Section */}
+      {/* Charts */}
       <div className="charts-section">
         <AppointmentsChart data={chartData} />
         <UpcomingAppointments appointments={upcomingAppointments} />

@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../services/firebase/config";
 import { useNavigate } from "react-router-dom";
 
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../services/firebase/config";
+
 import useAgenda from "../hooks/agenda/useAgenda";
+import PageHeader from "../components/common/PageHeader/PageHeader";
 import DateNavigation from "../components/agenda/DateNavigation";
 import AppointmentList from "../components/agenda/AppointmentList";
 import formatDate from "../utils/formatter/formatDate";
-import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
+import ContentLoading from "../components/common/ContentLoading/ContentLoading";
 
 import "./Agenda.css";
 
@@ -23,26 +25,40 @@ export default function Agenda({ handleSendWhatsapp }) {
     statusUpdates,
     referenceNames,
     patientStatus,
+    hasUnsavedChanges,
     handleStatusChange,
-    handleAddPatient
-  } = useAgenda(user, currentDate);
+    handleAddPatient,
+  } = useAgenda(currentDate);
 
-  const goToPrev = () => setCurrentDate(d => { const newD = new Date(d); newD.setDate(d.getDate() - 1); return newD; });
-  const goToNext = () => setCurrentDate(d => { const newD = new Date(d); newD.setDate(d.getDate() + 1); return newD; });
+  const goToPrev = () =>
+    setCurrentDate((d) => {
+      const newD = new Date(d);
+      newD.setDate(d.getDate() - 1);
+      return newD;
+    });
+
+  const goToNext = () =>
+    setCurrentDate((d) => {
+      const newD = new Date(d);
+      newD.setDate(d.getDate() + 1);
+      return newD;
+    });
+
   const goToToday = () => setCurrentDate(new Date());
 
-  if (loading) return <LoadingFallback message="Carregando agenda..." />;
+  if (loading) return <ContentLoading message="Carregando agenda..." />;
 
   return (
     <div className="calendar-availability-container">
 
-      {/* Header */}
-      <div className="padrao-header">
-        <div className="label">Gestão diaria</div>
-        <h2>Agenda do dia</h2>
-        <p>Gerencie seus horários e consultas do dia</p>
-      </div>
+      {/* ✅ PageHeader reutilizável */}
+      <PageHeader
+        label="Gestão diária"
+        title="Agenda do dia"
+        description="Gerencie seus horários e consultas do dia"
+      />
 
+      {/* Navegação de datas */}
       <DateNavigation
         currentDate={currentDate}
         onPrev={goToPrev}
@@ -51,6 +67,7 @@ export default function Agenda({ handleSendWhatsapp }) {
         formatDate={formatDate}
       />
 
+      {/* Lista de consultas */}
       <AppointmentList
         appointments={appointments}
         statusUpdates={statusUpdates}

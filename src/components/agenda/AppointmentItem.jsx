@@ -25,10 +25,11 @@ export default function AppointmentItem({
         value={status}
         onChange={(e) => onStatusChange(appt.id, e.target.value)}
       >
-        <option value="Pendente">⏳ Pendente</option>
-        <option value="Msg enviada">📩 Msg enviada</option>
-        <option value="Confirmado">✔ Confirmado</option>
-        <option value="Não Compareceu">❌ Não Compareceu</option>
+        <option value="Pendente">Pendente</option>
+        <option value="Msg enviada">Msg enviada</option>
+        <option value="Confirmado">Confirmado</option>
+        <option value="Não Compareceu">Não Compareceu</option>
+        <option value="Cancelado">Cancelado</option>
       </select>
 
       <button className="btn-primary" onClick={() => onSendWhatsapp(appt)}>

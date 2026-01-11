@@ -86,6 +86,7 @@ export default function PatientCard({
                   <option value="Confirmado">Confirmado</option>
                   <option value="Não Compareceu">Não Compareceu</option>
                   <option value="Msg enviada">Msg enviada</option>
+                  <option value="Cancelado">Cancelado</option>
                 </select>
               </div>
             </div>

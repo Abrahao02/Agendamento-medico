@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { auth } from "../../services/firebase";
 
 // Services
 import { getDoctor } from "../../services/firebase/doctors.service";
@@ -6,7 +7,19 @@ import { getAvailability, saveAvailability, removeAvailability } from "../../ser
 import { getAppointmentsByDoctor, createAppointment, deleteAppointment } from "../../services/firebase/appointments.service";
 import { getPatients } from "../../services/firebase/patients.service";
 
-export const useAvailability = (doctorId) => {
+export const useAvailability = () => {
+  // ==============================
+  // AUTH (garantido pelo PrivateRoute)
+  // ==============================
+  const user = auth.currentUser;
+
+  if (!user) {
+    console.warn("useAvailability usado sem usuário autenticado");
+  }
+
+  // ==============================
+  // ESTADO
+  // ==============================
   const [doctor, setDoctor] = useState(null);
   const [availability, setAvailability] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -18,21 +31,18 @@ export const useAvailability = (doctorId) => {
      LOAD INITIAL DATA
   ============================== */
   useEffect(() => {
-    const load = async () => {
-      if (!doctorId) {
-        setLoading(false);
-        return;
-      }
+    if (!user) return;
 
+    const load = async () => {
       setLoading(true);
       setError(null);
 
       try {
         const [doctorResult, availResult, appointmentsResult, patientsResult] = await Promise.all([
-          getDoctor(doctorId),
-          getAvailability(doctorId),
-          getAppointmentsByDoctor(doctorId),
-          getPatients(doctorId),
+          getDoctor(user.uid),
+          getAvailability(user.uid),
+          getAppointmentsByDoctor(user.uid),
+          getPatients(user.uid),
         ]);
 
         if (doctorResult.success) setDoctor(doctorResult.data);
@@ -56,7 +66,7 @@ export const useAvailability = (doctorId) => {
     };
 
     load();
-  }, [doctorId]);
+  }, [user]);
 
   /* ==============================
      GET AVAILABILITY FOR DATE
@@ -98,22 +108,33 @@ export const useAvailability = (doctorId) => {
   }, [availability, appointments]);
 
   /* ==============================
-     ADD / REMOVE / BOOK / CANCEL
+     ADD SLOT
   ============================== */
   const addSlot = async (date, slot) => {
+    if (!user) return { success: false, error: "Usuário não autenticado" };
+
     try {
       const dayAvailability = availability.find(a => a.date === date);
-      if (dayAvailability?.slots?.includes(slot)) throw new Error("Este horário já está cadastrado");
+      if (dayAvailability?.slots?.includes(slot)) {
+        throw new Error("Este horário já está cadastrado");
+      }
 
-      const result = await saveAvailability(doctorId, date, slot);
+      const result = await saveAvailability(user.uid, date, slot);
       if (!result.success) throw new Error(result.error);
 
       setAvailability(prev => {
         const existing = prev.find(a => a.date === date);
         if (existing) {
-          return prev.map(a => a.date === date ? { ...a, slots: [...a.slots, slot].sort() } : a);
+          return prev.map(a => 
+            a.date === date 
+              ? { ...a, slots: [...a.slots, slot].sort() } 
+              : a
+          );
         } else {
-          return [...prev, { id: `${doctorId}_${date}`, doctorId, date, slots: [slot] }].sort((a, b) => a.date.localeCompare(b.date));
+          return [
+            ...prev, 
+            { id: `${user.uid}_${date}`, doctorId: user.uid, date, slots: [slot] }
+          ].sort((a, b) => a.date.localeCompare(b.date));
         }
       });
 
@@ -123,12 +144,19 @@ export const useAvailability = (doctorId) => {
     }
   };
 
+  /* ==============================
+     REMOVE SLOT
+  ============================== */
   const removeSlot = async (date, slot) => {
+    if (!user) return { success: false, error: "Usuário não autenticado" };
+
     try {
       const hasAppointment = appointments.some(a => a.date === date && a.time === slot);
-      if (hasAppointment) throw new Error("Não é possível remover um horário com agendamento. Cancele o agendamento primeiro.");
+      if (hasAppointment) {
+        throw new Error("Não é possível remover um horário com agendamento. Cancele o agendamento primeiro.");
+      }
 
-      const result = await removeAvailability(doctorId, date, slot);
+      const result = await removeAvailability(user.uid, date, slot);
       if (!result.success) throw new Error(result.error);
 
       setAvailability(prev => prev
@@ -142,7 +170,12 @@ export const useAvailability = (doctorId) => {
     }
   };
 
+  /* ==============================
+     BOOK APPOINTMENT
+  ============================== */
   const bookAppointment = async ({ patientId, date, time }) => {
+    if (!user) return { success: false, error: "Usuário não autenticado" };
+
     try {
       const hasAppointment = appointments.some(a => a.date === date && a.time === time);
       if (hasAppointment) throw new Error("Já existe um agendamento neste horário");
@@ -151,7 +184,7 @@ export const useAvailability = (doctorId) => {
       if (!patient) throw new Error("Paciente não encontrado");
 
       const appointmentData = {
-        doctorId,
+        doctorId: user.uid,
         patientId: patient.id,
         patientName: patient.name,
         patientWhatsapp: patient.whatsapp,
@@ -172,6 +205,9 @@ export const useAvailability = (doctorId) => {
     }
   };
 
+  /* ==============================
+     CANCEL APPOINTMENT (DELETE)
+  ============================== */
   const cancelAppointment = async (appointmentId) => {
     try {
       const result = await deleteAppointment(appointmentId);
@@ -186,14 +222,38 @@ export const useAvailability = (doctorId) => {
   };
 
   /* ==============================
+     MARK AS CANCELLED (UPDATE STATUS)
+  ============================== */
+  const markAsCancelled = async (appointmentId) => {
+    try {
+      const appointment = appointments.find(a => a.id === appointmentId);
+      if (!appointment) throw new Error("Agendamento não encontrado");
+
+      // Importar updateAppointment do service
+      const { updateAppointment } = await import("../../services/firebase/appointments.service");
+      
+      const result = await updateAppointment(appointmentId, { status: "Cancelado" });
+      if (!result.success) throw new Error(result.error);
+
+      setAppointments(prev => prev.map(a => 
+        a.id === appointmentId 
+          ? { ...a, status: "Cancelado" } 
+          : a
+      ));
+
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  /* ==============================
      CALENDAR TILE DATA
-     ✅ Corrigido: pega sempre estado atualizado
   ============================== */
   const getCalendarTileData = useCallback((dateStr) => {
     const dayAvailability = availability.find(a => a.date === dateStr) || { slots: [] };
     const dayAppointments = appointments.filter(a => a.date === dateStr);
 
-    // Obtem apenas os slots livres (disponíveis e não agendados)
     const bookedTimes = dayAppointments.map(a => a.time);
     const freeSlotsArray = dayAvailability.slots.filter(slot => !bookedTimes.includes(slot));
 
@@ -206,18 +266,18 @@ export const useAvailability = (doctorId) => {
     };
   }, [availability, appointments]);
 
-
   return {
+    loading,
+    error,
     doctor,
     availability,
     appointments,
     patients,
-    loading,
-    error,
     addSlot,
     removeSlot,
     bookAppointment,
     cancelAppointment,
+    markAsCancelled,
     getAvailabilityForDate,
     getAllSlotsForDate,
     getAppointmentsForDate,

@@ -25,11 +25,10 @@
   overflow-x: hidden;
   overflow-y: auto;
   z-index: var(--z-fixed);
-  position: relative;
   border-right: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
   height: 100vh;
-  position: fixed;
+  position: sticky; /* Mudado de fixed para sticky no desktop */
   top: 0;
   left: 0;
 }
@@ -133,7 +132,6 @@
   flex-direction: column;
   gap: var(--spacing-xs);
   width: 100%;
-  /* Removido flex-grow: 1 para evitar movimento do plan box */
   margin-bottom: var(--spacing-xl);
 }
 
@@ -229,7 +227,7 @@
   transition: all var(--transition-base);
   position: relative;
   overflow: hidden;
-  flex-shrink: 0; /* Impede que o plan box diminua */
+  flex-shrink: 0;
 }
 
 .plan-box::before {
@@ -413,7 +411,7 @@
   justify-content: center;
   gap: var(--spacing-sm);
   box-shadow: var(--shadow-md);
-  flex-shrink: 0; /* Impede que o botão diminua */
+  flex-shrink: 0;
 }
 
 .logout-btn:hover {
@@ -444,15 +442,9 @@
   flex: 1;
   padding: var(--spacing-2xl);
   background-color: var(--bg-secondary);
-  transition: margin-left var(--transition-base);
   min-height: 100vh;
   overflow-x: hidden;
-  margin-left: 280px; /* Espaço para sidebar aberta */
-}
-
-/* Ajuste quando sidebar está compacta */
-.dashboard-layout:has(.sidebar.compact) .dashboard-content {
-  margin-left: 80px;
+  /* Removido margin-left fixo - agora funciona com flexbox */
 }
 
 /* ========================================
@@ -479,15 +471,19 @@
    ======================================== */
 
 @media (max-width: 768px) {
+  .dashboard-layout {
+    position: relative; /* Necessário para o overlay */
+  }
+
   .sidebar {
-    position: fixed;
+    position: fixed; /* Fixed apenas no mobile */
     top: 0;
     left: 0;
     height: 100vh;
     width: 280px;
     transform: translateX(-100%);
     box-shadow: none;
-    overflow-y: auto; /* Permite scroll */
+    overflow-y: auto;
     overflow-x: hidden;
   }
 
@@ -497,9 +493,10 @@
   }
 
   .dashboard-content {
-    margin-left: 0 !important; /* Remove margin em mobile */
+    margin-left: 0;
     padding: var(--spacing-lg);
     padding-top: 70px;
+    width: 100%; /* Garante largura total no mobile */
   }
 
   /* Esconder botão hamburguer interno da sidebar em mobile */
@@ -507,7 +504,7 @@
     display: none;
   }
 
-  /* Botão Hambúrguer Fixo Mobile (apenas esse) */
+  /* Botão Hambúrguer Fixo Mobile */
   .hamburger-fixed {
     position: fixed;
     top: var(--spacing-md);
@@ -587,6 +584,17 @@
 }
 
 /* ========================================
+   DESKTOP - Esconder elementos mobile
+   ======================================== */
+
+@media (min-width: 769px) {
+  .hamburger-fixed,
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
+
+/* ========================================
    ACESSIBILIDADE
    ======================================== */
 
@@ -640,7 +648,7 @@
 }
 
 .btn.free-plan-btn {
-  background-color: transparent; /* ou a cor que quiser */
+  background-color: transparent;
   color: var(--text-inverse);
   border: 2px solid white;
 }

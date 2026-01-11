@@ -1,27 +1,22 @@
-// src/pages/Availability/Availability.jsx
-import { useState, useEffect } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 
-import { auth } from "../services/firebase/config";
-import { useAvailability } from "../hooks/appointments/useAvaibility";
+// Hook
+import { useAvailability } from "../hooks/appointments/useAvailability";
 
+// Components
+import PageHeader from "../components/common/PageHeader/PageHeader";
 import CalendarWrapper from "../components/availability/CalendarWrapper/CalendarWrapper";
 import DayManagement from "../components/availability/DayManagement/DayManagement";
-import LoadingFallback from "../components/common/LoadingFallback";
+import ContentLoading from "../components/common/ContentLoading/ContentLoading";
 
 import formatDate from "../utils/formatter/formatDate";
 import "./Availability.css";
 
 export default function Availability() {
-  const [user, authLoading] = useAuthState(auth);
-  const navigate = useNavigate();
-
   const {
-    doctor,
-    patients,
     loading,
     error,
+    patients,
     getAvailabilityForDate,
     getAllSlotsForDate,
     getAppointmentsForDate,
@@ -30,7 +25,8 @@ export default function Availability() {
     removeSlot,
     bookAppointment,
     cancelAppointment,
-  } = useAvailability(user?.uid);
+    markAsCancelled,
+  } = useAvailability();
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarValue, setCalendarValue] = useState(new Date());
@@ -44,15 +40,6 @@ export default function Availability() {
     const d = String(date.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
   };
-
-  /* ==============================
-     AUTH REDIRECT
-  ============================== */
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/login");
-    }
-  }, [user, authLoading, navigate]);
 
   /* ==============================
      SET INITIAL DATE (TODAY)
@@ -85,12 +72,15 @@ export default function Availability() {
 
     return (
       <div className="calendar-badges">
-        {tileData.freeCount > 0 && <span className="badge free">{tileData.freeCount}</span>}
-        {tileData.bookedCount > 0 && <span className="badge booked">{tileData.bookedCount}</span>}
+        {tileData.freeCount > 0 && (
+          <span className="badge free">{tileData.freeCount}</span>
+        )}
+        {tileData.bookedCount > 0 && (
+          <span className="badge booked">{tileData.bookedCount}</span>
+        )}
       </div>
     );
   };
-
 
   /* ==============================
      HANDLE ADD SLOT
@@ -127,17 +117,24 @@ export default function Availability() {
   };
 
   /* ==============================
-     HANDLE CANCEL APPOINTMENT
+     HANDLE CANCEL APPOINTMENT (DELETE)
   ============================== */
   const handleCancelAppointment = async (appointmentId) => {
     return await cancelAppointment(appointmentId);
   };
 
   /* ==============================
+     HANDLE MARK AS CANCELLED (UPDATE STATUS)
+  ============================== */
+  const handleMarkAsCancelled = async (appointmentId) => {
+    return await markAsCancelled(appointmentId);
+  };
+
+  /* ==============================
      LOADING STATE
   ============================== */
-  if (authLoading || loading) {
-    return <LoadingFallback message="Carregando agenda..." />;
+  if (loading) {
+    return <ContentLoading message="Carregando agenda..." height={400} />;
   }
 
   /* ==============================
@@ -163,11 +160,11 @@ export default function Availability() {
   return (
     <div className="availability-page">
       {/* Header */}
-      <div className="calendar-header">
-        <div className="label">Gestão de Agenda</div>
-        <h2>Calendário de Disponibilidade</h2>
-        <p>Gerencie seus horários e consultas</p>
-      </div>
+      <PageHeader
+        label="Gestão de Agenda"
+        title="Calendário de Disponibilidade"
+        description="Gerencie seus horários e consultas"
+      />
 
       {/* Layout */}
       <div className="calendar-layout">
@@ -191,6 +188,7 @@ export default function Availability() {
             onRemoveSlot={handleRemoveSlot}
             onBookAppointment={handleBookAppointment}
             onCancelAppointment={handleCancelAppointment}
+            onMarkAsCancelled={handleMarkAsCancelled}
           />
         )}
       </div>
