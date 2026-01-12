@@ -1,13 +1,25 @@
 .settings-page {
-  max-width: 920px;
+  max-width: 1000px;
   margin: 2rem auto;
   padding: 1rem;
   font-family: "Inter", sans-serif;
 }
 
+.settings-header {
+  margin-bottom: 2rem;
+}
+
 .settings-page h1 {
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.settings-subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0;
 }
 
 /* Cards */
@@ -124,4 +136,200 @@
 .save-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Plan Upgrade Card */
+.plan-upgrade-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.plan-upgrade-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.plan-upgrade-icon {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plan-upgrade-card h2 {
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.plan-upgrade-card .helper-text {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.plan-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.plan-feature {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.plan-feature svg {
+  flex-shrink: 0;
+}
+
+.upgrade-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+}
+
+.upgrade-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.plan-active-card {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+}
+
+.plan-active-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.plan-active-header svg {
+  flex-shrink: 0;
+}
+
+.plan-active-card h2 {
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.plan-active-card .helper-text {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Sections */
+.values-section,
+.locations-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.section-subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.locations-list {
+  margin-bottom: 1rem;
+}
+
+.location-item,
+.add-location-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  align-items: center;
+}
+
+.location-name-input {
+  flex: 2;
+}
+
+.location-value-input {
+  flex: 1;
+}
+
+.remove-location-btn {
+  padding: 0.625rem 1rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.remove-location-btn:hover {
+  background: #dc2626;
+}
+
+.add-location-btn {
+  padding: 0.625rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.add-location-btn:hover {
+  background: #2563eb;
+}
+
+.settings-footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.footer-note {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .plan-features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .location-item,
+  .add-location-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .remove-location-btn,
+  .add-location-btn {
+    width: 100%;
+  }
 }

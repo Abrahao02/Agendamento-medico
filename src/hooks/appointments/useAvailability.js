@@ -257,15 +257,12 @@ export const useAvailability = () => {
       const slotExists = dayAvailability?.slots?.includes(time);
 
       if (!slotExists) {
-        console.log(`🔧 Criando slot ${time} automaticamente para ${date}`);
-
         const slotResult = await saveAvailability(user.uid, date, time);
 
         if (!slotResult.success) {
           throw new Error(`Erro ao criar slot: ${slotResult.error}`);
         }
 
-        // Atualiza estado local
         setAvailability(prev => {
           const existing = prev.find(a => a.date === date);
           if (existing) {
@@ -281,9 +278,14 @@ export const useAvailability = () => {
             ].sort((a, b) => a.date.localeCompare(b.date));
           }
         });
-
-        console.log(`✅ Slot ${time} criado com sucesso`);
       }
+
+      const appointmentTypeConfig = doctor?.appointmentTypeConfig || {
+        defaultValueOnline: 0,
+        defaultValuePresencial: 0,
+      };
+
+      const appointmentValue = patient.price || appointmentTypeConfig.defaultValueOnline || 0;
 
       const appointmentData = {
         doctorId: user.uid,
@@ -292,7 +294,7 @@ export const useAvailability = () => {
         patientWhatsapp: patient.whatsapp,
         date,
         time,
-        value: patient.price || doctor?.defaultValueSchedule || 0,
+        value: appointmentValue,
         status: APPOINTMENT_STATUS.CONFIRMED,
       };
 

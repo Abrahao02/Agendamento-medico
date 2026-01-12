@@ -13,14 +13,8 @@ import {
 import { db } from "./config";
 import { COLLECTIONS, validators } from "./collections";
 
-/* ==============================
-   CREATE APPOINTMENT
-   (Simples - sem validação de availability)
-================================ */
 export async function createAppointment(data) {
   try {
-    console.log("📥 createAppointment - dados recebidos:", data);
-
     const required = [
       "doctorId",
       "patientId",
@@ -32,19 +26,14 @@ export async function createAppointment(data) {
 
     for (const field of required) {
       if (!data[field]) {
-        console.error(`❌ Campo obrigatório faltando: ${field}`);
-        console.error("Dados recebidos:", data);
         throw new Error(`Campo obrigatório: ${field}`);
       }
     }
 
-    // Valida formato de data e hora (STRINGS!)
-    console.log("🔍 Validando data:", data.date, "tipo:", typeof data.date);
     if (typeof data.date !== "string" || !validators.date(data.date)) {
       throw new Error("Data inválida. Use formato YYYY-MM-DD");
     }
 
-    console.log("🔍 Validando hora:", data.time, "tipo:", typeof data.time);
     if (typeof data.time !== "string" || !validators.time(data.time)) {
       throw new Error("Horário inválido. Use formato HH:mm");
     }
@@ -60,10 +49,12 @@ export async function createAppointment(data) {
       patientId: data.patientId,
       patientName: data.patientName,
       patientWhatsapp: data.patientWhatsapp,
-      date: data.date,           // STRING: "2026-01-16"
-      time: data.time,           // STRING: "18:00"
+      date: data.date,
+      time: data.time,
       value,
       status: data.status || "Pendente",
+      appointmentType: data.appointmentType || null,
+      location: data.location || null,
       createdAt: serverTimestamp(),
     });
 
@@ -80,9 +71,6 @@ export async function createAppointment(data) {
   }
 }
 
-/* ==============================
-   UPDATE APPOINTMENT
-================================ */
 export async function updateAppointment(appointmentId, data) {
   try {
     if (!appointmentId) {
@@ -95,6 +83,8 @@ export async function updateAppointment(appointmentId, data) {
       "value",
       "status",
       "patientName",
+      "appointmentType",
+      "location",
     ];
 
     const updateData = {};
@@ -133,9 +123,6 @@ export async function updateAppointment(appointmentId, data) {
   }
 }
 
-/* ==============================
-   DELETE APPOINTMENT
-================================ */
 export async function deleteAppointment(appointmentId) {
   try {
     if (!appointmentId) {
@@ -152,9 +139,6 @@ export async function deleteAppointment(appointmentId) {
   }
 }
 
-/* ==============================
-   GET APPOINTMENTS BY DOCTOR
-================================ */
 export async function getAppointmentsByDoctor(doctorId) {
   try {
     if (!doctorId) {
@@ -180,9 +164,6 @@ export async function getAppointmentsByDoctor(doctorId) {
   }
 }
 
-/* ==============================
-   GET APPOINTMENTS BY DATE
-================================ */
 export async function getAppointmentsByDate(doctorId, date) {
   try {
     if (!doctorId || !date) {
@@ -213,9 +194,6 @@ export async function getAppointmentsByDate(doctorId, date) {
   }
 }
 
-/* ==============================
-   GET APPOINTMENTS BY PATIENT
-================================ */
 export async function getAppointmentsByPatient(doctorId, patientId) {
   try {
     if (!doctorId || !patientId) {

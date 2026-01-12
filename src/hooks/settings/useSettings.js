@@ -1,24 +1,11 @@
-// ============================================
-// 📁 src/hooks/useSettings.js - REFATORADO
-// ============================================
 import { useState, useEffect } from "react";
-import { DoctorService } from "../../services/firebase";
+import * as DoctorService from "../../services/firebase/doctors.service";
 import { generateWhatsappMessage } from "../../utils/message/generateWhatsappMessage";
 
-/**
- * Hook para gerenciar configurações do médico
- * @param {Object} user - Usuário autenticado do Firebase
- * @returns {Object} Estado e funções para gerenciar configurações
- */
 export function useSettings(user) {
-  // 🔄 Estados de loading
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  // 💰 Configurações financeiras
-  const [defaultValueSchedule, setDefaultValueSchedule] = useState("");
-
-  // 💬 Configurações do WhatsApp
+  const [doctor, setDoctor] = useState(null);
   const [whatsappConfig, setWhatsappConfig] = useState({
     intro: "Olá",
     body: "Sua sessão está agendada",
@@ -27,12 +14,18 @@ export function useSettings(user) {
     showValue: true,
   });
 
-  // 📅 Configurações do Agendamento Público
   const [publicScheduleConfig, setPublicScheduleConfig] = useState({
     period: "all_future",
   });
 
-  // 📥 Buscar configurações do médico
+  const [appointmentTypeConfig, setAppointmentTypeConfig] = useState({
+    mode: "disabled",
+    fixedType: "online",
+    defaultValueOnline: 0,
+    defaultValuePresencial: 0,
+    locations: [],
+  });
+
   useEffect(() => {
     if (!user) {
       setLoading(false);
@@ -48,23 +41,26 @@ export function useSettings(user) {
         if (result.success) {
           const data = result.data;
 
-          // 💰 Valor padrão da consulta
-          setDefaultValueSchedule(data.defaultValueSchedule || "");
+          setDoctor(data);
 
-          // 💬 Configuração WhatsApp
           setWhatsappConfig({
             intro: data.whatsappConfig?.intro || "Olá",
-            body:
-              data.whatsappConfig?.body || "Sua sessão está agendada",
-            footer:
-              data.whatsappConfig?.footer ||
+            body: data.whatsappConfig?.body || "Sua sessão está agendada",
+            footer: data.whatsappConfig?.footer ||
               "Caso não possa comparecer, por favor avisar com antecedência. Obrigado!",
             showValue: data.whatsappConfig?.showValue ?? true,
           });
 
-          // 📅 Configuração do Agendamento Público
           setPublicScheduleConfig({
             period: data.publicScheduleConfig?.period || "all_future",
+          });
+
+          setAppointmentTypeConfig({
+            mode: data.appointmentTypeConfig?.mode || "disabled",
+            fixedType: data.appointmentTypeConfig?.fixedType || "online",
+            defaultValueOnline: data.appointmentTypeConfig?.defaultValueOnline || 0,
+            defaultValuePresencial: data.appointmentTypeConfig?.defaultValuePresencial || 0,
+            locations: data.appointmentTypeConfig?.locations || [],
           });
         }
       } catch (error) {
@@ -87,7 +83,6 @@ export function useSettings(user) {
       setSaving(true);
 
       return await DoctorService.updateDoctor(user.uid, {
-        defaultValueSchedule: Number(defaultValueSchedule) || 0,
         whatsappConfig: {
           intro: whatsappConfig.intro,
           body: whatsappConfig.body,
@@ -96,6 +91,13 @@ export function useSettings(user) {
         },
         publicScheduleConfig: {
           period: publicScheduleConfig.period,
+        },
+        appointmentTypeConfig: {
+          mode: appointmentTypeConfig.mode,
+          fixedType: appointmentTypeConfig.fixedType,
+          defaultValueOnline: Number(appointmentTypeConfig.defaultValueOnline) || 0,
+          defaultValuePresencial: Number(appointmentTypeConfig.defaultValuePresencial) || 0,
+          locations: appointmentTypeConfig.locations,
         },
       });
     } catch (error) {
@@ -106,7 +108,6 @@ export function useSettings(user) {
     }
   };
 
-  // 🔄 Atualizar campo do WhatsApp
   const updateWhatsappField = (field, value) => {
     setWhatsappConfig((prev) => ({
       ...prev,
@@ -114,7 +115,6 @@ export function useSettings(user) {
     }));
   };
 
-  // 🔄 Atualizar campo do Agendamento Público
   const updatePublicScheduleField = (field, value) => {
     setPublicScheduleConfig((prev) => ({
       ...prev,
@@ -122,12 +122,40 @@ export function useSettings(user) {
     }));
   };
 
-  // ✅ 📝 Gerar preview da mensagem - USA UTIL
+  const updateAppointmentTypeField = (field, value) => {
+    setAppointmentTypeConfig((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const addLocation = (location) => {
+    setAppointmentTypeConfig((prev) => ({
+      ...prev,
+      locations: [...prev.locations, location],
+    }));
+  };
+
+  const updateLocation = (index, location) => {
+    setAppointmentTypeConfig((prev) => ({
+      ...prev,
+      locations: prev.locations.map((loc, i) => i === index ? location : loc),
+    }));
+  };
+
+  const removeLocation = (index) => {
+    setAppointmentTypeConfig((prev) => ({
+      ...prev,
+      locations: prev.locations.filter((_, i) => i !== index),
+    }));
+  };
+
   const generatePreview = (
     patientName = "João",
     date = "07/01/2026",
     time = "12:00"
   ) => {
+    const defaultValue = appointmentTypeConfig.defaultValueOnline || 0;
     return generateWhatsappMessage({
       intro: whatsappConfig.intro,
       body: whatsappConfig.body,
@@ -135,25 +163,24 @@ export function useSettings(user) {
       patientName,
       date,
       time,
-      value: Number(defaultValueSchedule) || 0,
+      value: defaultValue,
       showValue: whatsappConfig.showValue,
     });
   };
 
   return {
-    // Estados
     loading,
     saving,
-    defaultValueSchedule,
+    doctor,
     whatsappConfig,
     publicScheduleConfig,
-
-    // Setters
-    setDefaultValueSchedule,
+    appointmentTypeConfig,
     updateWhatsappField,
     updatePublicScheduleField,
-
-    // Funções
+    updateAppointmentTypeField,
+    addLocation,
+    updateLocation,
+    removeLocation,
     saveSettings,
     generatePreview,
   };

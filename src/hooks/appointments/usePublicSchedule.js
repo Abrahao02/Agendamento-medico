@@ -126,33 +126,15 @@ export const usePublicSchedule = (slug) => {
   };
 
   const handleSlotSelect = (day, time) => {
-    // Validações
-    if (!day || !day.date) {
-      console.error("handleSlotSelect: day inválido ou sem date");
-      return;
-    }
-    
-    if (typeof time !== "string") {
-      console.error("handleSlotSelect: time não é string");
-      return;
-    }
+    if (!day || !day.date) return;
+    if (typeof time !== "string") return;
     
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(day.date)) {
-      console.error("handleSlotSelect: day.date formato inválido:", day.date);
-      return;
-    }
+    if (!dateRegex.test(day.date)) return;
     
     const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!timeRegex.test(time)) {
-      console.error("handleSlotSelect: time formato inválido:", time);
-      return;
-    }
-    
-    if (time.includes('-')) {
-      console.error("handleSlotSelect: time contém '-', parece ser uma data!");
-      return;
-    }
+    if (!timeRegex.test(time)) return;
+    if (time.includes('-')) return;
     
     const slotData = { 
       dayId: day.id,
@@ -196,10 +178,31 @@ export const usePublicSchedule = (slug) => {
       const whatsapp = validateWhatsapp(patientWhatsapp);
       validateSelectedSlot(selectedSlot);
 
-      // Valor padrão
-      const appointmentValue = doctor.defaultValueSchedule || 0;
+      const appointmentTypeConfig = doctor.appointmentTypeConfig || {
+        mode: "disabled",
+        fixedType: "online",
+        defaultValueOnline: 0,
+        defaultValuePresencial: 0,
+        locations: [],
+      };
 
-      // ✅ USA generatePatientId util
+      let appointmentValue = appointmentTypeConfig.defaultValueOnline || 0;
+
+      if (formData.appointmentType) {
+        if (formData.appointmentType === "online") {
+          appointmentValue = appointmentTypeConfig.defaultValueOnline || 0;
+        } else if (formData.appointmentType === "presencial") {
+          if (formData.location) {
+            const selectedLocation = appointmentTypeConfig.locations.find(
+              loc => loc.name === formData.location
+            );
+            appointmentValue = selectedLocation?.defaultValue || appointmentTypeConfig.defaultValuePresencial || 0;
+          } else {
+            appointmentValue = appointmentTypeConfig.defaultValuePresencial || 0;
+          }
+        }
+      }
+
       const patientId = generatePatientId(doctor.id, whatsapp);
 
       const appointmentData = {
@@ -211,6 +214,8 @@ export const usePublicSchedule = (slug) => {
         time: selectedSlot.time,
         value: appointmentValue,
         status: "Pendente",
+        appointmentType: formData.appointmentType || null,
+        location: formData.location || null,
       };
 
       const result = await createAppointment(appointmentData);

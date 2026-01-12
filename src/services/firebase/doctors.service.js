@@ -13,9 +13,6 @@ import {
 import { db } from "./config";
 import { COLLECTIONS, validators } from "./collections";
 
-/* ==============================
-   CREATE DOCTOR
-================================ */
 
 function generateSlug(name) {
   return name
@@ -75,7 +72,14 @@ export async function createDoctor({ uid, name, email, whatsapp }) {
         showValue: true,
       },
       publicScheduleConfig: {
-        period: "all_future", // Período padrão: todos os horários futuros
+        period: "all_future",
+      },
+      appointmentTypeConfig: {
+        mode: "disabled",
+        fixedType: "online",
+        defaultValueOnline: 0,
+        defaultValuePresencial: 0,
+        locations: [],
       },
       createdAt: serverTimestamp(),
     });
@@ -89,9 +93,6 @@ export async function createDoctor({ uid, name, email, whatsapp }) {
 
 
 
-/* ==============================
-   GET DOCTOR BY ID
-================================ */
 export async function getDoctor(doctorId) {
   try {
     const docSnap = await getDoc(doc(db, COLLECTIONS.DOCTORS, doctorId));
@@ -109,9 +110,6 @@ export async function getDoctor(doctorId) {
   }
 }
 
-/* ==============================
-   GET DOCTOR BY SLUG
-================================ */
 
 export async function getDoctorBySlug(slug) {
   try {
@@ -145,9 +143,6 @@ export async function getDoctorBySlug(slug) {
   }
 }
 
-/* ==============================
-   UPDATE DOCTOR
-================================ */
 export async function updateDoctor(doctorId, data) {
   try {
     const allowedFields = [
@@ -157,6 +152,7 @@ export async function updateDoctor(doctorId, data) {
       "whatsappConfig",
       "patientLimit",
       "publicScheduleConfig",
+      "appointmentTypeConfig",
     ];
 
     const updateData = {};
@@ -199,9 +195,6 @@ export async function updateDoctor(doctorId, data) {
       }
     }
 
-    /* ==============================
-       VALIDAR publicScheduleConfig
-    ================================ */
     if (updateData.publicScheduleConfig) {
       const allowedPublicScheduleKeys = ["period"];
 
@@ -210,6 +203,39 @@ export async function updateDoctor(doctorId, data) {
           throw new Error(
             `Campo inválido em publicScheduleConfig: ${key}`
           );
+        }
+      }
+    }
+
+    if (updateData.appointmentTypeConfig) {
+      const allowedAppointmentTypeKeys = [
+        "mode",
+        "fixedType",
+        "defaultValueOnline",
+        "defaultValuePresencial",
+        "locations",
+      ];
+
+      for (const key of Object.keys(updateData.appointmentTypeConfig)) {
+        if (!allowedAppointmentTypeKeys.includes(key)) {
+          throw new Error(
+            `Campo inválido em appointmentTypeConfig: ${key}`
+          );
+        }
+      }
+
+      if (updateData.appointmentTypeConfig.locations) {
+        if (!Array.isArray(updateData.appointmentTypeConfig.locations)) {
+          throw new Error("appointmentTypeConfig.locations deve ser um array");
+        }
+
+        for (const location of updateData.appointmentTypeConfig.locations) {
+          if (!location.name || typeof location.name !== "string") {
+            throw new Error("Cada local deve ter um nome válido");
+          }
+          if (location.defaultValue === undefined) {
+            throw new Error("Cada local deve ter um defaultValue");
+          }
         }
       }
     }

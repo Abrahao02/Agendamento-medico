@@ -184,5 +184,26 @@
 
 .phone-field.shake {
   animation: shake 0.3s ease;
-  border-color: #ef4444; /* vermelho para aviso */
+  border-color: #ef4444;
+}
+
+.appointment-type-select,
+.location-select {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--white);
+  outline: none;
+  transition: var(--transition-base);
+  cursor: pointer;
+}
+
+.appointment-type-select:focus,
+.location-select:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--secondary-100);
 }

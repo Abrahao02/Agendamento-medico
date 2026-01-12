@@ -1,6 +1,3 @@
-// ============================================
-// index.js - Export Central
-// ============================================
 export * from "./config";
 export * from "./collections";
 

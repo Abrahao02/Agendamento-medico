@@ -1,6 +1,3 @@
-// ============================================
-// 📁 src/pages/PublicSchedule.jsx - REFATORADO
-// ============================================
 import React, { useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, AlertCircle } from "lucide-react";
@@ -125,6 +122,7 @@ export default function PublicSchedule() {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isSubmitting={submitting}
+          doctor={doctor}
         />
       )}
 

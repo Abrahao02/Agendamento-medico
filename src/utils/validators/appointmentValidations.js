@@ -11,7 +11,6 @@ export const validatePatientName = (name) => {
 export const validateWhatsapp = (whatsapp) => {
   const numbers = whatsapp.replace(/\D/g, "");
 
-  console.log("validateWhatsapp numbers:", numbers);
   if (numbers.length !== 11) {
     throw new Error(
       "Informe um número de WhatsApp válido com 11 dígitos."
