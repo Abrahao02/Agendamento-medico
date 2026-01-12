@@ -263,7 +263,7 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
   .appointment-card {
     grid-template-columns: 1fr;
     gap: var(--spacing-md);

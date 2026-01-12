@@ -1,6 +1,3 @@
-// ============================================
-// 📁 src/pages/AllAppointments.jsx - REFATORADO
-// ============================================
 import React from "react";
 import { auth } from "../services/firebase/config";
 
@@ -41,15 +38,14 @@ export default function AllAppointments() {
     handleStatusChange,
     handleSave,
     stats,
-    lockedAppointments, // ✅ NOVO
+    lockedAppointments,
   } = useAllAppointments(user);
 
   if (loadingData) {
     return <LoadingFallback message="Carregando agendamentos..." />;
   }
 
-  // ✅ MIGRADO: Usa getStatusOptions helper com constants centralizadas
-  const statusOptions = getStatusOptions(true); // true = inclui "Todos"
+  const statusOptions = getStatusOptions(true);
 
   const sendWhatsapp = (number, text) => {
     const cleanNumber = number.replace(/\D/g, "");
@@ -109,7 +105,7 @@ export default function AllAppointments() {
           patientsData={patientsData}
           expandedPatients={expandedPatients}
           changedIds={changedIds}
-          lockedAppointments={lockedAppointments} // ✅ NOVO
+          lockedAppointments={lockedAppointments}
           onTogglePatient={togglePatient}
           onStatusChange={handleStatusChange}
           onSendWhatsapp={sendWhatsapp}
