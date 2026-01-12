@@ -26,7 +26,8 @@
 
 /* Inputs */
 .settings-card input,
-.settings-card textarea {
+.settings-card textarea,
+.settings-card select {
   width: 100%;
   padding: 0.7rem 0.8rem;
   border-radius: 10px;
@@ -35,12 +36,18 @@
   margin-bottom: 0.8rem;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #ffffff;
 }
 
 .settings-card input:focus,
-.settings-card textarea:focus {
+.settings-card textarea:focus,
+.settings-card select:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.settings-card select {
+  cursor: pointer;
 }
 
 /* Texto auxiliar */

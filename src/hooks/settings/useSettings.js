@@ -27,6 +27,11 @@ export function useSettings(user) {
     showValue: true,
   });
 
+  // 📅 Configurações do Agendamento Público
+  const [publicScheduleConfig, setPublicScheduleConfig] = useState({
+    period: "all_future",
+  });
+
   // 📥 Buscar configurações do médico
   useEffect(() => {
     if (!user) {
@@ -56,6 +61,11 @@ export function useSettings(user) {
               "Caso não possa comparecer, por favor avisar com antecedência. Obrigado!",
             showValue: data.whatsappConfig?.showValue ?? true,
           });
+
+          // 📅 Configuração do Agendamento Público
+          setPublicScheduleConfig({
+            period: data.publicScheduleConfig?.period || "all_future",
+          });
         }
       } catch (error) {
         console.error("Erro ao buscar configurações:", error);
@@ -84,6 +94,9 @@ export function useSettings(user) {
           footer: whatsappConfig.footer,
           showValue: whatsappConfig.showValue,
         },
+        publicScheduleConfig: {
+          period: publicScheduleConfig.period,
+        },
       });
     } catch (error) {
       console.error("Erro ao salvar configurações:", error);
@@ -96,6 +109,14 @@ export function useSettings(user) {
   // 🔄 Atualizar campo do WhatsApp
   const updateWhatsappField = (field, value) => {
     setWhatsappConfig((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // 🔄 Atualizar campo do Agendamento Público
+  const updatePublicScheduleField = (field, value) => {
+    setPublicScheduleConfig((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -125,10 +146,12 @@ export function useSettings(user) {
     saving,
     defaultValueSchedule,
     whatsappConfig,
+    publicScheduleConfig,
 
     // Setters
     setDefaultValueSchedule,
     updateWhatsappField,
+    updatePublicScheduleField,
 
     // Funções
     saveSettings,

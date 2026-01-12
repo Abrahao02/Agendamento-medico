@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import { PrivateRoute } from "../components/PrivateRoute";
+import { PrivateRoute } from "./PrivateRoute";
 import LoadingFallback from "../components/common/LoadingFallback";
 
 

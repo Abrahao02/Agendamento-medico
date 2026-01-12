@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../../services/firebase";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
+import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
 
 const APPOINTMENT_LIMIT = 10;
 
@@ -83,7 +84,7 @@ function useUserData() {
           const appointments = appointmentsSnapshot.docs.map(d => d.data());
           const confirmedThisMonth = appointments.filter(
             appointment =>
-              appointment.status === "Confirmado" &&
+              appointment.status === APPOINTMENT_STATUS.CONFIRMED &&
               appointment.date >= startDate &&
               appointment.date <= endDate
           ).length;

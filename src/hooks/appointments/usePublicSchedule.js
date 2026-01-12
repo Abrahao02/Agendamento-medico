@@ -22,6 +22,7 @@ import {
   validateAvailability,
   filterAvailableSlots
 } from "../../utils/filters/availabilityFilters";
+import { filterByPeriodConfig } from "../../utils/filters/publicScheduleFilters";
 
 // ✅ UTILS - Appointments
 import { filterAppointments } from "../../utils/filters/appointmentFilters";
@@ -31,6 +32,9 @@ import { generatePatientId } from "../../utils/patients/generatePatientId";
 
 // ✅ UTILS - WhatsApp
 import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
+
+// ✅ CONSTANTS
+import { STATUS_GROUPS } from "../../constants/appointmentStatus";
 
 export const usePublicSchedule = (slug) => {
   const [doctor, setDoctor] = useState(null);
@@ -73,7 +77,12 @@ export const usePublicSchedule = (slug) => {
         if (availResult.success) {
           // ✅ USA validateAvailability - filtra futuras e válidas
           const validAvailability = validateAvailability(availResult.data, true);
-          setAvailability(validAvailability);
+          
+          // ✅ Aplica filtro de período baseado na configuração do médico
+          const periodConfig = doctorData.publicScheduleConfig?.period || "all_future";
+          const filteredByPeriod = filterByPeriodConfig(validAvailability, periodConfig);
+          
+          setAvailability(filteredByPeriod);
         }
 
         // 4. ✅ Carrega e filtra agendamentos com util
@@ -84,7 +93,7 @@ export const usePublicSchedule = (slug) => {
           const futureAppointments = filterAppointments(appointmentsResult.data, {
             futureOnly: true,
             statusFilter: "Todos" // Confirmado e Pendente
-          }).filter(a => a.status === "Pendente" || a.status === "Confirmado");
+          }).filter(a => STATUS_GROUPS.ACTIVE.includes(a.status));
           
           setAppointments(futureAppointments);
         }

@@ -4,6 +4,7 @@
 import React from "react";
 import { auth } from "../services/firebase";
 import { useSettings } from "../hooks/settings/useSettings";
+import { getPeriodOptions } from "../constants/publicScheduleConfig";
 
 import "./Settings.css";
 
@@ -15,8 +16,10 @@ export default function Settings() {
     saving,
     defaultValueSchedule,
     whatsappConfig,
+    publicScheduleConfig,
     setDefaultValueSchedule,
     updateWhatsappField,
+    updatePublicScheduleField,
     saveSettings,
     generatePreview,
   } = useSettings(user);
@@ -100,6 +103,30 @@ export default function Settings() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* 📅 Agendamento Público */}
+      <section className="settings-card">
+        <h2>Período de disponibilidade no agendamento público</h2>
+        <p className="helper-text">
+          Escolha quais horários serão exibidos para os clientes na agenda pública.
+        </p>
+
+        <label>Período de exibição</label>
+        <select
+          value={publicScheduleConfig.period}
+          onChange={(e) => updatePublicScheduleField("period", e.target.value)}
+        >
+          {getPeriodOptions().map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        <p className="helper-text">
+          {getPeriodOptions().find(opt => opt.value === publicScheduleConfig.period)?.description}
+        </p>
       </section>
 
       <button className="save-btn" onClick={handleSave} disabled={saving}>

@@ -1,6 +1,7 @@
 // src/components/allAppointments/PatientCard.jsx
 import React from "react";
 import formatDate from "../../utils/formatter/formatDate";
+import { getStatusOptions } from "../../utils/appointments/getStatusOptions";
 import "./PatientCard.css";
 
 export default function PatientCard({
@@ -12,6 +13,8 @@ export default function PatientCard({
   onStatusChange,
   onSendWhatsapp,
 }) {
+  // ✅ MIGRADO: Usa getStatusOptions helper com constants centralizadas
+  const statusOptions = getStatusOptions();
   const handleSendReport = (e) => {
     e.stopPropagation();
     const messages = patient.appointments.map(
@@ -84,11 +87,11 @@ export default function PatientCard({
                     disabled={isLocked}
                     title={isLocked ? "Horário reagendado - Status bloqueado" : ""}
                   >
-                    <option value="Pendente">Pendente</option>
-                    <option value="Confirmado">Confirmado</option>
-                    <option value="Não Compareceu">Não Compareceu</option>
-                    <option value="Msg enviada">Msg enviada</option>
-                    <option value="Cancelado">Cancelado</option>
+                    {statusOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                   
                   {/* ✅ NOVO: Indicador visual de bloqueio */}

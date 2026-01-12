@@ -74,6 +74,9 @@ export async function createDoctor({ uid, name, email, whatsapp }) {
         footer: "Caso não possa comparecer, avise com antecedência.",
         showValue: true,
       },
+      publicScheduleConfig: {
+        period: "all_future", // Período padrão: todos os horários futuros
+      },
       createdAt: serverTimestamp(),
     });
 
@@ -153,6 +156,7 @@ export async function updateDoctor(doctorId, data) {
       "defaultValueSchedule",
       "whatsappConfig",
       "patientLimit",
+      "publicScheduleConfig",
     ];
 
     const updateData = {};
@@ -192,6 +196,21 @@ export async function updateDoctor(doctorId, data) {
         throw new Error(
           "whatsappConfig.showValue deve ser boolean"
         );
+      }
+    }
+
+    /* ==============================
+       VALIDAR publicScheduleConfig
+    ================================ */
+    if (updateData.publicScheduleConfig) {
+      const allowedPublicScheduleKeys = ["period"];
+
+      for (const key of Object.keys(updateData.publicScheduleConfig)) {
+        if (!allowedPublicScheduleKeys.includes(key)) {
+          throw new Error(
+            `Campo inválido em publicScheduleConfig: ${key}`
+          );
+        }
       }
     }
 

@@ -9,6 +9,7 @@ import Filters from "../components/common/Filters/Filters";
 import PatientsList from "../components/allAppointments/PatientsList";
 import SaveChangesBar from "../components/allAppointments/SaveChangesBar";
 import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
+import { getStatusOptions } from "../utils/appointments/getStatusOptions";
 
 import "./AllAppointments.css";
 
@@ -47,13 +48,8 @@ export default function AllAppointments() {
     return <LoadingFallback message="Carregando agendamentos..." />;
   }
 
-  const statusOptions = [
-    { value: "Confirmado", label: "Confirmado" },
-    { value: "Pendente", label: "Pendente" },
-    { value: "Não Compareceu", label: "Não Compareceu" },
-    { value: "Msg enviada", label: "Msg enviada" },
-    { value: "Cancelado", label: "Cancelado" },
-  ];
+  // ✅ MIGRADO: Usa getStatusOptions helper com constants centralizadas
+  const statusOptions = getStatusOptions(true); // true = inclui "Todos"
 
   const sendWhatsapp = (number, text) => {
     const cleanNumber = number.replace(/\D/g, "");
