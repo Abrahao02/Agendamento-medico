@@ -1,164 +1,169 @@
-import { useEffect, useState } from "react";
-import { auth, db } from "../services/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  setDoc
-} from "firebase/firestore";
+// ============================================
+// 📁 src/pages/Patients.jsx - REFATORADO
+// ============================================
+import React from "react";
+import { auth } from "../services/firebase";
+import { usePatients } from "../hooks/patients/usePatients";
+import PageHeader from "../components/common/PageHeader/PageHeader";
+
 import "./Patients.css";
 
 export default function Patients() {
-  const [user] = useAuthState(auth);
-  const [patients, setPatients] = useState({});
-  const [saving, setSaving] = useState(null);
+  const user = auth.currentUser;
 
-  useEffect(() => {
-    if (!user) return;
+  const {
+    loading,
+    saving,
+    newPatient,
+    error,
+    patientsList,
+    patientsCount,
+    updateNewPatientField,
+    handleWhatsappChange,
+    isWhatsappDuplicate,
+    updatePatientPrice,
+    updatePatientReferenceName,
+    savePatient,
+    addPatient,
+    enableEditPatient,
+    editingPatients,
+    formatWhatsappDisplay,
+    setError,
+  } = usePatients(user);
 
-    const fetchPatients = async () => {
-      // 1️⃣ Buscar consultas
-      const apptSnap = await getDocs(
-        query(
-          collection(db, "appointments"),
-          where("doctorId", "==", user.uid)
-        )
-      );
-
-      const map = {};
-
-      apptSnap.docs.forEach(doc => {
-        const a = doc.data();
-        const key = a.patientWhatsapp;
-
-        if (!map[key]) {
-          map[key] = {
-            name: a.patientName,
-            whatsapp: a.patientWhatsapp,
-            totalConsultas: 0,
-            price: 0
-          };
-        }
-
-        map[key].totalConsultas += 1;
-      });
-
-      // 2️⃣ Buscar pacientes (preços)
-      const patientSnap = await getDocs(
-        query(
-          collection(db, "patients"),
-          where("doctorId", "==", user.uid)
-        )
-      );
-
-      patientSnap.docs.forEach(doc => {
-        const p = doc.data();
-        if (map[p.whatsapp]) {
-          map[p.whatsapp].price = p.price || 0;
-        }
-      });
-
-      setPatients(map);
-    };
-
-    fetchPatients();
-  }, [user]);
-
-  const handlePriceChange = (whatsapp, value) => {
-    setPatients(prev => ({
-      ...prev,
-      [whatsapp]: {
-        ...prev[whatsapp],
-        price: Number(value)
-      }
-    }));
+  const handleAddPatient = async () => {
+    const result = await addPatient();
+    if (result.success) alert("Paciente cadastrado com sucesso!");
+    else if (result.error && !error) alert(`Erro: ${result.error}`);
   };
 
-  const handleSavePrice = async (patient) => {
-    setSaving(patient.whatsapp);
-
-    try {
-      const id = `${user.uid}_${patient.whatsapp}`;
-
-      await setDoc(
-        doc(db, "patients", id),
-        {
-          doctorId: user.uid,
-          name: patient.name,
-          whatsapp: patient.whatsapp,
-          price: patient.price,
-          updatedAt: new Date()
-        },
-        { merge: true }
-      );
-
-      alert(`Valor salvo para ${patient.name}`);
-    } catch (err) {
-      console.error("Erro ao salvar valor:", err);
-      alert("Erro ao salvar valor.");
-    } finally {
-      setSaving(null);
-    }
+  const handleSavePatient = async (patient) => {
+    const result = await savePatient(patient);
+    if (result.success) alert(`Dados salvos para ${patient.name}`);
+    else alert(`Erro ao salvar: ${result.error || "Tente novamente"}`);
   };
 
-  const list = Object.values(patients);
+  if (loading) return <div className="patients-container"><p>Carregando pacientes...</p></div>;
 
   return (
     <div className="patients-container">
-      <h2>Pacientes</h2>
+      <PageHeader
+        label="Gestão de Pacientes"
+        title="Clientes"
+        description={`Total de ${patientsCount} cliente(s) cadastrado(s)`}
+      />
 
-      {list.length === 0 ? (
+      <div className="add-patient-form">
+        <h3>Adicionar Novo Paciente</h3>
+
+        <input
+          type="text"
+          placeholder="Nome"
+          value={newPatient.name}
+          onChange={(e) => updateNewPatientField("name", e.target.value)}
+        />
+
+        <input
+          type="text"
+          placeholder="Nome de referência"
+          value={newPatient.referenceName}
+          onChange={(e) => updateNewPatientField("referenceName", e.target.value)}
+        />
+
+        <input
+          type="text"
+          placeholder="WhatsApp (DDD + número)"
+          value={newPatient.whatsapp}
+          onChange={(e) => handleWhatsappChange(e.target.value)}
+          className={isWhatsappDuplicate(newPatient.whatsapp) ? "input-error" : ""}
+        />
+
+        <input
+          type="number"
+          min="0"
+          placeholder="Valor da consulta"
+          value={newPatient.price}
+          onChange={(e) => updateNewPatientField("price", e.target.value)}
+        />
+
+        <button onClick={handleAddPatient}>Cadastrar Paciente</button>
+
+        {error && <p className="error">{error}</p>}
+      </div>
+
+      <div className="patients-total">
+        Total de Clientes: <strong>{patientsCount}</strong>
+      </div>
+
+      {patientsList.length === 0 ? (
         <p>Nenhum paciente encontrado.</p>
       ) : (
         <table className="patients-table">
           <thead>
             <tr>
-              <th>Paciente</th>
+              <th>Nome Completo</th>
+              <th>Nome Preferido</th>
               <th>WhatsApp</th>
               <th>Valor Consulta (R$)</th>
               <th>Total Consultas</th>
-              <th>Total (R$)</th>
               <th>Ação</th>
             </tr>
           </thead>
 
           <tbody>
-            {list.map(p => (
-              <tr key={p.whatsapp}>
-                <td>{p.name}</td>
-                <td className="whatsapp">{p.whatsapp}</td>
+            {patientsList.map((patient) => {
+              const isEditing = editingPatients[patient.whatsapp];
 
-                <td>
-                  <input
-                    type="number"
-                    min="0"
-                    value={p.price}
-                    onChange={(e) =>
-                      handlePriceChange(p.whatsapp, e.target.value)
-                    }
-                  />
-                </td>
+              return (
+                <tr key={patient.whatsapp}>
+                  <td data-label="Nome Completo">
+                    <input
+                      type="text"
+                      value={patient.name}
+                      onChange={(e) => updateNewPatientField("name", e.target.value)}
+                      disabled={!isEditing}
+                    />
+                  </td>
 
-                <td className="center">{p.totalConsultas}</td>
+                  <td data-label="Nome Preferido">
+                    <input
+                      type="text"
+                      value={patient.referenceName}
+                      onChange={(e) => updatePatientReferenceName(patient.whatsapp, e.target.value)}
+                      disabled={!isEditing}
+                    />
+                  </td>
 
-                <td className="total">
-                  R$ {(p.price * p.totalConsultas).toFixed(2)}
-                </td>
+                  <td data-label="WhatsApp" className="whatsapp">{formatWhatsappDisplay(patient.whatsapp)}</td>
 
-                <td>
-                  <button
-                    className="save-btn"
-                    onClick={() => handleSavePrice(p)}
-                    disabled={saving === p.whatsapp}
-                  >
-                    {saving === p.whatsapp ? "Salvando..." : "Salvar"}
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  <td data-label="Valor Consulta (R$)">
+                    <input
+                      type="number"
+                      min="0"
+                      value={patient.price}
+                      onChange={(e) => updatePatientPrice(patient.whatsapp, e.target.value)}
+                      disabled={!isEditing}
+                    />
+                  </td>
+
+                  <td data-label="Total Consultas" className="center">{patient.totalConsultas}</td>
+
+                  <td data-label="Ação">
+                    {!isEditing ? (
+                      <button className="edit-btn" onClick={() => enableEditPatient(patient.whatsapp)}>Editar</button>
+                    ) : (
+                      <button
+                        className="save-btn"
+                        onClick={() => handleSavePatient(patient)}
+                        disabled={saving === patient.whatsapp}
+                      >
+                        {saving === patient.whatsapp ? "Salvando..." : "Salvar"}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

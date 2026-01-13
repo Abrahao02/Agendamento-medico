@@ -1,36 +1,38 @@
+@import url('../styles/variables.css');
+
 /* Container geral da página de agendamento */
 .public-schedule-container {
   max-width: 500px;
   margin: 40px auto;
   padding: 30px;
-  background-color: #f7f9fc;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-family-base);
 }
 
 /* Títulos */
 .public-schedule-container h2 {
   text-align: center;
-  color: #1e3a8a; /* azul escuro */
-  margin-bottom: 20px;
-  font-size: 1.8rem;
+  color: var(--secondary-800);
+  margin-bottom: var(--spacing-xl);
+  font-size: var(--text-3xl);
 }
 
 /* Texto de instrução ou confirmação */
 .public-schedule-container p {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #333;
-  margin-bottom: 15px;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
   text-align: center;
 }
 
 /* Texto de privacidade do formulário */
 .privacy {
-  font-size: 0.85rem;
-  color: #666;
-  margin-top: 10px;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-md);
   text-align: center;
 }
 
@@ -49,75 +51,75 @@
 
 /* Botão de confirmar agendamento */
 .public-schedule-container button[type="submit"] {
-  background-color: #1e3a8a; /* azul escuro */
-  color: #fff;
+  background-color: var(--secondary-800);
+  color: var(--text-inverse);
 }
 
 .public-schedule-container button[type="submit"]:hover {
-  background-color: #3749a3;
+  background-color: var(--secondary-700);
 }
 
 /* Botão de cancelar ou voltar */
 .public-schedule-container button[type="button"] {
-  background-color: #e5e7eb; /* cinza claro */
-  color: #1f2937;
+  background-color: var(--border-light);
+  color: var(--text-primary);
 }
 
 .public-schedule-container button[type="button"]:hover {
-  background-color: #d1d5db;
+  background-color: var(--border-medium);
 }
 
 /* Formulário de agendamento */
 .appointment-form {
-  margin-top: 20px;
-  padding: 20px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Inputs do formulário */
 .appointment-form input {
   width: 100%;
-  padding: 10px 12px;
-  margin: 8px 0 15px 0;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 1rem;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: var(--spacing-xs) 0 var(--spacing-lg) 0;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
   box-sizing: border-box;
-  transition: border-color 0.2s;
+  transition: border-color var(--transition-base);
 }
 
 .appointment-form input:focus {
-  border-color: #1e3a8a;
+  border-color: var(--secondary-800);
   outline: none;
 }
 
 /* Botões de horário */
 .slot-btn {
-  margin: 5px 5px 5px 0;
-  padding: 8px 15px;
-  background-color: #1e3a8a;
-  color: #fff;
+  margin: var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) 0;
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--secondary-800);
+  color: var(--text-inverse);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--transition-base);
 }
 
 .slot-btn:hover {
-  background-color: #3749a3;
+  background-color: var(--secondary-700);
 }
 
 /* Dia e horários */
 .day-slots {
-  margin-bottom: 15px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .day-slots h4 {
-  color: #1e3a8a;
-  margin-bottom: 8px;
-  font-size: 1.1rem;
+  color: var(--secondary-800);
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--text-lg);
 }
 
 /* Mensagem de sucesso */
@@ -125,19 +127,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: var(--spacing-lg);
 }
 
 .success-message h2 {
-  color: #16a34a; /* verde sucesso */
+  color: var(--success-600);
 }
 
 .success-message p {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 /* Ícone de check */
 .success-message .check-icon {
-  font-size: 3rem;
-  color: #16a34a;
+  font-size: var(--text-5xl);
+  color: var(--success-600);
 }

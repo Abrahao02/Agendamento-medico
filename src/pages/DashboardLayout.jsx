@@ -1,55 +1,91 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "../services/firebase";
+// ============================================
+// 📁 src/pages/DashboardLayout.jsx - REFATORADO
+// ============================================
+import { Outlet, NavLink } from "react-router-dom";
+import { useDashboardLayout } from "../hooks/common/useDashboardLayout";
+
+import {
+  FiSettings,
+  FiHome,
+  FiCalendar,
+  FiClock,
+  FiBookOpen,
+  FiUser,
+  FiLogOut,
+  FiMenu
+} from "react-icons/fi";
+
+import Sidebar from "../components/layout/Sidebar/Sidebar";
+
 import "./DashboardLayout.css";
 
-export default function DashboardLayout() {
-  const navigate = useNavigate();
+const MENU_ITEMS = [
+  { to: "/dashboard", icon: FiHome, text: "Home", end: true },
+  { to: "/dashboard/appointments", icon: FiCalendar, text: "Agenda do dia" },
+  { to: "/dashboard/availability", icon: FiClock, text: "Agenda do mês" },
+  { to: "/dashboard/allappointments", icon: FiBookOpen, text: "Todos agendamentos" },
+  { to: "/dashboard/clients", icon: FiUser, text: "Clientes" },
+  { to: "/dashboard/settings", icon: FiSettings, text: "Configurações" }
+];
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/login");
-  };
+export default function DashboardLayout() {
+  const {
+    sidebarOpen,
+    isDesktop,
+    toggleSidebar,
+    closeSidebar,
+    doctorName,
+    plan,
+    appointmentsThisMonth,
+    isLimitReached,
+    loading,
+    handleLogout,
+  } = useDashboardLayout();
+
+  if (loading) {
+    return (
+      <div className="dashboard-layout">
+        <div className="loading-container">
+          <p>Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-layout">
-      <nav className="sidebar">
-        <h2>Meu Painel</h2>
-        <ul>
-          <li>
-            <NavLink to="/dashboard" end>
-              🏠 Home
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/dashboard/appointments">
-              📋 Agenda do dia
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/dashboard/availability">
-              🕒 Disponibilidade
-            </NavLink>
-          </li>
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        toggleSidebar={toggleSidebar}
+        closeSidebar={closeSidebar}
+        isDesktop={isDesktop}
+        doctorName={doctorName}
+        plan={plan}
+        appointmentsThisMonth={appointmentsThisMonth}
+        isLimitReached={isLimitReached}
+        handleLogout={handleLogout}
+        menuItems={MENU_ITEMS}
+      />
 
-          <li>
-            <NavLink to="/dashboard/allappointments">
-              📚 Todas consultas
-            </NavLink>
-          </li>
+      {!isDesktop && (
+        <>
+          <button
+            onClick={toggleSidebar}
+            aria-expanded={sidebarOpen}
+            aria-label="Abrir menu"
+            className="hamburger-fixed"
+            title="Abrir menu"
+          >
+            <FiMenu />
+          </button>
 
-          <li>
-            <NavLink to="/dashboard/patients">
-              👤 Pacientes
-            </NavLink>
-          </li>
-          <li>
-            <button onClick={handleLogout} className="logout-btn">
-              🚪 Sair
-            </button>
-          </li>
-        </ul>
-      </nav>
+          <div
+            className={`sidebar-overlay ${sidebarOpen ? "open" : ""}`}
+            onClick={closeSidebar}
+            aria-hidden="true"
+          />
+        </>
+      )}
 
       <main className="dashboard-content">
         <Outlet />

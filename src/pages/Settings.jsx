@@ -1,0 +1,123 @@
+import React from "react";
+import { auth } from "../services/firebase";
+import { useSettings } from "../hooks/settings/useSettings";
+import PlanSection from "../components/settings/PlanSection/PlanSection";
+import WhatsAppSection from "../components/settings/WhatsAppSection/WhatsAppSection";
+import PublicScheduleSection from "../components/settings/PublicScheduleSection/PublicScheduleSection";
+import AppointmentTypeSection from "../components/settings/AppointmentTypeSection/AppointmentTypeSection";
+import Button from "../components/common/Button";
+import ContentLoading from "../components/common/ContentLoading/ContentLoading";
+import { Save } from "lucide-react";
+
+import "./Settings.css";
+
+export default function Settings() {
+  const user = auth.currentUser;
+
+  const {
+    loading,
+    saving,
+    doctor,
+    isPro,
+    whatsappConfig,
+    publicScheduleConfig,
+    appointmentTypeConfig,
+    subscriptionEndDate,
+    updateLocation,
+    removeLocation,
+    newLocationName,
+    newLocationValue,
+    cancelLoading,
+    cancelError,
+    reactivateLoading,
+    reactivateError,
+    updateWhatsappField,
+    updatePublicScheduleField,
+    updateAppointmentTypeField,
+    setNewLocationName,
+    setNewLocationValue,
+    handleAddLocation,
+    handleCancelSubscription,
+    handleReactivateSubscription,
+    saveSettings,
+    generatePreview,
+  } = useSettings(user);
+
+  const handleSave = async () => {
+    const result = await saveSettings();
+
+    if (result.success) {
+      alert("Configurações salvas com sucesso!");
+    } else {
+      alert(`Erro ao salvar: ${result.error || "Tente novamente"}`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="settings-page">
+        <ContentLoading message="Carregando configurações..." />
+      </div>
+    );
+  }
+
+  return (
+    <div className="settings-page">
+      <div className="settings-header">
+        <h1>Configurações</h1>
+        <p className="settings-subtitle">Gerencie suas preferências e plano</p>
+      </div>
+
+      <PlanSection
+        isPro={isPro}
+        doctor={doctor}
+        subscriptionEndDate={subscriptionEndDate}
+        onCancel={handleCancelSubscription}
+        onReactivate={handleReactivateSubscription}
+        cancelLoading={cancelLoading}
+        reactivateLoading={reactivateLoading}
+        cancelError={cancelError}
+        reactivateError={reactivateError}
+      />
+
+      <PublicScheduleSection
+        publicScheduleConfig={publicScheduleConfig}
+        onUpdateField={updatePublicScheduleField}
+      />
+
+      <AppointmentTypeSection
+        appointmentTypeConfig={appointmentTypeConfig}
+        onUpdateField={updateAppointmentTypeField}
+        onAddLocation={handleAddLocation}
+        onUpdateLocation={updateLocation}
+        onRemoveLocation={removeLocation}
+        newLocationName={newLocationName}
+        newLocationValue={newLocationValue}
+        onNewLocationNameChange={setNewLocationName}
+        onNewLocationValueChange={setNewLocationValue}
+      />
+
+      <WhatsAppSection
+        whatsappConfig={whatsappConfig}
+        onUpdateField={updateWhatsappField}
+        preview={generatePreview()}
+      />
+
+      <div className="settings-footer">
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          loading={saving}
+          variant="primary"
+          leftIcon={!saving ? <Save size={18} /> : null}
+          className="save-btn"
+        >
+          {saving ? "Salvando..." : "Salvar configurações"}
+        </Button>
+        <p className="footer-note">
+          Necessario salvar para aplicar as configurações.
+        </p>
+      </div>
+    </div>
+  );
+}

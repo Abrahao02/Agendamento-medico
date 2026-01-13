@@ -1,244 +1,140 @@
-/* ===============================
-   LAYOUT GERAL
-================================ */
-.dashboard-container {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 2.5rem;
-  background: #ffffff;
-  border-radius: 1.2rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  font-family: 'Inter', 'Segoe UI', sans-serif;
+/* ============================================
+   📁 src/pages/Dashboard/Dashboard.css - MELHORADO
+   ============================================ */
+@import url('../styles/variables.css');
+
+.dashboard-content {
+  padding: var(--spacing-xl);
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease;
 }
 
-.dashboard-container h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: #1f2937;
-  font-size: 1.6rem;
-  font-weight: 600;
-}
-
-/* ===============================
-   FILTRO DE MÊS
-================================ */
-.month-filter {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 1.8rem;
-}
-
-.month-filter label {
-  font-weight: 600;
-  color: #374151;
-}
-
-.month-filter input {
-  padding: 0.45rem 0.7rem;
-  border-radius: 0.5rem;
-  border: 1px solid #d1d5db;
-  font-size: 0.95rem;
-}
-
-/* ===============================
-   LINK PÚBLICO
-================================ */
-.public-link-card {
-  margin-bottom: 2.2rem;
-  padding: 1.2rem 1.5rem;
-  border-radius: 0.9rem;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-}
-
-.public-link-card p {
-  text-align: center;
-  font-weight: 500;
-  color: #374151;
-}
-
-
-.link-box {
-  margin-top: 0.6rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-}
-
-.link-box span {
-  font-family: monospace;
-  background: #eef2ff;
-  color: #1e40af;
-  padding: 0.5rem 0.9rem;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.link-box button {
-  padding: 0.45rem 0.9rem;
-  background-color: #2563eb;
-  border: none;
-  border-radius: 0.5rem;
-  color: white;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s;
-}
-
-.link-box button:hover {
-  background-color: #1d4ed8;
-}
-
-/* ===============================
-   CARDS DE INDICADORES
-================================ */
-.stats-container {
+/* Stats Grid */
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1.2rem;
-  margin-bottom: 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
 }
 
-.stat-card {
-  padding: 1.6rem 1rem;
-  border-radius: 1rem;
-  text-align: center;
-  color: white;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+/* ✨ NOVO: Segunda linha de stats (menor ênfase) */
+.stats-grid-secondary {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  margin-bottom: var(--spacing-2xl);
 }
 
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+.stats-grid-secondary .stats-card {
+  background: linear-gradient(135deg, var(--gray-50) 0%, var(--bg-primary) 100%);
 }
 
-.stat-card h3 {
-  font-size: 2.2rem;
-  margin: 0;
-}
-
-.stat-card p {
-  margin-top: 0.4rem;
-  font-weight: 500;
-  font-size: 0.95rem;
-}
-
-/* Cores dos cards */
-.stat-card.slots-open { background: linear-gradient(135deg, #2563eb, #1e40af); }
-.stat-card.appointments-confirmed { background: linear-gradient(135deg, #16a34a, #15803d); }
-.stat-card.clients-pending { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.stat-card.appointments-attended { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
-.stat-card.no-shows { background: linear-gradient(135deg, #ef4444, #dc2626); }
-
-/* ===============================
-   GRÁFICOS
-================================ */
-.charts {
+/* Charts Section */
+.charts-section {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
+  gap: var(--spacing-xl);
 }
 
-.chart-card {
-  background: #ffffff;
-  border-radius: 1rem;
-  padding: 1.2rem;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-}
+/* ✨ NOVO: Efeito de fade in escalonado */
+.stats-grid .stats-card:nth-child(1) { animation-delay: 0.1s; }
+.stats-grid .stats-card:nth-child(2) { animation-delay: 0.15s; }
+.stats-grid .stats-card:nth-child(3) { animation-delay: 0.2s; }
+.stats-grid .stats-card:nth-child(4) { animation-delay: 0.25s; }
 
-.chart-card h3 {
-  text-align: center;
-  margin-bottom: 0.8rem;
-  font-size: 1.1rem;
-  color: #1f2937;
-}
+.stats-grid-secondary .stats-card:nth-child(1) { animation-delay: 0.3s; }
+.stats-grid-secondary .stats-card:nth-child(2) { animation-delay: 0.35s; }
 
-/* Texto dentro dos cards SEMPRE branco */
-.stat-card h3,
-.stat-card p {
-  color: #ffffff !important;
-}
-
-.public-link-card {
-  margin: 2rem auto;
-  padding: 1.5rem;
-  max-width: 700px;
-  border-radius: 1rem;
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
-  text-align: center;
-}
-
-.public-link-label {
-  font-size: 0.9rem;
-  color: #475569;
-  margin-bottom: 0.6rem;
-  font-weight: 500;
-}
-
-.public-link-box {
+/* Loading State */
+.dashboard-loading {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
+  min-height: 400px;
+  gap: var(--spacing-lg);
 }
 
-/* Link em destaque */
-.public-link-text {
-  background: #eef2ff;
-  color: #1e40af;
-  padding: 0.6rem 1rem;
-  border-radius: 0.6rem;
-  font-family: monospace;
-  font-size: 0.9rem;
-  max-width: 100%;
-  overflow-x: auto;
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--gray-200);
+  border-top-color: var(--color-secondary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
-/* Botões */
-.copy-btn {
-  padding: 0.55rem 1rem;
-  background-color: #2563eb;
-  border: none;
-  border-radius: 0.6rem;
-  color: white;
-  cursor: pointer;
-  font-weight: 500;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.copy-btn:hover {
-  background-color: #1e40af;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.open-btn {
-  padding: 0.55rem 1rem;
-  background-color: #10b981;
-  border-radius: 0.6rem;
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
+.dashboard-loading p {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
 }
 
-.open-btn:hover {
-  background-color: #059669;
+/* ✨ NOVO: Destaque visual para métricas importantes */
+.dashboard-content .stats-grid .stats-card:first-child {
+  position: relative;
 }
 
+.dashboard-content .stats-grid .stats-card:first-child::before {
+  content: '✨';
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  font-size: var(--text-lg);
+  animation: float 3s ease-in-out infinite;
+}
 
-/* ===============================
-   RESPONSIVO
-================================ */
-@media (max-width: 900px) {
-  .charts {
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .charts-section {
     grid-template-columns: 1fr;
   }
+  
+  .stats-grid-secondary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
-  .dashboard-container {
-    padding: 1.5rem;
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: var(--spacing-md);
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+  }
+  
+  .stats-grid-secondary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }

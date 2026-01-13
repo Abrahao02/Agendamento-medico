@@ -1,0 +1,260 @@
+/* ========================================
+   CONTENT LOADING
+   Loading para áreas específicas (não tela cheia)
+   ======================================== */
+
+.content-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  background-color: transparent;
+}
+
+.content-loading.inline {
+  display: inline-flex;
+  width: auto;
+}
+
+.content-loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* ========================================
+   SPINNER ANIMADO
+   ======================================== */
+
+.content-spinner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tamanhos do Spinner */
+.content-spinner.sm {
+  width: 30px;
+  height: 30px;
+}
+
+.content-spinner.md {
+  width: 50px;
+  height: 50px;
+}
+
+.content-spinner.lg {
+  width: 70px;
+  height: 70px;
+}
+
+/* Anéis do Spinner */
+.spinner-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--color-primary);
+  animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+
+.content-spinner.sm .spinner-ring {
+  border-width: 2px;
+}
+
+.content-spinner.lg .spinner-ring {
+  border-width: 4px;
+}
+
+/* Primeiro anel */
+.spinner-ring:nth-child(1) {
+  width: 100%;
+  height: 100%;
+  border-top-color: var(--color-primary);
+}
+
+/* Segundo anel */
+.spinner-ring:nth-child(2) {
+  width: 75%;
+  height: 75%;
+  border-top-color: var(--color-secondary);
+  animation-delay: -0.5s;
+  animation-direction: reverse;
+}
+
+/* Terceiro anel */
+.spinner-ring:nth-child(3) {
+  width: 50%;
+  height: 50%;
+  border-top-color: var(--color-accent);
+  animation-delay: -1s;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+    border-width: 3px;
+  }
+  50% {
+    transform: rotate(180deg);
+    border-width: 1px;
+  }
+  100% {
+    transform: rotate(360deg);
+    border-width: 3px;
+  }
+}
+
+/* Ajuste para tamanhos */
+.content-spinner.sm .spinner-ring {
+  border-width: 2px;
+}
+
+.content-spinner.sm @keyframes spin {
+  50% {
+    border-width: 1px;
+  }
+}
+
+.content-spinner.lg .spinner-ring {
+  border-width: 4px;
+}
+
+.content-spinner.lg @keyframes spin {
+  50% {
+    border-width: 2px;
+  }
+}
+
+/* ========================================
+   TEXTO
+   ======================================== */
+
+.content-loading-text {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  text-align: center;
+  animation: fadeInOut 2s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   VARIAÇÕES DE CONTEXTO
+   ======================================== */
+
+/* Loading em Card */
+.content-loading.card-loading {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Loading em Modal */
+.content-loading.modal-loading {
+  padding: var(--spacing-2xl);
+}
+
+/* Loading em Tabela */
+.content-loading.table-loading {
+  padding: var(--spacing-xl) 0;
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* ========================================
+   SKELETON (Opcional - Placeholder)
+   ======================================== */
+
+.skeleton-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.skeleton-line {
+  height: 16px;
+  background: linear-gradient(
+    90deg,
+    var(--gray-200) 25%,
+    var(--gray-300) 50%,
+    var(--gray-200) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--radius-sm);
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-line.title {
+  height: 24px;
+  width: 60%;
+}
+
+.skeleton-line.subtitle {
+  height: 18px;
+  width: 80%;
+}
+
+.skeleton-line.text {
+  width: 100%;
+}
+
+.skeleton-line.short {
+  width: 40%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ========================================
+   RESPONSIVO
+   ======================================== */
+
+@media (max-width: 768px) {
+  .content-loading {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .content-spinner.lg {
+    width: 50px;
+    height: 50px;
+  }
+
+  .content-loading-text {
+    font-size: var(--text-xs);
+  }
+}
+
+/* ========================================
+   ACESSIBILIDADE
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner-ring,
+  .content-loading-text {
+    animation: none;
+  }
+
+  .skeleton-line {
+    animation: none;
+  }
+}

@@ -1,0 +1,179 @@
+/* src/components/publicSchedule/DayCard/DayCard.css */
+@import url('../../../styles/variables.css');
+
+.day-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  transition: var(--transition-base);
+  animation: fadeUp 0.4s ease forwards;
+  opacity: 0;
+}
+
+.day-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.day-btn {
+  width: 100%;
+  padding: var(--spacing-lg);
+  background: var(--white);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition-base);
+  font-family: inherit;
+}
+
+.day-btn:hover:not(:disabled) {
+  background: var(--secondary-50);
+}
+
+.day-btn.selected {
+  background: var(--secondary-100);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.day-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.day-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+.day-info svg {
+  color: var(--color-secondary);
+}
+
+.day-date {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+}
+
+.slots-count {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--gray-100);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-medium);
+}
+
+.arrow {
+  display: flex;
+  align-items: center;
+  color: var(--text-tertiary);
+  transition: var(--transition-base);
+}
+
+.day-btn:hover .arrow {
+  color: var(--color-secondary);
+}
+
+/* Slots List */
+.slots-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  background: var(--gray-50);
+  animation: slideDown 0.3s ease;
+}
+
+.slot-btn {
+  padding: var(--spacing-md);
+  background: var(--white);
+  border: 2px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.slot-btn:hover {
+  border-color: var(--color-secondary);
+  background: var(--secondary-50);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.slot-btn.selected {
+  background: var(--gradient-secondary);
+  color: var(--white);
+  border-color: var(--color-secondary);
+  box-shadow: var(--shadow-secondary);
+}
+
+.slot-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+/* Animation delays */
+.day-card:nth-child(1) { animation-delay: 0.05s; }
+.day-card:nth-child(2) { animation-delay: 0.1s; }
+.day-card:nth-child(3) { animation-delay: 0.15s; }
+.day-card:nth-child(4) { animation-delay: 0.2s; }
+.day-card:nth-child(5) { animation-delay: 0.25s; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .day-btn {
+    padding: var(--spacing-md);
+  }
+
+  .day-info {
+    gap: var(--spacing-sm);
+  }
+
+  .day-date {
+    font-size: var(--text-sm);
+  }
+
+  .slots-list {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    padding: var(--spacing-md);
+  }
+
+  .slot-btn {
+    padding: var(--spacing-sm);
+    font-size: var(--text-xs);
+  }
+}

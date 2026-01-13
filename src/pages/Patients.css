@@ -1,91 +1,237 @@
+@import url('../styles/variables.css');
+
+/* =========================
+   CONTAINER BASE
+========================= */
 .patients-container {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #f9fafb;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-  font-family: "Inter", sans-serif;
+  max-width: 950px;
+  margin: var(--spacing-xl) auto;
+  padding: var(--spacing-xl);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-family-base);
 }
 
 .patients-container h2 {
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: #1f2937;
+  margin-bottom: var(--spacing-xl);
+  color: var(--text-primary);
 }
 
+/* =========================
+   FORMULÁRIO ADICIONAR PACIENTE
+========================= */
+.add-patient-form {
+  background: var(--bg-primary);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-xl);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  align-items: flex-end;
+}
+
+.add-patient-form h3 {
+  width: 100%;
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+}
+
+.add-patient-form input {
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  transition: all var(--transition-base);
+  font-size: var(--text-sm);
+  flex: 1 1 200px;
+}
+
+.add-patient-form input:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+}
+
+.add-patient-form button {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  background: var(--color-secondary);
+  color: var(--text-inverse);
+  font-weight: var(--font-medium);
+  transition: all var(--transition-base);
+  flex: 1 1 120px;
+}
+
+.add-patient-form button:hover {
+  background: var(--secondary-600);
+}
+
+.add-patient-form input.input-error {
+  border-color: var(--danger-500);
+  background-color: var(--danger-100);
+}
+
+.error {
+  color: var(--danger-500);
+  margin-top: 0.5rem;
+  font-weight: var(--font-medium);
+}
+
+/* =========================
+   TOTAL DE CLIENTES
+========================= */
+.patients-total {
+  margin-bottom: var(--spacing-md);
+  font-size: var(--text-lg);
+  color: var(--text-primary);
+}
+
+.patients-total strong {
+  color: var(--color-secondary);
+}
+
+/* =========================
+   TABELA DE PACIENTES
+========================= */
 .patients-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border-radius: 12px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
 .patients-table thead {
-  background: #f3f4f6;
+  background: var(--bg-tertiary);
 }
 
 .patients-table th,
 .patients-table td {
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-light);
+  font-size: var(--text-sm);
 }
 
 .patients-table th {
-  color: #374151;
-  font-weight: 600;
+  color: var(--text-secondary);
+  font-weight: var(--font-semibold);
 }
 
 .patients-table tbody tr:hover {
-  background: #f9fafb;
+  background: var(--bg-primary-light);
 }
 
 .patients-table input {
-  width: 90px;
+  width: 100%;
+  max-width: 150px;
   padding: 0.35rem 0.5rem;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  transition: all var(--transition-base);
 }
 
 .patients-table input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--color-secondary);
 }
 
 .center {
   text-align: center;
 }
 
-.total {
-  font-weight: 600;
-  color: #065f46;
-}
-
 .whatsapp {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--text-secondary);
+}
+
+/* =========================
+   BOTÕES
+========================= */
+.save-btn,
+.edit-btn {
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  transition: all var(--transition-base);
 }
 
 .save-btn {
-  padding: 0.35rem 0.8rem;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background: #3b82f6;
-  color: white;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: background 0.2s;
+  background: var(--color-secondary);
+  color: var(--text-inverse);
 }
 
 .save-btn:hover {
-  background: #2563eb;
+  background: var(--secondary-600);
 }
 
 .save-btn:disabled {
-  background: #9ca3af;
+  background: var(--border-medium);
   cursor: not-allowed;
+}
+
+.edit-btn {
+  background: var(--color-success);
+  color: var(--text-inverse);
+}
+
+.edit-btn:hover {
+  background: var(--success-600);
+}
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+@media (max-width: 768px) {
+  .patients-table,
+  .patients-table thead,
+  .patients-table tbody,
+  .patients-table th,
+  .patients-table td,
+  .patients-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .patients-table thead tr {
+    display: none;
+  }
+
+  .patients-table tbody tr {
+    margin-bottom: var(--spacing-md);
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .patients-table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: var(--text-sm);
+  }
+
+  .patients-table td::before {
+    content: attr(data-label);
+    font-weight: var(--font-semibold);
+    color: var(--text-secondary);
+  }
+
+  .patients-table input {
+    max-width: 120px;
+  }
+
+  .patients-container {
+    padding: var(--spacing-md);
+    margin: var(--spacing-md);
+  }
 }

@@ -1,0 +1,252 @@
+@import url('../../../styles/variables.css');
+
+.plan-upgrade-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: var(--text-inverse) !important;
+  border: none !important;
+  padding: var(--spacing-lg) !important;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Forçar cor branca apenas em textos, não em botões */
+.plan-upgrade-card h2,
+.plan-upgrade-card p,
+.plan-upgrade-card span:not(.upgrade-btn span) {
+  color: var(--text-inverse) !important;
+}
+
+.plan-upgrade-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.plan-upgrade-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-inverse) !important;
+}
+
+.plan-upgrade-icon svg {
+  color: var(--text-inverse) !important;
+}
+
+.plan-upgrade-card h2 {
+  color: var(--text-inverse) !important;
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.plan-upgrade-card .helper-text {
+  color: var(--text-inverse) !important;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  opacity: 1 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.plan-features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: var(--spacing-md);
+  padding: 0.875rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.plan-feature {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-inverse) !important;
+}
+
+.plan-feature span {
+  color: var(--text-inverse) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.plan-feature svg {
+  flex-shrink: 0;
+  color: var(--text-inverse) !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  stroke-width: 2.5;
+}
+
+.upgrade-btn {
+  width: 100%;
+  background: var(--white);
+  color: #667eea;
+  font-weight: var(--font-semibold);
+  font-size: 0.95rem;
+  padding: 0.75rem var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  box-shadow: var(--shadow-md);
+}
+
+.upgrade-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: var(--gray-50);
+}
+
+.plan-active-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: var(--text-inverse) !important;
+  border: none !important;
+}
+
+/* Forçar cor branca em todos os elementos filhos */
+.plan-active-card * {
+  color: var(--text-inverse) !important;
+}
+
+.plan-active-card h2,
+.plan-active-card p,
+.plan-active-card span {
+  color: var(--text-inverse) !important;
+}
+
+.plan-active-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.plan-active-header svg {
+  flex-shrink: 0;
+  color: var(--text-inverse) !important;
+}
+
+.plan-active-card h2 {
+  color: var(--text-inverse) !important;
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.plan-active-card .helper-text {
+  color: var(--text-inverse) !important;
+  opacity: 1 !important;
+  font-weight: var(--font-medium);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.subscription-info {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.subscription-info p {
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+  color: var(--text-inverse) !important;
+  line-height: var(--leading-normal);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.subscription-end-date {
+  font-size: var(--text-lg) !important;
+  font-weight: var(--font-medium);
+  margin: var(--spacing-md) 0 !important;
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  color: var(--text-inverse) !important;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.subscription-end-date strong {
+  font-size: var(--text-sm);
+  opacity: 0.9;
+  font-weight: var(--font-medium);
+}
+
+.subscription-end-date span {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-inverse) !important;
+}
+
+.subscription-cancel-warning {
+  color: var(--warning-400) !important;
+  font-weight: var(--font-semibold);
+  margin-top: var(--spacing-md) !important;
+  padding: 0.75rem;
+  background: rgba(251, 191, 36, 0.2);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--warning-400);
+}
+
+.subscription-management {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.subscription-management .helper-text {
+  margin-bottom: var(--spacing-md);
+  color: var(--text-inverse) !important;
+  opacity: 1 !important;
+  font-weight: var(--font-medium);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.subscription-management .error-message {
+  color: var(--danger-100) !important;
+  font-size: var(--text-sm);
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+.subscription-management .btn {
+  width: 100%;
+  margin-top: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+.subscription-management .btn-danger {
+  background: rgba(239, 68, 68, 0.9);
+  color: var(--white);
+  border: none;
+}
+
+.subscription-management .btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 1);
+}
+
+.subscription-management .btn-primary {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.subscription-management .btn-primary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+}

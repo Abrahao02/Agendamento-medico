@@ -1,0 +1,376 @@
+/* ========== Day Management Container ========== */
+.day-slots-card {
+  flex: 1 1 380px;
+  max-width: 580px;
+  background: white;
+  border-radius: 16px;
+  padding: 1.75rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  animation: slideInRight 0.4s ease forwards;
+}
+
+/* ========== Header ========== */
+.day-slots-card h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  line-height: 1.3;
+}
+
+.day-slots-card h3 svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+/* ========== Mode Toggle ========== */
+.mode-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.375rem;
+  background: #f3f4f6;
+  border-radius: 12px;
+}
+
+.mode-toggle button {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.mode-toggle button:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.mode-toggle button.active {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+/* ========== Add Slot Form ========== */
+.add-slot {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+  margin-bottom: 1.5rem;
+}
+
+.add-slot input {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  font-size: 0.9375rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.add-slot input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.add-slot input:disabled {
+  background: #f9fafb;
+  cursor: not-allowed;
+}
+
+.add-slot button {
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+.add-slot button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.4);
+}
+
+.add-slot button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ========== Book Appointment Form ========== */
+.book-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.book-slot select {
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  font-size: 0.9375rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+}
+
+.book-slot select:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.book-slot select:disabled {
+  background-color: #f9fafb;
+  cursor: not-allowed;
+}
+
+.book-slot button {
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.book-slot button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+}
+
+.book-slot button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ========== Slots List ========== */
+.slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Scrollbar customization */
+.slots-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.slots-list::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 99px;
+}
+
+.slots-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 99px;
+}
+
+.slots-list::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Empty State */
+.empty-message {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+/* ========== Error Message ========== */
+.error-message {
+  padding: 0.875rem 1rem;
+  background: linear-gradient(to right, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+  border-radius: 10px;
+  color: #991b1b;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 1.5;
+}
+
+.error-message::before {
+  content: "⚠️";
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+/* ========== Animations ========== */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ========== Responsive - Tablet ========== */
+@media (max-width: 1024px) {
+  .day-slots-card {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .slots-list {
+    max-height: 400px;
+  }
+}
+
+/* ========== Responsive - Mobile ========== */
+@media (max-width: 640px) {
+  .day-slots-card {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .day-slots-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .day-slots-card h3 svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mode-toggle {
+    margin-bottom: 1.25rem;
+  }
+
+  .mode-toggle button {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .add-slot {
+    flex-direction: column;
+    margin-bottom: 1.25rem;
+  }
+
+  .add-slot input,
+  .add-slot button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .book-slot {
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .book-slot select,
+  .book-slot button {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .slots-list {
+    gap: 0.625rem;
+    max-height: 350px;
+  }
+
+  .error-message {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* ========== Dark Mode Support (Opcional) ========== */
+@media (prefers-color-scheme: dark) {
+  .day-slots-card {
+    background: #1f2937;
+    border-color: #374151;
+  }
+
+  .day-slots-card h3 {
+    color: #f9fafb;
+  }
+
+  .mode-toggle {
+    background: #111827;
+  }
+
+  .mode-toggle button {
+    color: #9ca3af;
+  }
+
+  .mode-toggle button:hover {
+    background: #374151;
+    color: #f9fafb;
+  }
+
+  .add-slot input,
+  .book-slot select {
+    background: #111827;
+    border-color: #374151;
+    color: #f9fafb;
+  }
+
+  .add-slot input:focus,
+  .book-slot select:focus {
+    border-color: #3b82f6;
+  }
+
+  .empty-message {
+    color: #6b7280;
+  }
+
+  .slots-list::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+
+  .slots-list::-webkit-scrollbar-thumb {
+    background: #4b5563;
+  }
+}

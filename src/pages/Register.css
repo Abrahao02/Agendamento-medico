@@ -1,91 +1,105 @@
+@import url('../styles/variables.css');
+
+/* ===============================
+   Register Page - MedSchedule
+   =============================== */
 .register-container {
-  max-width: 450px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.register-form h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.input-wrapper {
-  position: relative;
-}
-
-.input-wrapper input {
-  width: 100%;
-  padding: 0.75rem 2.5rem 0.75rem 2.5rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-
-.input-wrapper .icon {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #888;
-}
-
-.toggle-btn {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  color: #555;
-}
-
-.error {
-  color: red;
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
-}
-
-.password-checklist {
+  min-height: 100vh;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-  font-size: 0.8rem;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  padding: var(--spacing-xl);
 }
 
-.password-checklist span {
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: #eee;
-}
-
-.password-checklist span.valid {
-  background: #4caf50;
-  color: white;
-}
-
-.submit-btn {
+.register-card {
   width: 100%;
-  padding: 0.75rem;
-  margin-top: 1rem;
-  border: none;
-  border-radius: 6px;
-  background-color: #007bff;
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
+  max-width: 460px;
+  background: var(--bg-primary);
+  padding: var(--spacing-2xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
 }
 
+.register-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  text-align: center; /* centraliza */
+}
+
+.register-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+  text-align: center; /* centraliza */
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.register-footer {
+  margin-top: var(--spacing-lg);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.register-footer a {
+  cursor: pointer;
+  color: var(--text-link);
+  font-weight: var(--font-medium);
+}
+
+.register-footer a:hover {
+  color: var(--text-link-hover);
+}
+
+/* Botão principal */
+.submit-btn {
+  background: var(--color-secondary);
+  color: var(--text-inverse);
+  border: none;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.submit-btn:hover {
+  background: var(--color-secondary-hover);
+  transform: translateY(-2px);
+}
+
+/* Botão secundário */
 .submit-btn.secondary {
-  background-color: #4caf50;
+  background: var(--bg-primary);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-secondary);
+}
+
+.submit-btn.secondary:hover {
+  background: var(--color-secondary);
+  color: var(--text-inverse);
+  transform: translateY(-2px);
+}
+
+/* Checklist de senha */
+.password-checklist {
+  margin-top: -0.5rem;
+}
+
+/* Mensagens de erro */
+.error {
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  margin-top: -0.5rem;
 }

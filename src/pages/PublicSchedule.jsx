@@ -1,250 +1,133 @@
-import { useEffect, useState, useRef } from "react";
-import { db } from "../services/firebase";
+import React, { useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { collection, query, where, getDocs, addDoc, doc, updateDoc } from "firebase/firestore";
+import { Calendar, AlertCircle } from "lucide-react";
+
+import { usePublicSchedule } from "../hooks/appointments/usePublicSchedule";
+
+import Card from "../components/common/Card";
+import Badge from "../components/common/Badge";
+import DayCard from "../components/publicSchedule/DayCard";
+import AppointmentForm from "../components/publicSchedule/AppointmentForm/AppointmentForm";
+import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
+import PublicScheduleHeader from "../components/publicSchedule/PublicScheduleHeader/PublicScheduleHeader";
+import IntroCard from "../components/publicSchedule/IntroCard/IntroCard";
+import LimitReachedBanner from "../components/publicSchedule/LimitReachedBanner/LimitReachedBanner";
+import EmptyState from "../components/publicSchedule/EmptyState/EmptyState";
+
 import "./PublicSchedule.css";
-import formatDate from "../utils/formatDate";
 
 export default function PublicSchedule() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [doctor, setDoctor] = useState(null);
-  const [availability, setAvailability] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [patientName, setPatientName] = useState("");
-  const [patientWhatsapp, setPatientWhatsapp] = useState("");
+  const formRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Ref para scroll suave
-  const formRef = useRef(null);
+  const {
+    doctor,
+    availability,
+    loading,
+    error,
+    limitReached,
+    selectedDay,
+    selectedSlot,
+    handleDaySelect,
+    handleSlotSelect,
+    createAppointment,
+  } = usePublicSchedule(slug);
 
-  useEffect(() => {
-    const fetchDoctorAndAvailability = async () => {
-      setLoading(true);
-      try {
-        const doctorsRef = collection(db, "doctors");
-        const q = query(doctorsRef, where("slug", "==", slug));
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) {
-          setDoctor(null);
-          setAvailability([]);
-          setLoading(false);
-          return;
-        }
-
-        const docSnap = snapshot.docs[0];
-        const doctorData = docSnap.data();
-        const doctorId = docSnap.id;
-        setDoctor({ ...doctorData, id: doctorId });
-
-        const availabilityRef = collection(db, "availability");
-        const availQuery = query(availabilityRef, where("doctorId", "==", doctorId));
-        const availSnapshot = await getDocs(availQuery);
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayStr = today.toISOString().slice(0, 10);
-        const rawData = availSnapshot.docs.map(doc => ({
-          id: doc.id,
-          date: doc.data().date,
-          slots: doc.data().slots || []
-        }));
-
-        const data = rawData
-          .filter(a => a.slots.length > 0 && a.date >= todayStr)
-          .sort((a, b) => a.date.localeCompare(b.date));
-
-        setAvailability(data);
-
-      } catch (error) {
-        console.error("Erro ao buscar disponibilidade:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDoctorAndAvailability();
-  }, [slug]);
-
-  const handleDayClick = (day) => {
-    setSelectedDay(selectedDay?.id === day.id ? null : day);
-    setSelectedSlot(null);
-    setPatientName("");
-    setPatientWhatsapp("");
-  };
-
-  const handleSlotClick = (dayId, date, slot) => {
-    setSelectedSlot({ dayId, date, time: slot });
-    setPatientName("");
-    setPatientWhatsapp("");
-
-    // Scroll suave para o formulário
+  const handleSlotClick = (day, time) => {
+    handleSlotSelect(day, time);
     setTimeout(() => {
-      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      formRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }, 100);
   };
 
-  const handleSubmitAppointment = async (e) => {
-    e.preventDefault();
-
-    if (!patientName.trim()) {
-      alert("Preencha seu nome completo.");
-      return;
-    }
-
-    const whatsappNumbers = patientWhatsapp.replace(/\D/g, "");
-    if (whatsappNumbers.length !== 11) {
-      alert("Informe um número de WhatsApp válido com 11 dígitos (ex: 5511988888888).");
-      return;
-    }
-
+  const handleSubmit = async (formData) => {
     setSubmitting(true);
-
     try {
-      // Salvar no Firestore
-      await addDoc(collection(db, "appointments"), {
-        doctorId: doctor.id,
-        doctorSlug: doctor.slug,
-        date: selectedSlot.date,
-        time: selectedSlot.time,
-        patientName,
-        patientWhatsapp: whatsappNumbers,
-        status: "Pendente",
-        createdAt: new Date()
-      });
-
-      // Atualizar disponibilidade
-      const availRef = doc(db, "availability", selectedSlot.dayId);
-      await updateDoc(availRef, {
-        slots: availability.find(a => a.id === selectedSlot.dayId)
-          .slots.filter(s => s !== selectedSlot.time)
-      });
-
-      setAvailability(prev => prev.map(a =>
-        a.id === selectedSlot.dayId
-          ? { ...a, slots: a.slots.filter(s => s !== selectedSlot.time) }
-          : a
-      ));
-
-      // Enviar e-mail via Apps Script (simples, sem CORS)
-      const formData = new URLSearchParams();
-      formData.append("to", doctor.email);
-      formData.append("subject", `Novo agendamento com ${patientName}`);
-      formData.append("body",
-        `Paciente: ${patientName}\nWhatsApp: ${whatsappNumbers}\nData: ${selectedSlot.date}\nHora: ${selectedSlot.time}`
-      );
-      formData.append("htmlBody", `
-        <p>Olá Dr(a). ${doctor.name},</p>
-        <p>Você tem um novo agendamento:</p>
-        <ul>
-          <li><b>Paciente:</b> ${patientName}</li>
-          <li><b>WhatsApp:</b> ${whatsappNumbers}</li>
-          <li><b>Data:</b> ${selectedSlot.date}</li>
-          <li><b>Hora:</b> ${selectedSlot.time}</li>
-        </ul>
-      `);
-
-      const emailEndpoint = import.meta.env.VITE_APPS_SCRIPT_URL;
-
-      if (!emailEndpoint) {
-        throw new Error("Endpoint de e-mail não configurado");
+      const result = await createAppointment(formData);
+      if (result.success) {
+        navigate(`/public/${slug}/success`, { state: result.data });
+      } else {
+        alert(result.error || "Erro ao agendar");
       }
-
-      await fetch(emailEndpoint, {
-        method: "POST",
-        body: formData
-      });
-
-      // Redirecionar para página de sucesso
-      navigate(`/public/${slug}/success`, {
-        state: { name: patientName, date: selectedSlot.date, time: selectedSlot.time }
-      });
-
     } catch (err) {
-      console.error("Erro ao agendar:", err);
+      console.error(err);
       alert("Erro ao agendar. Tente novamente.");
     } finally {
       setSubmitting(false);
     }
   };
 
+  const handleCancel = () => handleSlotSelect(null);
 
-  if (loading) return <p>Carregando...</p>;
-  if (!doctor) return <p>Médico não encontrado.</p>;
+  if (loading) return <LoadingFallback message="Carregando agenda..." />;
+
+  if (error || !doctor) {
+    return (
+      <div className="public-schedule-container">
+        <Card className="error-card">
+          <div className="error-content">
+            <AlertCircle size={48} color="var(--danger-500)" />
+            <h2>Médico não encontrado</h2>
+            <p>
+              {error || "O link que você acessou não corresponde a nenhum médico cadastrado."}
+            </p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="public-schedule-container">
-      <h2>Agendar com Dr(a). {doctor.name}</h2>
-      <p className="instructions">
-        Preencha o formulário abaixo para solicitar seu horário de atendimento.<br />
-        Após o envio, você receberá a confirmação pelo WhatsApp.
-      </p>
+      <PublicScheduleHeader doctor={doctor} />
+      <IntroCard />
 
-      {availability.length === 0 && <p>Nenhum horário disponível.</p>}
+      {limitReached && <LimitReachedBanner doctor={doctor} />}
 
-      {/* Lista de dias disponíveis - horizontal */}
-      <div className="days-list-horizontal">
-        {availability.map(({ id, date, slots }) => (
-          <div key={id} className="day-container-horizontal">
-            <button
-              className={`day-btn ${selectedDay?.id === id ? 'selected' : ''}`}
-              onClick={() => handleDayClick({ id, date, slots })}
-            >
-              {formatDate(date)} — {slots.length} horário(s)
-            </button>
-
-            {selectedDay?.id === id && (
-              <div className="day-slots-inline">
-                {slots.map((slot, idx) => (
-                  <button
-                    key={idx}
-                    className={`slot-btn ${selectedSlot?.time === slot ? 'selected' : ''}`}
-                    onClick={() => handleSlotClick(id, date, slot)}
-                  >
-                    {slot}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Formulário */}
-      {selectedSlot && (
-        <div className="appointment-form" ref={formRef}>
-          <h3>Agendar {formatDate(selectedSlot.date)} às {selectedSlot.time}</h3>
-          <form onSubmit={handleSubmitAppointment}>
-            <label>
-              Nome completo:
-              <input
-                value={patientName}
-                onChange={e => setPatientName(e.target.value)}
-              />
-            </label>
-            <label>
-              WhatsApp:
-              <input
-                value={patientWhatsapp}
-                onChange={e => setPatientWhatsapp(e.target.value)}
-                placeholder="Ex: 5511988888888"
-              />
-            </label>
-            <p className="privacy">
-              As informações fornecidas serão utilizadas apenas para organização do agendamento e contato, respeitando a confidencialidade e a privacidade do paciente.
-            </p>
-            <button type="submit" disabled={submitting}>
-              {submitting ? "Agendando..." : "Confirmar"}
-            </button>
-            <button type="button" onClick={() => setSelectedSlot(null)}>
-              Cancelar
-            </button>
-          </form>
+      {!limitReached && (
+        <div className="availability-status">
+          <Badge variant={availability.length > 0 ? "success" : "warning"}>
+            {availability.length > 0
+              ? `${availability.length} dia(s) disponível(is)`
+              : "Nenhum horário disponível"}
+          </Badge>
         </div>
+      )}
+
+      {availability.length > 0 && !limitReached && (
+        <div className="days-list">
+          {availability.map((day) => (
+            <DayCard
+              key={day.id}
+              day={day}
+              isSelected={selectedDay?.id === day.id}
+              isDisabled={limitReached}
+              onDayClick={handleDaySelect}
+              onSlotClick={handleSlotClick}
+              selectedSlotTime={selectedSlot?.time}
+            />
+          ))}
+        </div>
+      )}
+
+      {selectedSlot && (
+        <AppointmentForm
+          ref={formRef}
+          selectedSlot={selectedSlot}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          isSubmitting={submitting}
+          doctor={doctor}
+        />
+      )}
+
+      {!limitReached && availability.length === 0 && (
+        <EmptyState doctor={doctor} />
       )}
     </div>
   );

@@ -1,0 +1,209 @@
+/* src/components/publicSchedule/AppointmentForm/AppointmentForm.css */
+@import url('../../../styles/variables.css');
+
+.appointment-form-card {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--secondary-200);
+  margin-top: var(--spacing-xl);
+  animation: slideUp 0.4s ease;
+  scroll-margin-top: var(--spacing-xl);
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--secondary-100);
+}
+
+.form-header h3 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.selected-time {
+  font-size: var(--text-lg);
+  color: var(--color-secondary);
+  font-weight: var(--font-semibold);
+  background: var(--secondary-50);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+.appointment-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* Phone Input */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.form-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.phone-input {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  border: 2px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 0 var(--spacing-sm);
+  background: var(--white);
+  transition: var(--transition-base);
+}
+
+.phone-input:focus-within {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--secondary-100);
+}
+
+.country-code {
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  padding: var(--spacing-sm);
+  border-right: 1px solid var(--border-light);
+  font-size: var(--text-base);
+}
+
+.phone-field {
+  flex: 1;
+  padding: var(--spacing-md);
+  border: none;
+  outline: none;
+  font-size: var(--text-base);
+  font-family: inherit;
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.phone-field::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* Privacy Notice */
+.privacy-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: var(--secondary-50);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-secondary);
+}
+
+.privacy-notice svg {
+  color: var(--color-secondary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.privacy-notice p {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .appointment-form-card {
+    padding: var(--spacing-xl);
+  }
+
+  .form-header h3 {
+    font-size: var(--text-xl);
+  }
+
+  .selected-time {
+    font-size: var(--text-base);
+    padding: var(--spacing-xs) var(--spacing-md);
+  }
+
+  .phone-input {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .country-code {
+    border-right: none;
+    border-bottom: 1px solid var(--border-light);
+    text-align: center;
+  }
+
+  .phone-field {
+    text-align: center;
+  }
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+  100% { transform: translateX(0); }
+}
+
+.phone-field.shake {
+  animation: shake 0.3s ease;
+  border-color: #ef4444;
+}
+
+.appointment-type-select,
+.location-select {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--white);
+  outline: none;
+  transition: var(--transition-base);
+  cursor: pointer;
+}
+
+.appointment-type-select:focus,
+.location-select:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--secondary-100);
+}
