@@ -1,8 +1,6 @@
-// ============================================
-// 📁 src/components/layout/PlanBox.jsx - NOVO
-// ============================================
 import { useNavigate } from "react-router-dom";
 import Button from "../../common/Button";
+import StripeCheckoutButton from "../../stripe/StripeCheckoutButton";
 
 export default function PlanBox({ 
   plan, 
@@ -30,7 +28,7 @@ export default function PlanBox({
         Plano {plan === "free" ? "Gratuito" : "PRO"}
       </span>
 
-      <p>
+      <p className="plan-description">
         {plan === "free" ? (
           <>
             Você ainda possui:{" "}
@@ -40,28 +38,27 @@ export default function PlanBox({
             {remainingAppointments === 1 ? "consulta" : "consultas"}
           </>
         ) : (
-          <>✨ Consultas ilimitadas</>
+          <>✨ Agendamentos ilimitados</>
         )}
       </p>
 
       {plan === "free" && (
         <div className="plan-actions">
-          <a
-            href="https://mpago.la/1TYVDfE"
-            target="_blank"
-            rel="noopener noreferrer"
+          <StripeCheckoutButton
             className="pro-subscribe-btn"
-            aria-label="Assinar plano PRO"
+            variant="primary"
+            fullWidth
+            showPaymentInfo={false}
+            showIcon={false}
           >
-            <span>Assinar PRO</span> <br />
-            <span className="plan-payment-info">
-              Pix, Cartão ou Boleto
-            </span>
-          </a>
+            Assinar PRO
+          </StripeCheckoutButton>
 
           <Button
             onClick={handleScrollToPlans}
             className="free-plan-btn"
+            variant="ghost"
+            fullWidth
             aria-label="Conhecer todos os planos"
           >
             Conhecer planos

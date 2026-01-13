@@ -392,6 +392,16 @@ if (result.success) {
     footer: "Caso não possa comparecer, avise com antecedência.",
     showValue: true
   },
+  publicScheduleConfig: {        // ✨ NOVO
+    period: "all_future"
+  },
+  appointmentTypeConfig: {       // ✨ NOVO
+    mode: "disabled",
+    fixedType: "online",
+    defaultValueOnline: 0,
+    defaultValuePresencial: 0,
+    locations: []
+  },
   createdAt: serverTimestamp()
 }
 ```
@@ -441,6 +451,8 @@ if (result.success) {
     patientLimit: number,
     defaultValueSchedule: number,
     whatsappConfig: object,
+    publicScheduleConfig?: object,    // ✨ NOVO
+    appointmentTypeConfig?: object,   // ✨ NOVO
     createdAt: Timestamp
   }
 }
@@ -498,14 +510,21 @@ await updateDoctor("doc123", {
 **Campos Permitidos:**
 - `name` (string)
 - `whatsapp` (string)
-- `defaultValueSchedule` (number)
+- `defaultValueSchedule` (number) ✨ DEPRECADO (mantido para compatibilidade)
 - `whatsappConfig` (object)
 - `patientLimit` (number)
+- ✨ NOVO: `publicScheduleConfig` (object) - Configuração de período de exibição do agendamento público
+- ✨ NOVO: `appointmentTypeConfig` (object) - Configuração de tipos de atendimento e locais
 
 **Validações:**
 - `whatsappConfig.showValue` deve ser boolean
+- ✨ NOVO: `publicScheduleConfig.period` deve ser string válida
+- ✨ NOVO: `appointmentTypeConfig.mode` deve ser 'disabled', 'fixed' ou 'allow_choice'
+- ✨ NOVO: `appointmentTypeConfig.locations` deve ser array de objetos com `name` e `defaultValue`
 - Apenas campos permitidos são atualizados
 - Adiciona `updatedAt` automaticamente
+
+**Nota:** Campos relacionados a Stripe (`plan`, `stripeCustomerId`, `stripeSubscriptionId`, etc.) são gerenciados exclusivamente pelas Firebase Functions do Stripe e não podem ser atualizados via `updateDoctor`.
 
 **Retorna:** `{ success: boolean, error?: string }`
 

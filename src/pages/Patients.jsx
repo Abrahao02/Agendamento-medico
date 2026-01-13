@@ -4,6 +4,7 @@
 import React from "react";
 import { auth } from "../services/firebase";
 import { usePatients } from "../hooks/patients/usePatients";
+import PageHeader from "../components/common/PageHeader/PageHeader";
 
 import "./Patients.css";
 
@@ -46,7 +47,11 @@ export default function Patients() {
 
   return (
     <div className="patients-container">
-      <h2>Clientes</h2>
+      <PageHeader
+        label="Gestão de Pacientes"
+        title="Clientes"
+        description={`Total de ${patientsCount} cliente(s) cadastrado(s)`}
+      />
 
       <div className="add-patient-form">
         <h3>Adicionar Novo Paciente</h3>

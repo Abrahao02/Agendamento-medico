@@ -125,6 +125,7 @@
   --bg-primary: var(--white);
   --bg-secondary: var(--gray-50);
   --bg-tertiary: var(--gray-100);
+  --bg-preferential: #eff4f1;
   --bg-dark: var(--primary-800);
   --bg-overlay: rgba(0, 0, 0, 0.5);
 

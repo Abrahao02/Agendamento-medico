@@ -1,11 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import * as DoctorService from "../../services/firebase/doctors.service";
 import { generateWhatsappMessage } from "../../utils/message/generateWhatsappMessage";
+import { useCancelSubscription } from "../stripe/useCancelSubscription";
+import { useReactivateSubscription } from "../stripe/useReactivateSubscription";
 
 export function useSettings(user) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [doctor, setDoctor] = useState(null);
+  const [newLocationName, setNewLocationName] = useState("");
+  const [newLocationValue, setNewLocationValue] = useState("");
+  
+  // Subscription hooks
+  const { handleCancel, loading: cancelLoading, error: cancelError } = useCancelSubscription();
+  const { handleReactivate, loading: reactivateLoading, error: reactivateError } = useReactivateSubscription();
   const [whatsappConfig, setWhatsappConfig] = useState({
     intro: "Olá",
     body: "Sua sessão está agendada",
@@ -150,12 +158,81 @@ export function useSettings(user) {
     }));
   };
 
+  const handleAddLocation = () => {
+    if (newLocationName.trim() && newLocationValue) {
+      addLocation({
+        name: newLocationName.trim(),
+        defaultValue: Number(newLocationValue) || 0,
+      });
+      setNewLocationName("");
+      setNewLocationValue("");
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (confirm('Tem certeza que deseja cancelar sua assinatura? Você continuará com acesso PRO até o final do período pago.')) {
+      const result = await handleCancel();
+      if (result.success) {
+        alert('Assinatura cancelada com sucesso! Você continuará com acesso PRO até o final do período pago.');
+        window.location.reload();
+      } else {
+        alert(`Erro ao cancelar: ${result.error || 'Tente novamente'}`);
+      }
+    }
+  };
+
+  const handleReactivateSubscription = async () => {
+    if (confirm('Tem certeza que deseja reativar sua assinatura? Ela continuará sendo cobrada normalmente.')) {
+      const result = await handleReactivate();
+      if (result.success) {
+        alert('Assinatura reativada com sucesso!');
+        window.location.reload();
+      } else {
+        alert(`Erro ao reativar: ${result.error || 'Tente novamente'}`);
+      }
+    }
+  };
+
+  const handleUpdateLocation = (index, location) => {
+    updateLocation(index, location);
+  };
+
+  const handleRemoveLocation = (index) => {
+    removeLocation(index);
+  };
+
+  // Calcular data de término da assinatura
+  const subscriptionEndDate = useMemo(() => {
+    if (!doctor?.planUpdatedAt) return null;
+    try {
+      const startDate = doctor.planUpdatedAt?.toDate 
+        ? doctor.planUpdatedAt.toDate() 
+        : doctor.planUpdatedAt?.seconds 
+        ? new Date(doctor.planUpdatedAt.seconds * 1000)
+        : new Date(doctor.planUpdatedAt);
+      
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 30);
+      return endDate;
+    } catch (error) {
+      console.error('Erro ao calcular data:', error);
+      return null;
+    }
+  }, [doctor?.planUpdatedAt]);
+
+  const isPro = useMemo(() => {
+    return doctor?.plan === "pro";
+  }, [doctor?.plan]);
+
   const generatePreview = (
     patientName = "João",
     date = "07/01/2026",
     time = "12:00"
   ) => {
-    const defaultValue = appointmentTypeConfig.defaultValueOnline || 0;
+    // Usa o valor configurado ou um valor padrão para demonstração
+    const defaultValue = appointmentTypeConfig.defaultValueOnline || 
+                        appointmentTypeConfig.defaultValuePresencial || 
+                        150; // Valor padrão para preview
     return generateWhatsappMessage({
       intro: whatsappConfig.intro,
       body: whatsappConfig.body,
@@ -172,15 +249,28 @@ export function useSettings(user) {
     loading,
     saving,
     doctor,
+    isPro,
     whatsappConfig,
     publicScheduleConfig,
     appointmentTypeConfig,
+    subscriptionEndDate,
+    newLocationName,
+    newLocationValue,
+    cancelLoading,
+    cancelError,
+    reactivateLoading,
+    reactivateError,
     updateWhatsappField,
     updatePublicScheduleField,
     updateAppointmentTypeField,
     addLocation,
-    updateLocation,
-    removeLocation,
+    setNewLocationName,
+    setNewLocationValue,
+    handleAddLocation,
+    updateLocation: handleUpdateLocation,
+    removeLocation: handleRemoveLocation,
+    handleCancelSubscription,
+    handleReactivateSubscription,
     saveSettings,
     generatePreview,
   };

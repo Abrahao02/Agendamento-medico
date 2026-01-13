@@ -110,6 +110,10 @@ export default function LandingPage() {
 
 - ✅ Exibe conteúdo público
 - ✅ Detecta usuário autenticado
+- ✅ ✨ NOVO: Busca plano do usuário no Firestore
+- ✅ ✨ NOVO: Verifica se usuário já é PRO antes de checkout
+- ✅ ✨ NOVO: Integra com Stripe Checkout para assinatura
+- ✅ ✨ NOVO: Redireciona para settings se usuário já é PRO
 - ✅ Scroll suave para seção de planos
 - ✅ Links para registro/login
 
@@ -704,42 +708,101 @@ export default function Patients() {
 **Arquivo:** `src/pages/Settings.jsx`  
 **Rota:** `/dashboard/settings`
 
-Página de configurações do médico.
+Página de configurações do médico com estrutura modular e seções colapsáveis.
 
 #### **Estrutura**
 
 ```javascript
 import { useSettings } from "../hooks/settings/useSettings";
+import PlanSection from "../components/settings/PlanSection/PlanSection";
+import WhatsAppSection from "../components/settings/WhatsAppSection/WhatsAppSection";
+import PublicScheduleSection from "../components/settings/PublicScheduleSection/PublicScheduleSection";
+import AppointmentTypeSection from "../components/settings/AppointmentTypeSection/AppointmentTypeSection";
+import Button from "../components/common/Button";
+import ContentLoading from "../components/common/ContentLoading/ContentLoading";
 
 export default function Settings() {
+  const user = auth.currentUser;
   const {
     loading,
     saving,
-    defaultValueSchedule,
+    doctor,
+    isPro,
     whatsappConfig,
-    setDefaultValueSchedule,
+    publicScheduleConfig,
+    appointmentTypeConfig,
+    subscriptionEndDate,
+    newLocationName,
+    newLocationValue,
+    cancelLoading,
+    cancelError,
+    reactivateLoading,
+    reactivateError,
     updateWhatsappField,
+    updatePublicScheduleField,
+    updateAppointmentTypeField,
+    setNewLocationName,
+    setNewLocationValue,
+    handleAddLocation,
+    updateLocation,
+    removeLocation,
+    handleCancelSubscription,
+    handleReactivateSubscription,
     saveSettings,
     generatePreview,
   } = useSettings(user);
 
-  if (loading) return <div>Carregando configurações...</div>;
+  if (loading) {
+    return <ContentLoading message="Carregando configurações..." />;
+  }
 
   return (
     <div className="settings-page">
-      <h1>Configurações</h1>
-      <section className="settings-card">
-        <h2>Valor padrão da consulta</h2>
-        {/* Campo de valor */}
-      </section>
-      <section className="settings-card">
-        <h2>Mensagem padrão do WhatsApp</h2>
-        {/* Campos de mensagem */}
-        <div className="whatsapp-preview">
-          {/* Preview da mensagem */}
-        </div>
-      </section>
-      <button onClick={handleSave}>Salvar configurações</button>
+      <div className="settings-header">
+        <h1>Configurações</h1>
+        <p className="settings-subtitle">Gerencie suas preferências e plano</p>
+      </div>
+
+      <PlanSection
+        isPro={isPro}
+        doctor={doctor}
+        subscriptionEndDate={subscriptionEndDate}
+        onCancel={handleCancelSubscription}
+        onReactivate={handleReactivateSubscription}
+        cancelLoading={cancelLoading}
+        reactivateLoading={reactivateLoading}
+        cancelError={cancelError}
+        reactivateError={reactivateError}
+      />
+
+      <PublicScheduleSection
+        publicScheduleConfig={publicScheduleConfig}
+        onUpdateField={updatePublicScheduleField}
+      />
+
+      <AppointmentTypeSection
+        appointmentTypeConfig={appointmentTypeConfig}
+        onUpdateField={updateAppointmentTypeField}
+        onAddLocation={handleAddLocation}
+        onUpdateLocation={updateLocation}
+        onRemoveLocation={removeLocation}
+        newLocationName={newLocationName}
+        newLocationValue={newLocationValue}
+        onNewLocationNameChange={setNewLocationName}
+        onNewLocationValueChange={setNewLocationValue}
+      />
+
+      <WhatsAppSection
+        whatsappConfig={whatsappConfig}
+        onUpdateField={updateWhatsappField}
+        preview={generatePreview()}
+      />
+
+      <div className="settings-footer">
+        <Button onClick={handleSave} disabled={saving} loading={saving}>
+          {saving ? "Salvando..." : "Salvar configurações"}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -747,15 +810,25 @@ export default function Settings() {
 
 #### **Componentes Utilizados**
 
-- Formulário HTML nativo
+- ✨ NOVO: `PlanSection` - Gerenciamento de plano e assinatura (upgrade, cancelamento, reativação)
+- ✨ NOVO: `WhatsAppSection` - Configuração de mensagens WhatsApp (colapsável)
+- ✨ NOVO: `PublicScheduleSection` - Configuração de período de exibição do agendamento público (colapsável)
+- ✨ NOVO: `AppointmentTypeSection` - Configuração de tipos de atendimento e locais (colapsável)
+- `Button` - Botão de salvar
+- `ContentLoading` - Loading state
 
 #### **Hooks Utilizados**
 
-- `useSettings(user)`: Gerencia estado e handlers de configurações
+- `useSettings(user)`: Gerencia estado e handlers de configurações (inclui integração Stripe)
 
 #### **Funcionalidades**
 
-- ✅ Configuração de valor padrão da consulta
+- ✅ ✨ NOVO: Gerenciamento de assinatura Stripe (upgrade, cancelamento, reativação)
+- ✅ ✨ NOVO: Exibição de data de término da assinatura
+- ✅ ✨ NOVO: Configuração de período de exibição do agendamento público
+- ✅ ✨ NOVO: Configuração de tipos de atendimento (online/presencial)
+- ✅ ✨ NOVO: Gerenciamento de múltiplos locais de atendimento presencial
+- ✅ ✨ NOVO: Seções colapsáveis com animações
 - ✅ Configuração de mensagem WhatsApp (intro, body, footer)
 - ✅ Opção de incluir/ocultar valor na mensagem
 - ✅ Preview da mensagem em tempo real
@@ -763,8 +836,22 @@ export default function Settings() {
 
 #### **Configurações**
 
-- Valor padrão da consulta (número)
-- Mensagem WhatsApp:
+- ✨ NOVO: **Plano e Assinatura:**
+  - Upgrade para PRO (Stripe Checkout)
+  - Cancelamento de assinatura
+  - Reativação de assinatura
+  - Data de término da assinatura
+
+- ✨ NOVO: **Agendamento Público:**
+  - Período de exibição (todas as datas futuras, semana atual, mês atual, próximos 7 dias, etc.)
+
+- ✨ NOVO: **Tipo de Atendimento:**
+  - Modo: Desabilitado, Fixo, Permitir escolha
+  - Tipo fixo: Online ou Presencial
+  - Valores padrão para Online e Presencial
+  - Locais de atendimento presencial (nome e valor)
+
+- **Mensagem WhatsApp:**
   - Início da mensagem (intro)
   - Texto principal (body)
   - Texto final (footer)

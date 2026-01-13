@@ -1,8 +1,8 @@
 # 📚 Documentação Completa - Utils do Projeto
 
-> **Versão:** 2.0  
+> **Versão:** 2.1  
 > **Última atualização:** Janeiro 2026  
-> **Total de Utils:** 28 funções
+> **Total de Utils:** 26 funções
 
 ---
 
@@ -293,72 +293,6 @@ isPasswordValid(criteria);
 ---
 
 ## 📅 Filtros de Data
-
-### `isDateInFuture(dateStr)` ✨ NOVO
-**Arquivo**: `src/utils/dates/isDateInFuture.js`
-
-Verifica se uma data é futura ou hoje (>= hoje).
-
-```javascript
-import { isDateInFuture } from "@/utils/dates/isDateInFuture";
-
-// Assumindo hoje = 2026-01-10
-
-isDateInFuture("2026-01-15");
-// ➜ true
-
-isDateInFuture("2026-01-10");
-// ➜ true (hoje é futuro)
-
-isDateInFuture("2026-01-05");
-// ➜ false
-```
-
-**Parâmetros:**
-- `dateStr` (string): Data no formato YYYY-MM-DD
-
-**Retorna:** `boolean`
-
-**Uso nos Hooks:**
-- `usePublicSchedule` - Filtrar datas futuras
-- `useAvailability` - Validar disponibilidade futura
-
----
-
-### `getMonthDateRange(month, year)` ✨ NOVO
-**Arquivo**: `src/utils/dates/getMonthDateRange.js`
-
-Retorna o range de datas de um mês específico.
-
-```javascript
-import { getMonthDateRange } from "@/utils/dates/getMonthDateRange";
-
-getMonthDateRange(1, 2026);
-// ➜ { startDate: "2026-01-01", endDate: "2026-01-31" }
-
-getMonthDateRange(2, 2026);
-// ➜ { startDate: "2026-02-01", endDate: "2026-02-28" }
-
-getMonthDateRange(2, 2024); // Ano bissexto
-// ➜ { startDate: "2024-02-01", endDate: "2024-02-29" }
-```
-
-**Parâmetros:**
-- `month` (number): Mês (1-12)
-- `year` (number): Ano
-
-**Retorna:** `Object`
-```typescript
-{
-  startDate: string,  // YYYY-MM-DD
-  endDate: string     // YYYY-MM-DD
-}
-```
-
-**Uso nos Hooks:**
-- `useDashboard` (DashboardLayout) - Calcular range do mês atual
-
----
 
 ### `formatDateToQuery(date)`
 **Arquivo**: `src/utils/filters/dateFilters.js`

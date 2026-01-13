@@ -62,7 +62,10 @@ export function generateWhatsappMessage({
   // Detalhes
   if (date) message += `Data: ${date}\n`;
   if (time) message += `Horário: ${time}\n`;
-  if (showValue && value) message += `Valor: R$ ${value}\n`;
+  if (showValue && (value !== null && value !== undefined && value !== '')) {
+    const formattedValue = typeof value === 'number' ? value.toFixed(2).replace('.', ',') : value;
+    message += `Valor: R$ ${formattedValue}\n`;
+  }
   
   // Rodapé
   if (footer) {

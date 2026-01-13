@@ -1,8 +1,8 @@
 # 📚 Documentação Completa - Hooks do Projeto
 
-> **Versão:** 1.0  
+> **Versão:** 1.1  
 > **Última atualização:** Janeiro 2026  
-> **Total de Hooks:** 12 hooks
+> **Total de Hooks:** 15 hooks
 
 ---
 
@@ -15,8 +15,9 @@
 5. [Appointments Hooks](#-appointments-hooks)
 6. [Patients Hooks](#-patients-hooks)
 7. [Settings Hooks](#-settings-hooks)
-8. [Common Hooks](#-common-hooks)
-9. [Guia de Uso](#-guia-de-uso)
+8. [Stripe Hooks](#-stripe-hooks) ✨ NOVO
+9. [Common Hooks](#-common-hooks)
+10. [Guia de Uso](#-guia-de-uso)
 
 ---
 
@@ -41,6 +42,12 @@ src/hooks/
 │   └── usePatients.js
 ├── settings/
 │   └── useSettings.js
+├── settings/
+│   └── useSettings.js
+└── stripe/
+    ├── useStripeCheckout.js
+    ├── useCancelSubscription.js
+    └── useReactivateSubscription.js
 └── common/
     ├── useDashboardLayout.js
     ├── useLandingPage.js
@@ -694,7 +701,7 @@ function Patients() {
 
 **Arquivo:** `src/hooks/settings/useSettings.js`
 
-Hook para gerenciar configurações do médico.
+Hook para gerenciar configurações do médico, incluindo WhatsApp, agendamento público, tipos de atendimento e gerenciamento de assinatura Stripe.
 
 #### **Uso**
 
@@ -707,10 +714,28 @@ function Settings() {
   const {
     loading,
     saving,
-    defaultValueSchedule,
+    doctor,
+    isPro,
     whatsappConfig,
-    setDefaultValueSchedule,
+    publicScheduleConfig,
+    appointmentTypeConfig,
+    subscriptionEndDate,
+    newLocationName,
+    newLocationValue,
+    cancelLoading,
+    cancelError,
+    reactivateLoading,
+    reactivateError,
     updateWhatsappField,
+    updatePublicScheduleField,
+    updateAppointmentTypeField,
+    setNewLocationName,
+    setNewLocationValue,
+    handleAddLocation,
+    updateLocation,
+    removeLocation,
+    handleCancelSubscription,
+    handleReactivateSubscription,
     saveSettings,
     generatePreview,
   } = useSettings(user);
@@ -729,24 +754,60 @@ function Settings() {
 {
   loading: boolean,
   saving: boolean,
-  defaultValueSchedule: string,
+  doctor: Doctor | null,
+  isPro: boolean,                    // ✨ NOVO: Se usuário é PRO
   whatsappConfig: {
     intro: string,
     body: string,
     footer: string,
     showValue: boolean
-  }
+  },
+  publicScheduleConfig: {           // ✨ NOVO
+    period: string
+  },
+  appointmentTypeConfig: {          // ✨ NOVO
+    mode: 'disabled' | 'fixed' | 'allow_choice',
+    fixedType: 'online' | 'presencial',
+    defaultValueOnline: number,
+    defaultValuePresencial: number,
+    locations: Array<{ name: string, defaultValue: number }>
+  },
+  subscriptionEndDate: Date | null,  // ✨ NOVO: Data de término da assinatura
+  newLocationName: string,          // ✨ NOVO
+  newLocationValue: string,         // ✨ NOVO
+  cancelLoading: boolean,            // ✨ NOVO
+  cancelError: string | null,       // ✨ NOVO
+  reactivateLoading: boolean,       // ✨ NOVO
+  reactivateError: string | null    // ✨ NOVO
 }
 ```
 
 #### **Handlers**
 
-- `setDefaultValueSchedule(value)`: Define valor padrão da consulta
 - `updateWhatsappField(field, value)`: Atualiza campo da configuração WhatsApp
+- `updatePublicScheduleField(field, value)`: ✨ NOVO - Atualiza configuração de agendamento público
+- `updateAppointmentTypeField(field, value)`: ✨ NOVO - Atualiza configuração de tipo de atendimento
+- `setNewLocationName(value)`: ✨ NOVO - Define nome do novo local
+- `setNewLocationValue(value)`: ✨ NOVO - Define valor do novo local
+- `handleAddLocation()`: ✨ NOVO - Adiciona novo local de atendimento
+- `updateLocation(index, location)`: ✨ NOVO - Atualiza local existente
+- `removeLocation(index)`: ✨ NOVO - Remove local de atendimento
+- `handleCancelSubscription()`: ✨ NOVO - Cancela assinatura Stripe
+- `handleReactivateSubscription()`: ✨ NOVO - Reativa assinatura cancelada
 - `saveSettings()`: Salva todas as configurações
 - `generatePreview(patientName, date, time)`: Gera preview da mensagem WhatsApp
 
 #### **Comportamento**
+
+- ✅ Carrega configurações do médico do Firestore
+- ✅ Gerencia configurações de WhatsApp (intro, body, footer, showValue)
+- ✅ ✨ NOVO: Gerencia período de exibição do agendamento público
+- ✅ ✨ NOVO: Gerencia tipos de atendimento (online/presencial) e locais
+- ✅ ✨ NOVO: Integra com hooks de Stripe para cancelamento/reativação
+- ✅ ✨ NOVO: Calcula data de término da assinatura (planUpdatedAt + 30 dias)
+- ✅ ✨ NOVO: Deriva `isPro` do plano do médico
+- ✅ Gera preview da mensagem WhatsApp em tempo real
+- ✅ Valida e salva todas as configurações
 
 - ✅ Carrega configurações do médico
 - ✅ Gera preview da mensagem WhatsApp em tempo real
@@ -848,16 +909,31 @@ function LandingPage() {
 }
 ```
 
+#### **Estados Retornados**
+
+```typescript
+{
+  user: User | null,
+  loading: boolean,
+  userPlan: 'free' | 'pro',  // ✨ NOVO
+  handleProClick: () => Promise<void>,
+  scrollToPlans: () => void
+}
+```
+
 #### **Handlers**
 
-- `handleProClick()`: Abre link de upgrade para plano PRO
+- `handleProClick()`: ✨ ATUALIZADO - Inicia checkout Stripe ou redireciona para settings se já é PRO
 - `scrollToPlans()`: Faz scroll suave para seção de planos
 
 #### **Comportamento**
 
 - ✅ Detecta usuário autenticado
+- ✅ ✨ NOVO: Busca plano do usuário no Firestore
+- ✅ ✨ NOVO: Verifica se usuário já é PRO antes de checkout
+- ✅ ✨ NOVO: Redireciona para settings se usuário já é PRO
+- ✅ ✨ NOVO: Integra com `useStripeCheckout` para iniciar checkout
 - ✅ Gerencia scroll para seção de planos
-- ✅ Abre link de pagamento em nova aba
 
 ---
 

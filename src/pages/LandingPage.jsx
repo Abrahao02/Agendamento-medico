@@ -17,7 +17,7 @@ import "./LandingPage.css";
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { user, loading, handleProClick, scrollToPlans } = useLandingPage();
+  const { user, loading, userPlan, handleProClick, scrollToPlans } = useLandingPage();
 
   return (
     <div className="landing-page">
@@ -28,6 +28,7 @@ export default function LandingPage() {
       <FeaturesSection />
       <PricingSection 
         user={user}
+        userPlan={userPlan}
         loading={loading}
         onProClick={handleProClick}
         onNavigateToRegister={() => navigate("/register")}

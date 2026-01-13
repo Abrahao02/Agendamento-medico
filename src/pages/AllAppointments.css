@@ -173,7 +173,7 @@
 }
 
 .appointments-page::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--bg-secondary);
 }
 
 .appointments-page::-webkit-scrollbar-thumb {

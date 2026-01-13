@@ -28,7 +28,8 @@ src/docs/
 ├── DocumentacaoUtils.MD             # Documentação dos Utils (referência)
 ├── DocumentacaoHooks.md             # ✨ Documentação completa dos Hooks
 ├── DocumentacaoPages.md             # ✨ Documentação completa das Pages
-└── DocumentacaoComponents.md        # ✨ Documentação completa dos Components
+├── DocumentacaoComponents.md        # ✨ Documentação completa dos Components
+└── DocumentacaoStripe.md            # ✨ NOVO - Documentação completa da integração Stripe
 ```
 
 ---
@@ -255,10 +256,11 @@ Documentação dos principais componentes reutilizáveis:
 | Documentação | Status | Versão | Última Atualização |
 |--------------|--------|--------|-------------------|
 | DocumentacaoServices.md | ✅ Completa | 1.0 | Janeiro 2026 |
-| DocumentacaoUtils.MD | ✅ Completa | 2.0 | Janeiro 2026 |
-| DocumentacaoHooks.md | ✅ Completa | 1.0 | Janeiro 2026 |
-| DocumentacaoPages.md | ✅ Completa | 1.0 | Janeiro 2026 |
-| DocumentacaoComponents.md | ✅ Completa | 1.0 | Janeiro 2026 |
+| DocumentacaoUtils.MD | ✅ Completa | 2.1 | Janeiro 2026 |
+| DocumentacaoHooks.md | ✅ Completa | 1.1 | Janeiro 2026 |
+| DocumentacaoPages.md | ✅ Completa | 1.1 | Janeiro 2026 |
+| DocumentacaoComponents.md | ✅ Completa | 1.1 | Janeiro 2026 |
+| DocumentacaoStripe.md | ✅ Completa | 1.0 | Janeiro 2026 |
 | SugestoesMelhorias.md | ✅ Completa | 1.0 | Janeiro 2026 |
 | SugestoesOrganizacao.md | ✅ Completa | 1.0 | Janeiro 2026 |
 
@@ -276,6 +278,7 @@ Documentação dos principais componentes reutilizáveis:
 - [DocumentacaoHooks.md](./DocumentacaoHooks.md) - Hooks do projeto
 - [DocumentacaoPages.md](./DocumentacaoPages.md) - Pages do projeto
 - [DocumentacaoComponents.md](./DocumentacaoComponents.md) - Components do projeto
+- [DocumentacaoStripe.md](./DocumentacaoStripe.md) - ✨ NOVO - Integração Stripe
 - [SugestoesMelhorias.md](./SugestoesMelhorias.md) - Sugestões de melhorias
 - [SugestoesOrganizacao.md](./SugestoesOrganizacao.md) - Sugestões de organização
 
@@ -304,4 +307,4 @@ Para melhorar as documentações:
 
 **Documentação criada por:** Assistente IA  
 **Data:** Janeiro 2026  
-**Versão:** 1.0
+**Versão:** 1.1

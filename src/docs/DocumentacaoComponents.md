@@ -1,8 +1,8 @@
 # 📚 Documentação Completa - Components do Projeto
 
-> **Versão:** 1.0  
+> **Versão:** 1.1  
 > **Última atualização:** Janeiro 2026  
-> **Total de Componentes:** ~50 componentes
+> **Total de Componentes:** ~55 componentes
 
 ---
 
@@ -16,7 +16,9 @@
 6. [Availability Components](#-availability-components)
 7. [Landing Components](#-landing-components)
 8. [Public Schedule Components](#-public-schedule-components)
-9. [Guia de Uso](#-guia-de-uso)
+9. [Stripe Components](#-stripe-components) ✨ NOVO
+10. [Settings Components](#-settings-components) ✨ NOVO
+11. [Guia de Uso](#-guia-de-uso)
 
 ---
 
@@ -1032,6 +1034,248 @@ import Footer from "@/components/landing/Footer";
 
 <Footer />
 ```
+
+---
+
+## 💳 Stripe Components ✨ NOVO
+
+### `StripeCheckoutButton`
+
+**Arquivo:** `src/components/stripe/StripeCheckoutButton.jsx`
+
+Botão reutilizável para iniciar checkout do Stripe.
+
+#### **Props**
+
+```typescript
+interface StripeCheckoutButtonProps {
+  children?: React.ReactNode;        // Texto do botão (default: "Assinar PRO")
+  variant?: 'primary' | 'secondary'; // Variante do botão (default: 'primary')
+  className?: string;                // Classes CSS adicionais
+  showPaymentInfo?: boolean;         // Mostrar "Cartão de crédito ou Pix" (default: true)
+  showIcon?: boolean;                // Mostrar ícone Zap (default: true)
+  [key: string]: any;                // Outras props do Button
+}
+```
+
+#### **Uso**
+
+```javascript
+import StripeCheckoutButton from '@/components/stripe/StripeCheckoutButton';
+
+// Uso básico
+<StripeCheckoutButton>
+  Assinar PRO - R$ 49/mês
+</StripeCheckoutButton>
+
+// Sem informações de pagamento e ícone
+<StripeCheckoutButton
+  showPaymentInfo={false}
+  showIcon={false}
+  className="upgrade-btn"
+>
+  Assinar PRO - R$ 49/mês
+</StripeCheckoutButton>
+```
+
+#### **Comportamento**
+
+- ✅ Usa `useStripeCheckout` internamente
+- ✅ Gerencia loading state
+- ✅ Exibe erros abaixo do botão
+- ✅ Desabilita durante loading
+- ✅ Suporta customização via props
+
+---
+
+## ⚙️ Settings Components ✨ NOVO
+
+### `PlanSection`
+
+**Arquivo:** `src/components/settings/PlanSection/PlanSection.jsx`
+
+Seção para gerenciamento de plano e assinatura Stripe.
+
+#### **Props**
+
+```typescript
+interface PlanSectionProps {
+  isPro: boolean;
+  doctor: Doctor | null;
+  subscriptionEndDate: Date | null;
+  onCancel: () => Promise<void>;
+  onReactivate: () => Promise<void>;
+  cancelLoading: boolean;
+  reactivateLoading: boolean;
+  cancelError: string | null;
+  reactivateError: string | null;
+}
+```
+
+#### **Uso**
+
+```javascript
+import PlanSection from '@/components/settings/PlanSection/PlanSection';
+
+<PlanSection
+  isPro={isPro}
+  doctor={doctor}
+  subscriptionEndDate={subscriptionEndDate}
+  onCancel={handleCancelSubscription}
+  onReactivate={handleReactivateSubscription}
+  cancelLoading={cancelLoading}
+  reactivateLoading={reactivateLoading}
+  cancelError={cancelError}
+  reactivateError={reactivateError}
+/>
+```
+
+#### **Comportamento**
+
+- ✅ Exibe card de upgrade para usuários free
+- ✅ Exibe informações de assinatura ativa para usuários PRO
+- ✅ Mostra data de término da assinatura
+- ✅ Permite cancelamento (no final do período pago)
+- ✅ Permite reativação de assinatura cancelada
+- ✅ Gerencia estados de loading e error
+
+---
+
+### `WhatsAppSection`
+
+**Arquivo:** `src/components/settings/WhatsAppSection/WhatsAppSection.jsx`
+
+Seção colapsável para configuração de mensagens WhatsApp.
+
+#### **Props**
+
+```typescript
+interface WhatsAppSectionProps {
+  whatsappConfig: {
+    intro: string;
+    body: string;
+    footer: string;
+    showValue: boolean;
+  };
+  onUpdateField: (field: string, value: any) => void;
+  preview: string;
+}
+```
+
+#### **Uso**
+
+```javascript
+import WhatsAppSection from '@/components/settings/WhatsAppSection/WhatsAppSection';
+
+<WhatsAppSection
+  whatsappConfig={whatsappConfig}
+  onUpdateField={updateWhatsappField}
+  preview={generatePreview()}
+/>
+```
+
+#### **Comportamento**
+
+- ✅ Seção colapsável com animação
+- ✅ Campos para intro, body, footer
+- ✅ Checkbox para incluir valor
+- ✅ Preview da mensagem em tempo real
+- ✅ Gerencia estado de expansão
+
+---
+
+### `PublicScheduleSection`
+
+**Arquivo:** `src/components/settings/PublicScheduleSection/PublicScheduleSection.jsx`
+
+Seção colapsável para configuração do período de exibição do agendamento público.
+
+#### **Props**
+
+```typescript
+interface PublicScheduleSectionProps {
+  publicScheduleConfig: {
+    period: string;
+  };
+  onUpdateField: (field: string, value: any) => void;
+}
+```
+
+#### **Uso**
+
+```javascript
+import PublicScheduleSection from '@/components/settings/PublicScheduleSection/PublicScheduleSection';
+
+<PublicScheduleSection
+  publicScheduleConfig={publicScheduleConfig}
+  onUpdateField={updatePublicScheduleField}
+/>
+```
+
+#### **Comportamento**
+
+- ✅ Seção colapsável com animação
+- ✅ Select com opções de período
+- ✅ Descrição de cada opção
+- ✅ Gerencia estado de expansão
+
+---
+
+### `AppointmentTypeSection`
+
+**Arquivo:** `src/components/settings/AppointmentTypeSection/AppointmentTypeSection.jsx`
+
+Seção colapsável para configuração de tipos de atendimento e locais.
+
+#### **Props**
+
+```typescript
+interface AppointmentTypeSectionProps {
+  appointmentTypeConfig: {
+    mode: 'disabled' | 'fixed' | 'allow_choice';
+    fixedType: 'online' | 'presencial';
+    defaultValueOnline: number;
+    defaultValuePresencial: number;
+    locations: Array<{ name: string; defaultValue: number }>;
+  };
+  onUpdateField: (field: string, value: any) => void;
+  onAddLocation: () => void;
+  onUpdateLocation: (index: number, location: { name: string; defaultValue: number }) => void;
+  onRemoveLocation: (index: number) => void;
+  newLocationName: string;
+  newLocationValue: string;
+  onNewLocationNameChange: (value: string) => void;
+  onNewLocationValueChange: (value: string) => void;
+}
+```
+
+#### **Uso**
+
+```javascript
+import AppointmentTypeSection from '@/components/settings/AppointmentTypeSection/AppointmentTypeSection';
+
+<AppointmentTypeSection
+  appointmentTypeConfig={appointmentTypeConfig}
+  onUpdateField={updateAppointmentTypeField}
+  onAddLocation={handleAddLocation}
+  onUpdateLocation={updateLocation}
+  onRemoveLocation={removeLocation}
+  newLocationName={newLocationName}
+  newLocationValue={newLocationValue}
+  onNewLocationNameChange={setNewLocationName}
+  onNewLocationValueChange={setNewLocationValue}
+/>
+```
+
+#### **Comportamento**
+
+- ✅ Seção colapsável com animação
+- ✅ Select para modo de exibição (desabilitado, fixo, permitir escolha)
+- ✅ Select para tipo fixo (quando modo é fixo)
+- ✅ Campos para valores padrão (online e presencial)
+- ✅ Gerenciamento de múltiplos locais de atendimento
+- ✅ Adicionar, editar e remover locais
+- ✅ Validação de campos obrigatórios
 
 ---
 

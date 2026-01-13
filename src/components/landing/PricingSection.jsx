@@ -19,6 +19,7 @@ const proFeatures = [
 
 export default function PricingSection({ 
   user, 
+  userPlan,
   loading, 
   onProClick, 
   onNavigateToRegister 
@@ -69,21 +70,38 @@ export default function PricingSection({
             ))}
           </ul>
 
-          <button
-            onClick={onProClick}
-            className="btn btn-primary pro-pay-btn"
-            disabled={loading}
-          >
-            Assinar PRO
-            <span className="pay-hint">
-              Pix, cartão ou Mercado Pago
-            </span>
-          </button>
+          {userPlan === "pro" ? (
+            <>
+              <button
+                className="btn btn-primary pro-pay-btn"
+                disabled
+                style={{ opacity: 0.7, cursor: 'not-allowed' }}
+              >
+                Você já é PRO! ✨
+              </button>
+              <p className="pro-note" style={{ color: '#10b981', marginTop: '0.5rem' }}>
+                Acesse as configurações para gerenciar sua assinatura
+              </p>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={onProClick}
+                className="btn btn-primary pro-pay-btn"
+                disabled={loading}
+              >
+                Assinar PRO
+                <span className="pay-hint">
+                  Cartão de crédito ou Pix
+                </span>
+              </button>
 
-          {!user && !loading && (
-            <p className="pro-note">
-              🔒 É necessário estar logado para assinar
-            </p>
+              {!user && !loading && (
+                <p className="pro-note">
+                  🔒 É necessário estar logado para assinar
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>

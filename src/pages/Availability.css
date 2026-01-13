@@ -1,4 +1,5 @@
 /* src/pages/Availability/Availability.css */
+@import url('../styles/variables.css');
 
 /* ========== Page Container ========== */
 .availability-page {

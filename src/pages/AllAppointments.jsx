@@ -2,6 +2,7 @@ import React from "react";
 import { auth } from "../services/firebase/config";
 
 import useAllAppointments from "../hooks/agenda/useAllAppointments";
+import PageHeader from "../components/common/PageHeader/PageHeader";
 import Filters from "../components/common/Filters/Filters";
 import PatientsList from "../components/allAppointments/PatientsList";
 import SaveChangesBar from "../components/allAppointments/SaveChangesBar";
@@ -68,14 +69,11 @@ export default function AllAppointments() {
   return (
     <div className="appointments-page">
       <div className="appointments-container">
-        <header className="page-header">
-          <h2>Todos os Agendamentos</h2>
-          <p>
-            {stats.totalAppointments} agendamento(s) •{" "}
-            <strong>R$ {stats.totalValue.toFixed(2)}</strong> • Pacientes:{" "}
-            <strong>{stats.totalPatients}</strong>
-          </p>
-        </header>
+        <PageHeader
+          label="Gestão de Agendamentos"
+          title="Todos os Agendamentos"
+          description={`${stats.totalAppointments} agendamento(s) • R$ ${stats.totalValue.toFixed(2)} • Pacientes: ${stats.totalPatients}`}
+        />
 
         <Filters
           searchTerm={searchTerm}
