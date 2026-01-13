@@ -118,7 +118,7 @@ Este sistema resolve esses problemas oferecendo uma **experiência digital compl
 ## 🌐 Acesso à Plataforma
 
 🔗 **Aplicação em produção:**  
-> [Link da aplicação](https://etna-agendamento-medico.web.app/login)
+> [Link da aplicação](https://etna-agendamento-medico.web.app/)
 
 ---
 
