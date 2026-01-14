@@ -1,23 +1,21 @@
 // src/hooks/usePublicSchedule.js - REFATORADO
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 
 // Services
 import { getDoctorBySlug } from "../../services/firebase/doctors.service";
 import { getAvailability } from "../../services/firebase/availability.service";
 import { 
-  getAppointmentsByDoctor, 
-  createAppointment 
+  getAppointmentsByDoctor
 } from "../../services/firebase/appointments.service";
+import { createPublicAppointment as createPublicAppointmentService } from "../../services/appointments/publicAppointment.service";
 import { sendAppointmentEmail } from "../../services/api/email.service";
 
-// ✅ UTILS - Validações
 import {
   validatePatientName,
   validateWhatsapp,
   validateSelectedSlot,
 } from "../../utils/validators/appointmentValidations";
 
-// ✅ UTILS - Availability
 import {
   validateAvailability,
   filterAvailableSlots
@@ -27,19 +25,26 @@ import { filterByPeriodConfig } from "../../utils/filters/publicScheduleFilters"
 // ✅ UTILS - Appointments
 import { filterAppointments } from "../../utils/filters/appointmentFilters";
 
-// ✅ UTILS - Patients
-import { generatePatientId } from "../../utils/patients/generatePatientId";
-
 // ✅ UTILS - WhatsApp
 import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
 
 // ✅ CONSTANTS
-import { STATUS_GROUPS } from "../../constants/appointmentStatus";
+import { STATUS_GROUPS, APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
+import { logError } from "../../utils/logger/logger";
+import {
+  calculateMonthlyAppointmentsCount,
+  checkLimitReached,
+} from "../../utils/limits/calculateMonthlyLimit";
+
+import { filterSlotsByLocation } from "../../utils/filters/slotFilters";
+import { getAvailableLocationsWithInfo } from "../../utils/locations/locationHelpers";
+import { normalizeSlotsArray } from "../../utils/availability/normalizeSlot";
 
 export const usePublicSchedule = (slug) => {
   const [doctor, setDoctor] = useState(null);
   const [availability, setAvailability] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [allAppointments, setAllAppointments] = useState([]); // ✅ Todos os appointments (incluindo cancelados)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -48,6 +53,7 @@ export const usePublicSchedule = (slug) => {
 
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   /* ==============================
      LOAD INITIAL DATA
@@ -67,39 +73,43 @@ export const usePublicSchedule = (slug) => {
         const doctorData = doctorResult.data;
         setDoctor(doctorData);
 
-        // 2. Verifica limite (opcional)
-        setAttendedPatientsCount(0);
-        setLimitReached(false);
-
         // 3. ✅ Carrega e valida disponibilidade com util
-        const availResult = await getAvailability(doctorData.id);
+        const availabilityResult = await getAvailability(doctorData.id);
         
-        if (availResult.success) {
-          // ✅ USA validateAvailability - filtra futuras e válidas
-          const validAvailability = validateAvailability(availResult.data, true);
+        if (availabilityResult.success) {
+          const validAvailability = validateAvailability(availabilityResult.data, true);
           
-          // ✅ Aplica filtro de período baseado na configuração do médico
           const periodConfig = doctorData.publicScheduleConfig?.period || "all_future";
           const filteredByPeriod = filterByPeriodConfig(validAvailability, periodConfig);
           
           setAvailability(filteredByPeriod);
         }
 
-        // 4. ✅ Carrega e filtra agendamentos com util
         const appointmentsResult = await getAppointmentsByDoctor(doctorData.id);
         
         if (appointmentsResult.success) {
-          // ✅ USA filterAppointments - apenas futuros e ativos
+          // ✅ Carrega TODOS os appointments futuros (incluindo cancelados para mostrar slots livres)
           const futureAppointments = filterAppointments(appointmentsResult.data, {
             futureOnly: true,
-            statusFilter: "Todos" // Confirmado e Pendente
-          }).filter(a => STATUS_GROUPS.ACTIVE.includes(a.status));
+            statusFilter: "Todos"
+          });
           
-          setAppointments(futureAppointments);
+          // ✅ Para validações, usa apenas ACTIVE
+          const activeAppointments = futureAppointments.filter(a => STATUS_GROUPS.ACTIVE.includes(a.status));
+          setAppointments(activeAppointments);
+          
+          // ✅ Guarda todos os appointments (incluindo cancelados) para incluir slots cancelados
+          setAllAppointments(futureAppointments);
+
+          // Calculate limit
+          const plan = doctorData.plan || "free";
+          const count = calculateMonthlyAppointmentsCount(appointmentsResult.data);
+          setAttendedPatientsCount(count);
+          setLimitReached(checkLimitReached(plan, count));
         }
 
       } catch (err) {
-        console.error("Erro ao carregar agenda pública:", err);
+        logError("Erro ao carregar agenda pública:", err);
         setError(err.message || "Erro ao carregar dados");
       } finally {
         setLoading(false);
@@ -112,10 +122,198 @@ export const usePublicSchedule = (slug) => {
   }, [slug]);
 
   /* ==============================
-     ✅ FILTRA SLOTS DISPONÍVEIS
-     USA filterAvailableSlots util
+     ✅ HELPER: Verifica se slot já passou
   ============================== */
-  const filteredAvailability = filterAvailableSlots(availability, appointments);
+  const isSlotInPast = useCallback((date, time) => {
+    if (!date || !time) return true;
+    
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    // Se a data é passada, o slot já passou
+    if (date < todayStr) return true;
+    
+    // Se a data é hoje, verifica a hora
+    if (date === todayStr) {
+      const [hours, minutes] = time.split(':').map(Number);
+      if (isNaN(hours) || isNaN(minutes)) return true;
+      
+      const slotTime = new Date();
+      slotTime.setHours(hours, minutes, 0, 0);
+      
+      // Se o horário do slot já passou, retorna true
+      return slotTime < now;
+    }
+    
+    // Se a data é futura, o slot ainda não passou
+    return false;
+  }, []);
+
+  /* ==============================
+     ✅ FILTRA SLOTS DISPONÍVEIS
+     Inclui slots com appointments cancelados (liberados)
+     Filtra slots que já passaram (data/hora atual)
+  ============================== */
+  const availableSlots = useMemo(() => {
+    // ✅ Slots livres na availability (não ocupados por ACTIVE)
+    const baseAvailableSlots = filterAvailableSlots(availability, appointments);
+    
+    // ✅ Adiciona slots com appointments cancelados que não estão na availability
+    const slotsWithCancelled = baseAvailableSlots.map(day => {
+      // Busca appointments cancelados para este dia
+      const cancelledAppointmentsForDay = allAppointments.filter(a =>
+        a.date === day.date && 
+        a.status === APPOINTMENT_STATUS.CANCELLED &&
+        a.time
+      );
+      
+      // Horários ocupados por ACTIVE
+      const bookedTimes = appointments
+        .filter(a => a.date === day.date && STATUS_GROUPS.ACTIVE.includes(a.status))
+        .map(a => a.time);
+      
+      // Slots cancelados que não estão na availability e não estão ocupados por ACTIVE
+      const cancelledSlotsNotInAvailability = cancelledAppointmentsForDay
+        .map(a => a.time)
+        .filter(time => {
+          // Verifica se não está ocupado por ACTIVE
+          if (bookedTimes.includes(time)) return false;
+          
+          // ✅ Verifica se o slot já não passou
+          if (isSlotInPast(day.date, time)) return false;
+          
+          // Verifica se não está na availability
+          return !(day.slots || []).some(slot => {
+            const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+            return slotTime === time;
+          });
+        });
+      
+      // Combina slots da availability com slots cancelados
+      const allSlots = [
+        ...(day.slots || []),
+        ...cancelledSlotsNotInAvailability
+      ];
+      
+      // ✅ Filtra slots que já passaram (data/hora atual)
+      const validSlots = allSlots.filter(slot => {
+        const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+        if (!slotTime) return false;
+        return !isSlotInPast(day.date, slotTime);
+      });
+      
+      return {
+        ...day,
+        slots: validSlots
+      };
+    });
+    
+    // ✅ Adiciona dias que só têm appointments cancelados (não estão na availability)
+    const cancelledDates = new Set();
+    allAppointments.forEach(a => {
+      if (a.status === APPOINTMENT_STATUS.CANCELLED && a.date && a.time) {
+        // ✅ Verifica se o slot já não passou
+        if (isSlotInPast(a.date, a.time)) return;
+        
+        // Verifica se não está na availability e não está ocupado por ACTIVE
+        const dayInAvailability = availability.find(av => av.date === a.date);
+        const hasActiveInSlot = appointments.some(apt => 
+          apt.date === a.date && 
+          apt.time === a.time && 
+          STATUS_GROUPS.ACTIVE.includes(apt.status)
+        );
+        
+        if (!dayInAvailability && !hasActiveInSlot) {
+          cancelledDates.add(a.date);
+        }
+      }
+    });
+    
+    // Cria dias para slots cancelados que não estão na availability
+    const cancelledDays = Array.from(cancelledDates).map(date => {
+      const cancelledForDate = allAppointments.filter(a =>
+        a.date === date &&
+        a.status === APPOINTMENT_STATUS.CANCELLED &&
+        a.time
+      );
+      
+      const bookedTimes = appointments
+        .filter(a => a.date === date && STATUS_GROUPS.ACTIVE.includes(a.status))
+        .map(a => a.time);
+      
+      const cancelledSlots = cancelledForDate
+        .map(a => a.time)
+        .filter(time => {
+          // Verifica se não está ocupado por ACTIVE
+          if (bookedTimes.includes(time)) return false;
+          // ✅ Verifica se o slot já não passou
+          return !isSlotInPast(date, time);
+        })
+        .sort();
+      
+      if (cancelledSlots.length > 0) {
+        return {
+          id: `cancelled_${date}`,
+          date,
+          slots: cancelledSlots
+        };
+      }
+      return null;
+    }).filter(Boolean);
+    
+    // Combina todos os dias (availability + cancelados)
+    const allDays = [...slotsWithCancelled, ...cancelledDays];
+    
+    // Remove duplicatas e ordena por data
+    const uniqueDays = allDays.reduce((acc, day) => {
+      const existing = acc.find(d => d.date === day.date);
+      if (existing) {
+        // Se já existe, combina os slots
+        const allSlots = [...new Set([...existing.slots, ...day.slots])].sort();
+        return acc.map(d => d.date === day.date ? { ...d, slots: allSlots } : d);
+      }
+      return [...acc, day];
+    }, []);
+    
+    return uniqueDays.filter(day => day.slots.length > 0).sort((a, b) => a.date.localeCompare(b.date));
+  }, [availability, appointments, allAppointments, isSlotInPast]);
+
+  /* ==============================
+     FILTER BY LOCATION
+     Filters availability by selected location
+  ============================== */
+  const filteredAvailability = useMemo(() => {
+    if (!selectedLocation) {
+      return availableSlots;
+    }
+
+    return availableSlots.map(day => {
+      // Normalize slots to handle both formats
+      const normalizedSlots = normalizeSlotsArray(day.slots || [], doctor);
+      
+      // Filter slots by location
+      const filteredSlots = filterSlotsByLocation(normalizedSlots, selectedLocation, doctor);
+      
+      return {
+        ...day,
+        slots: filteredSlots.map(s => s.time || s), // Convert back to original format for display
+      };
+    }).filter(day => day.slots.length > 0);
+  }, [availableSlots, selectedLocation, doctor]);
+
+  /* ==============================
+     GET AVAILABLE LOCATIONS
+     Extract unique locations from available slots
+  ============================== */
+  const availableLocations = useMemo(() => {
+    if (!doctor || !availableSlots.length) return [];
+    
+    // Collect all slots from all days
+    const allSlots = availableSlots.flatMap(day => day.slots || []);
+    const normalizedSlots = normalizeSlotsArray(allSlots, doctor);
+    
+    return getAvailableLocationsWithInfo(normalizedSlots, doctor);
+  }, [availableSlots, doctor]);
 
   /* ==============================
      UI HANDLERS
@@ -125,21 +323,33 @@ export const usePublicSchedule = (slug) => {
     setSelectedSlot(null);
   };
 
-  const handleSlotSelect = (day, time) => {
+  const handleSlotSelect = (day, slot) => {
     if (!day || !day.date) return;
-    if (typeof time !== "string") return;
+    
+    // Extract time from slot (handles both string and object formats)
+    const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+    if (!slotTime) return;
     
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(day.date)) return;
     
     const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!timeRegex.test(time)) return;
-    if (time.includes('-')) return;
+    if (!timeRegex.test(slotTime)) return;
+    if (slotTime.includes('-')) return;
+    
+    // Find the actual slot object from day.slots
+    const actualSlot = typeof slot === "object" && slot.time 
+      ? slot 
+      : (day.slots || []).find(s => {
+          const sTime = typeof s === "string" ? s : (s?.time || null);
+          return sTime === slotTime;
+        });
     
     const slotData = { 
       dayId: day.id,
       date: day.date,
-      time
+      time: slotTime,
+      slotData: actualSlot, // Include full slot object
     };
     
     setSelectedSlot(slotData);
@@ -153,6 +363,10 @@ export const usePublicSchedule = (slug) => {
     try {
       if (!doctor) {
         throw new Error("Médico não carregado.");
+      }
+
+      if (limitReached) {
+        throw new Error("Atenção: você chegou ao limite permitido de consultas atendidas no mês.");
       }
 
       if (!selectedSlot || !selectedSlot.date || !selectedSlot.time) {
@@ -173,73 +387,44 @@ export const usePublicSchedule = (slug) => {
 
       const { patientName, patientWhatsapp } = formData;
 
-      // ✅ Validações com utils existentes
       validatePatientName(patientName);
-      const whatsapp = validateWhatsapp(patientWhatsapp);
+      validateWhatsapp(patientWhatsapp);
       validateSelectedSlot(selectedSlot);
+      
+      // Clean WhatsApp for email (backend will also clean it)
+      const cleanWhatsappNumber = cleanWhatsapp(patientWhatsapp);
 
-      const appointmentTypeConfig = doctor.appointmentTypeConfig || {
-        mode: "disabled",
-        fixedType: "online",
-        defaultValueOnline: 0,
-        defaultValuePresencial: 0,
-        locations: [],
-      };
-
-      let appointmentValue = appointmentTypeConfig.defaultValueOnline || 0;
-
-      if (formData.appointmentType) {
-        if (formData.appointmentType === "online") {
-          appointmentValue = appointmentTypeConfig.defaultValueOnline || 0;
-        } else if (formData.appointmentType === "presencial") {
-          if (formData.location) {
-            const selectedLocation = appointmentTypeConfig.locations.find(
-              loc => loc.name === formData.location
-            );
-            appointmentValue = selectedLocation?.defaultValue || appointmentTypeConfig.defaultValuePresencial || 0;
-          } else {
-            appointmentValue = appointmentTypeConfig.defaultValuePresencial || 0;
-          }
-        }
-      }
-
-      const patientId = generatePatientId(doctor.id, whatsapp);
-
-      const appointmentData = {
-        doctorId: doctor.id,
-        patientId: patientId,
-        patientName: patientName.trim(),
-        patientWhatsapp: whatsapp,
+      // All validation happens server-side
+      const result = await createPublicAppointmentService({
+        doctorSlug: doctor.slug,
         date: selectedSlot.date,
         time: selectedSlot.time,
-        value: appointmentValue,
-        status: "Pendente",
+        patientName: patientName.trim(),
+        patientWhatsapp: patientWhatsapp, // Service will clean it
         appointmentType: formData.appointmentType || null,
         location: formData.location || null,
-      };
-
-      const result = await createAppointment(appointmentData);
+      });
 
       if (!result.success) {
         throw new Error(result.error);
       }
 
-      // Atualiza lista local
-      setAppointments(prev => [...prev, appointmentData]);
+      // Atualiza lista local (opcional - dados podem ser recarregados)
+      // Note: We don't have the full appointment data here since it's created server-side
 
       // Limpa seleção
       setSelectedDay(null);
       setSelectedSlot(null);
 
-      // Envia email (opcional)
+      // Envia email (opcional - value is calculated server-side, so we send without it)
       sendAppointmentEmail({
         doctor,
         patientName: patientName.trim(),
-        whatsapp,
+        whatsapp: cleanWhatsappNumber,
         date: selectedSlot.date,
         time: selectedSlot.time,
-        value: appointmentValue,
-      }).catch(err => console.error("Erro ao enviar email:", err));
+        value: 0, // Value calculated server-side, not available here
+      }).catch(err => logError("Erro ao enviar email:", err));
 
       return { 
         success: true, 
@@ -251,7 +436,7 @@ export const usePublicSchedule = (slug) => {
       };
 
     } catch (err) {
-      console.error("Erro ao criar agendamento:", err);
+      logError("Erro ao criar agendamento:", err);
       return { 
         success: false, 
         error: err.message || "Erro ao agendar." 
@@ -265,6 +450,7 @@ export const usePublicSchedule = (slug) => {
   return {
     doctor,
     availability: filteredAvailability,
+    availableLocations,
     loading,
     error,
 
@@ -273,9 +459,11 @@ export const usePublicSchedule = (slug) => {
 
     selectedDay,
     selectedSlot,
+    selectedLocation,
 
     handleDaySelect,
     handleSlotSelect,
+    setSelectedLocation,
     createAppointment: createPublicAppointment,
   };
 };

@@ -1,6 +1,5 @@
 // ============================================
 // 📁 src/hooks/appointments/useAvailability.js
-// ✅ ATUALIZADO: removeSlot agora considera apenas appointments ATIVOS
 // ============================================
 
 import { useEffect, useState, useCallback } from "react";
@@ -21,12 +20,17 @@ import { sortAppointments } from "../../utils/filters/appointmentFilters";
 
 // Constants
 import { APPOINTMENT_STATUS, STATUS_GROUPS } from "../../constants/appointmentStatus";
+import {
+  calculateMonthlyAppointmentsCount,
+  checkLimitReached,
+} from "../../utils/limits/calculateMonthlyLimit";
+import { logError, logWarning } from "../../utils/logger/logger";
 
 export const useAvailability = () => {
   const user = auth.currentUser;
 
   if (!user) {
-    console.warn("useAvailability usado sem usuário autenticado");
+    logWarning("useAvailability usado sem usuário autenticado");
   }
 
   // ==============================
@@ -38,6 +42,7 @@ export const useAvailability = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isLimitReached, setIsLimitReached] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarValue, setCalendarValue] = useState(new Date());
@@ -68,7 +73,7 @@ export const useAvailability = () => {
       setError(null);
 
       try {
-        const [doctorResult, availResult, appointmentsResult, patientsResult] = await Promise.all([
+        const [doctorResult, availabilityResult, appointmentsResult, patientsResult] = await Promise.all([
           getDoctor(user.uid),
           getAvailability(user.uid),
           getAppointmentsByDoctor(user.uid),
@@ -77,20 +82,27 @@ export const useAvailability = () => {
 
         if (doctorResult.success) setDoctor(doctorResult.data);
 
-        if (availResult.success) {
-          const validAvailability = validateAvailability(availResult.data, false);
+        if (availabilityResult.success) {
+          const validAvailability = validateAvailability(availabilityResult.data, false);
           setAvailability(validAvailability);
         }
 
         if (appointmentsResult.success) {
           const sortedAppointments = sortAppointments(appointmentsResult.data);
           setAppointments(sortedAppointments);
+
+          // Calculate limit
+          if (doctorResult.success && doctorResult.data) {
+            const plan = doctorResult.data.plan || "free";
+            const count = calculateMonthlyAppointmentsCount(sortedAppointments);
+            setIsLimitReached(checkLimitReached(plan, count));
+          }
         }
 
         if (patientsResult.success) setPatients(patientsResult.data);
 
       } catch (err) {
-        console.error("Erro ao carregar disponibilidade:", err);
+        logError("Erro ao carregar disponibilidade:", err);
         setError(err.message || "Erro ao carregar dados");
       } finally {
         setLoading(false);
@@ -108,11 +120,15 @@ export const useAvailability = () => {
     const dayAvailability = availability.find(a => a.date === date);
     if (!dayAvailability || !dayAvailability.slots) return [];
 
-    // ✅ getBookedSlotsForDate já filtra apenas appointments ativos
     const bookedSlots = getBookedSlotsForDate(appointments, date);
 
+    // Handle both string and object slot formats
     return dayAvailability.slots
-      .filter(slot => !bookedSlots.includes(slot))
+      .filter(slot => {
+        const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+        return slotTime && !bookedSlots.includes(slotTime);
+      })
+      .map(slot => typeof slot === "string" ? slot : (slot?.time || slot))
       .sort();
   }, [availability, appointments]);
 
@@ -135,35 +151,60 @@ export const useAvailability = () => {
     const dayAvailability = availability.find(a => a.date === date);
     if (!dayAvailability) return false;
 
+    // Check if slot with this time exists (handles both string and object formats)
+    const slotExists = dayAvailability.slots.some(slot => {
+      const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+      return slotTime === time;
+    });
+
     // ✅ hasAppointmentConflict já filtra apenas appointments ativos
-    return dayAvailability.slots.includes(time) &&
-      !hasAppointmentConflict(appointments, date, time);
+    return slotExists && !hasAppointmentConflict(appointments, date, time);
   }, [availability, appointments]);
 
-  /**
-   * Dados para renderizar badges no calendário
-   * ✅ CORRIGIDO: Considera apenas appointments ATIVOS
-   */
   const getCalendarTileData = useCallback((dateStr) => {
     const dayAvailability = availability.find(a => a.date === dateStr) || { slots: [] };
 
-    // ✅ FILTRA apenas appointments ATIVOS para essa data
+    // ✅ Appointments ATIVOS (bloqueiam slots): Confirmado, Pendente, Msg enviada, Não Compareceu
     const activeAppointmentsForDate = appointments.filter(a =>
       a.date === dateStr && STATUS_GROUPS.ACTIVE.includes(a.status)
     );
 
-    // ✅ Slots ocupados = apenas appointments ativos
+    // ✅ Horários ocupados (apenas ACTIVE bloqueiam - cancelados NÃO bloqueiam mais)
     const bookedTimes = getBookedSlotsForDate(appointments, dateStr);
 
-    // ✅ Slots livres = slots cadastrados - appointments ativos
-    const freeSlotsArray = dayAvailability.slots.filter(slot => !bookedTimes.includes(slot));
+    // ✅ Slots livres na availability (não ocupados por ACTIVE)
+    const freeSlotsInAvailability = dayAvailability.slots.filter(slot => {
+      const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+      return slotTime && !bookedTimes.includes(slotTime);
+    });
+
+    // ✅ Appointments cancelados (liberam slots - devem ser contados como livres)
+    const cancelledAppointmentsForDate = appointments.filter(a =>
+      a.date === dateStr && 
+      a.status === APPOINTMENT_STATUS.CANCELLED &&
+      a.time
+    );
+    
+    // ✅ Slots com appointments cancelados que não estão na availability
+    // (foram removidos da availability mas ainda têm appointment cancelado - devem contar como livres)
+    const cancelledTimes = cancelledAppointmentsForDate.map(a => a.time);
+    const cancelledSlotsNotInAvailability = cancelledTimes.filter(time => {
+      // Verifica se o horário não está na availability
+      return !dayAvailability.slots.some(slot => {
+        const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+        return slotTime === time;
+      });
+    });
+
+    // ✅ Total de slots livres = slots livres na availability + slots com appointments cancelados
+    const totalFreeSlots = freeSlotsInAvailability.length + cancelledSlotsNotInAvailability.length;
 
     return {
-      hasFreeSlots: freeSlotsArray.length > 0,
-      hasBookedSlots: activeAppointmentsForDate.length > 0, // ✅ MUDANÇA PRINCIPAL
-      freeCount: freeSlotsArray.length,
-      bookedCount: activeAppointmentsForDate.length, // ✅ MUDANÇA PRINCIPAL
-      totalCount: dayAvailability.slots.length,
+      hasFreeSlots: totalFreeSlots > 0,
+      hasBookedSlots: activeAppointmentsForDate.length > 0,
+      freeCount: totalFreeSlots,
+      bookedCount: activeAppointmentsForDate.length,
+      totalCount: dayAvailability.slots.length + cancelledSlotsNotInAvailability.length,
     };
   }, [availability, appointments]);
 
@@ -171,39 +212,35 @@ export const useAvailability = () => {
      ACTIONS - AVAILABILITY
   ============================== */
 
-  const addSlot = async (date, slot) => {
+  const addSlot = useCallback(async (date, slot) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
+    if (isLimitReached) {
+      return { success: false, error: "Atenção: você chegou ao limite permitido de consultas atendidas no mês." };
+    }
+
     try {
-      const dayAvailability = availability.find(a => a.date === date);
-      if (dayAvailability?.slots?.includes(slot)) {
-        throw new Error("Este horário já está cadastrado");
+      // Extract time from slot (handles both string and object formats)
+      const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+      if (!slotTime) {
+        throw new Error("Horário do slot é obrigatório");
       }
 
       const result = await saveAvailability(user.uid, date, slot);
       if (!result.success) throw new Error(result.error);
 
-      setAvailability(prev => {
-        const existing = prev.find(a => a.date === date);
-        if (existing) {
-          return prev.map(a =>
-            a.date === date
-              ? { ...a, slots: [...a.slots, slot].sort() }
-              : a
-          );
-        } else {
-          return [
-            ...prev,
-            { id: `${user.uid}_${date}`, doctorId: user.uid, date, slots: [slot] }
-          ].sort((a, b) => a.date.localeCompare(b.date));
-        }
-      });
+      // Reload availability to get the updated slot
+      const availabilityResult = await getAvailability(user.uid);
+      if (availabilityResult.success) {
+        const validAvailability = validateAvailability(availabilityResult.data, false);
+        setAvailability(validAvailability);
+      }
 
       return { success: true };
     } catch (err) {
       return { success: false, error: err.message };
     }
-  };
+  }, [user, isLimitReached]);
 
   /**
    * Remove um slot de disponibilidade
@@ -236,15 +273,14 @@ export const useAvailability = () => {
      ACTIONS - APPOINTMENTS
   ============================== */
 
-  /**
-   * Cria um novo agendamento
-   * ✅ Cria o slot automaticamente se não existir
-   */
-  const bookAppointment = async ({ patientId, date, time }) => {
+  const bookAppointment = async ({ patientId, date, time, appointmentType, location }) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
+    if (isLimitReached) {
+      return { success: false, error: "Atenção: você chegou ao limite permitido de consultas atendidas no mês." };
+    }
+
     try {
-      // ✅ hasAppointmentConflict já filtra apenas ativos
       if (hasAppointmentConflict(appointments, date, time)) {
         throw new Error("Já existe um agendamento ativo neste horário");
       }
@@ -296,6 +332,8 @@ export const useAvailability = () => {
         time,
         value: appointmentValue,
         status: APPOINTMENT_STATUS.CONFIRMED,
+        appointmentType: appointmentType || null,
+        location: location || null,
       };
 
       const result = await createAppointment(appointmentData);
@@ -341,7 +379,6 @@ export const useAvailability = () => {
       });
       if (!result.success) throw new Error(result.error);
 
-      // ✅ Atualiza estado local - o slot será automaticamente liberado
       // porque os getters filtram por STATUS_GROUPS.ACTIVE
       setAppointments(prev => prev.map(a =>
         a.id === appointmentId
@@ -370,7 +407,7 @@ export const useAvailability = () => {
       return { success: false, error: "Nenhuma data selecionada" };
     }
     return await addSlot(selectedDate, slot);
-  }, [selectedDate]);
+  }, [selectedDate, addSlot]);
 
   const handleRemoveSlot = useCallback(async (slot) => {
     if (!selectedDate) {
@@ -379,7 +416,7 @@ export const useAvailability = () => {
     return await removeSlot(selectedDate, slot);
   }, [selectedDate]);
 
-  const handleBookAppointment = useCallback(async (patientId, time) => {
+  const handleBookAppointment = useCallback(async (patientId, time, appointmentType, location) => {
     if (!selectedDate) {
       return { success: false, error: "Nenhuma data selecionada" };
     }
@@ -387,6 +424,8 @@ export const useAvailability = () => {
       patientId,
       date: selectedDate,
       time,
+      appointmentType,
+      location,
     });
   }, [selectedDate, bookAppointment]);
 
@@ -423,5 +462,8 @@ export const useAvailability = () => {
 
     // Helpers
     formatLocalDate,
+
+    // Limit state
+    isLimitReached,
   };
 };

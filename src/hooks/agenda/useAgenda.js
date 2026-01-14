@@ -1,18 +1,22 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { auth, db } from "../../services/firebase/config";
 import { collection, query, where, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
 
 // Services
 import * as PatientService from "../../services/firebase/patients.service";
+import { getAvailability, removeAvailability } from "../../services/firebase/availability.service";
 
 // Constants
-import { APPOINTMENT_STATUS, STATUS_GROUPS } from "../../constants/appointmentStatus";
+import { APPOINTMENT_STATUS, STATUS_GROUPS, isStatusInGroup } from "../../constants/appointmentStatus";
 
 // Utils
 import { formatDateToQuery } from "../../utils/filters/dateFilters";
 import { sortAppointments } from "../../utils/filters/appointmentFilters";
 import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
 import formatDate from "../../utils/formatter/formatDate";
+import { getBookedSlotsForDate } from "../../utils/appointments/getBookedSlots";
+import { hasAppointmentConflict } from "../../utils/appointments/hasConflict";
+import { logError, logWarning } from "../../utils/logger/logger";
 
 // 📱 Formata WhatsApp padrão BR
 const formatWhatsappNumber = (number) => {
@@ -29,7 +33,8 @@ export default function useAgenda(currentDate) {
   const [referenceNames, setReferenceNames] = useState({});
   const [patientStatus, setPatientStatus] = useState({});
   const [whatsappConfig, setWhatsappConfig] = useState(null);
-  const [lockedAppointments, setLockedAppointments] = useState(new Set()); // ✅ NOVO
+  const [lockedAppointments, setLockedAppointments] = useState(new Set());
+  const [availability, setAvailability] = useState([]);
 
   const hasUnsavedChanges = useRef(false);
   const currentDateStr = formatDateToQuery(currentDate);
@@ -55,6 +60,26 @@ export default function useAgenda(currentDate) {
     };
 
     fetchDoctorConfig();
+  }, [user]);
+
+  // ------------------------------
+  // Buscar availability
+  // ------------------------------
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchAvailability = async () => {
+      try {
+        const result = await getAvailability(user.uid);
+        if (result.success) {
+          setAvailability(result.data || []);
+        }
+      } catch (err) {
+        logError("Erro ao buscar disponibilidade:", err);
+      }
+    };
+
+    fetchAvailability();
   }, [user]);
 
   // ------------------------------
@@ -84,19 +109,17 @@ export default function useAgenda(currentDate) {
         setStatusUpdates(initialStatus);
         hasUnsavedChanges.current = false;
 
-        // ✅ NOVO: Identifica appointments que não podem mais mudar de status
         identifyLockedAppointments(data);
 
         await loadPatientData(data);
       } catch (err) {
-        console.error("Erro ao buscar agendamentos:", err);
+        logError("Erro ao buscar agendamentos:", err);
       }
     };
 
     fetchAppointments();
   }, [user, currentDateStr]);
 
-  // ✅ NOVA FUNÇÃO: Identifica appointments bloqueados
   const identifyLockedAppointments = (appointmentsList) => {
     const locked = new Set();
 
@@ -144,7 +167,8 @@ export default function useAgenda(currentDate) {
             names[appt.id] = appt.patientName;
             status[appt.id] = "new";
           }
-        } catch {
+        } catch (error) {
+          logError("Erro ao buscar dados do paciente:", error);
           names[appt.id] = appt.patientName;
           status[appt.id] = "new";
         }
@@ -155,13 +179,10 @@ export default function useAgenda(currentDate) {
     setPatientStatus(status);
   };
 
-  // ------------------------------
-  // ✅ ATUALIZADO: Atualizar status com validação
-  // ------------------------------
   const handleStatusChange = async (id, value) => {
-    // ❌ Bloqueia se o appointment está travado
+    // Bloqueia se o appointment está travado
     if (lockedAppointments.has(id)) {
-      console.warn("⚠️ Este agendamento não pode ter o status alterado pois o horário já foi reagendado");
+      logWarning("Este agendamento não pode ter o status alterado pois o horário já foi reagendado");
       return {
         success: false,
         error: "Horário já foi reagendado. Status não pode ser alterado."
@@ -170,7 +191,7 @@ export default function useAgenda(currentDate) {
 
     const currentAppointment = appointments.find(a => a.id === id);
     
-    // ✅ Se está mudando PARA cancelado/não compareceu, verifica conflito
+    // Se está mudando PARA cancelado/não compareceu, verifica conflito
     if (!STATUS_GROUPS.ACTIVE.includes(value)) {
       const hasActiveInSameSlot = appointments.some(
         other => 
@@ -180,7 +201,7 @@ export default function useAgenda(currentDate) {
       );
 
       if (hasActiveInSameSlot) {
-        console.warn("⚠️ Não é possível cancelar: horário já foi reagendado");
+        logWarning("Não é possível cancelar: horário já foi reagendado");
         return {
           success: false,
           error: "Este horário já foi reagendado. Não é possível cancelar."
@@ -188,7 +209,6 @@ export default function useAgenda(currentDate) {
       }
     }
 
-    // ✅ Atualização permitida
     setStatusUpdates((prev) => ({ ...prev, [id]: value }));
     hasUnsavedChanges.current = true;
 
@@ -198,7 +218,6 @@ export default function useAgenda(currentDate) {
       setAppointments((prev) => {
         const updated = prev.map((a) => (a.id === id ? { ...a, status: value } : a));
         
-        // ✅ Recalcula appointments bloqueados após atualização
         identifyLockedAppointments(updated);
         
         return updated;
@@ -206,14 +225,11 @@ export default function useAgenda(currentDate) {
 
       return { success: true };
     } catch (err) {
-      console.error("Erro ao atualizar status:", err);
+      logError("Erro ao atualizar status:", err);
       return { success: false, error: err.message };
     }
   };
 
-  // ------------------------------
-  // ✅ NOVA FUNÇÃO: Verifica se appointment está bloqueado
-  // ------------------------------
   const isAppointmentLocked = (appointmentId) => {
     return lockedAppointments.has(appointmentId);
   };
@@ -240,7 +256,7 @@ export default function useAgenda(currentDate) {
       setPatientStatus((prev) => ({ ...prev, [appt.id]: "existing" }));
       return result;
     } catch (err) {
-      console.error("Erro ao adicionar paciente:", err);
+      logError("Erro ao adicionar paciente:", err);
       return { success: false, error: err.message };
     }
   };
@@ -279,6 +295,122 @@ Horário: ${appt.time}`;
     handleStatusChange(appt.id, APPOINTMENT_STATUS.MESSAGE_SENT);
   };
 
+  // ------------------------------
+  // Remover slot livre
+  // ------------------------------
+  const handleRemoveSlot = async (slotTime) => {
+    if (!user) return { success: false, error: "Usuário não autenticado" };
+
+    try {
+      // Verifica se há agendamento ativo no horário
+      if (hasAppointmentConflict(appointments, currentDateStr, slotTime)) {
+        throw new Error("Não é possível remover um horário com agendamento ativo. Cancele o agendamento primeiro.");
+      }
+
+      const result = await removeAvailability(user.uid, currentDateStr, slotTime);
+      if (!result.success) throw new Error(result.error);
+
+      // Atualiza a disponibilidade
+      const availabilityResult = await getAvailability(user.uid);
+      if (availabilityResult.success) {
+        setAvailability(availabilityResult.data || []);
+      }
+
+      return { success: true };
+    } catch (err) {
+      logError("Erro ao remover slot:", err);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const dayAvailability = useMemo(() => {
+    return availability.find(a => a.date === currentDateStr) || { slots: [] };
+  }, [availability, currentDateStr]);
+
+  const activeAppointments = useMemo(() => {
+    return appointments.filter(a => STATUS_GROUPS.ACTIVE.includes(a.status));
+  }, [appointments]);
+
+  // ✅ CORRIGIDO: Calcula totalSlots igual ao DayManagement (combina slots + appointments ativos)
+  const totalSlots = useMemo(() => {
+    // Extract times from slots (handle both string and object formats)
+    const slotTimes = (dayAvailability.slots || []).map(slot => {
+      if (typeof slot === "string") return slot;
+      if (typeof slot === "object" && slot.time) return slot.time;
+      return null;
+    }).filter(Boolean);
+    
+    const activeBookedTimes = activeAppointments.map((a) => a.time);
+    const combined = [...new Set([...slotTimes, ...activeBookedTimes])];
+    return combined.length;
+  }, [dayAvailability, activeAppointments]);
+
+  const freeSlots = useMemo(() => {
+    if (!totalSlots) return [];
+    
+    // ✅ Horários ocupados (apenas ACTIVE bloqueiam)
+    const bookedSlots = getBookedSlotsForDate(appointments, currentDateStr);
+    
+    // ✅ Slots livres na availability (não ocupados por ACTIVE)
+    const freeSlotsInAvailability = (dayAvailability.slots || [])
+      .filter(slot => {
+        // Extract time from slot (handles both string and object formats)
+        const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+        return slotTime && !bookedSlots.includes(slotTime);
+      })
+      .map(slot => typeof slot === "string" ? slot : (slot?.time || ""))
+      .filter(time => time);
+
+    // ✅ Appointments cancelados (liberam slots - devem ser contados como livres)
+    const cancelledAppointmentsForDate = appointments.filter(a =>
+      a.date === currentDateStr && 
+      a.status === APPOINTMENT_STATUS.CANCELLED &&
+      a.time
+    );
+    
+    // ✅ Slots com appointments cancelados que não estão na availability
+    // (foram removidos da availability mas ainda têm appointment cancelado - devem contar como livres)
+    const cancelledTimes = cancelledAppointmentsForDate.map(a => a.time);
+    const cancelledSlotsNotInAvailability = cancelledTimes.filter(time => {
+      // Verifica se o horário não está na availability
+      return !(dayAvailability.slots || []).some(slot => {
+        const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+        return slotTime === time;
+      });
+    });
+
+    // ✅ Total de slots livres = slots livres na availability + slots com appointments cancelados
+    return [...freeSlotsInAvailability, ...cancelledSlotsNotInAvailability].sort();
+  }, [dayAvailability, appointments, currentDateStr, totalSlots]);
+
+  const stats = useMemo(() => {
+    const confirmed = appointments.filter(a => 
+      isStatusInGroup(a.status, 'CONFIRMED')
+    ).length;
+
+    const pending = appointments.filter(a => 
+      isStatusInGroup(a.status, 'PENDING')
+    ).length;
+
+    const cancelled = appointments.filter(a => 
+      a.status === APPOINTMENT_STATUS.CANCELLED
+    ).length;
+
+    const free = freeSlots.length;
+
+    return {
+      confirmed,
+      pending,
+      cancelled,
+      free,
+    };
+  }, [appointments, freeSlots]);
+
+  const occupancyRate = useMemo(() => {
+    if (totalSlots === 0) return 0;
+    return Math.round((activeAppointments.length / totalSlots) * 100);
+  }, [totalSlots, activeAppointments.length]);
+
   return {
     appointments,
     statusUpdates,
@@ -290,6 +422,12 @@ Horário: ${appt.time}`;
     handleStatusChange,
     handleAddPatient,
     handleSendWhatsapp,
+    handleRemoveSlot,
     isAppointmentLocked,
+    totalSlots,
+    freeSlots,
+    stats,
+    occupancyRate,
+    activeAppointments,
   };
 }
