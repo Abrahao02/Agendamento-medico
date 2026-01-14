@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999999; /* ✨ Z-index muito alto para ficar acima de tudo */
+  z-index: var(--z-modal);
   padding: 1rem;
   animation: fadeIn 0.25s ease-out;
   overflow-y: auto; /* ✨ Permite scroll se o conteúdo for maior que a tela */
@@ -441,8 +441,9 @@
   .modal-close {
     top: 1rem;
     right: 1rem;
-    width: 28px;
-    height: 28px;
+    width: 44px; /* ✅ Tamanho mínimo para touch */
+    height: 44px; /* ✅ Tamanho mínimo para touch */
+    padding: var(--spacing-xs); /* Aumenta área de toque */
   }
 
   .modal-body {

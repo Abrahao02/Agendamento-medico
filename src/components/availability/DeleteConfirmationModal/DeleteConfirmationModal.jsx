@@ -12,17 +12,18 @@ export default function DeleteConfirmationModal({
   time,
   loading = false,
 }) {
-  // ✅ FIX: useEffect para controlar scroll corretamente
   React.useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     }
 
-    // Cleanup ao desmontar
+    // Always cleanup on unmount or when modal closes
+    // This ensures body scroll is restored even if user navigates away
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
+      // Alternative approach: document.body.style.removeProperty('overflow');
     };
   }, [isOpen]);
 

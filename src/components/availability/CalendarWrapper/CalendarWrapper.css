@@ -92,24 +92,44 @@
 
 /* Today's date */
 .react-calendar__tile--now {
-  background: var(--primary-50);
-  border: 2px solid var(--color-primary);
+  background: #dbeafe; /* Azul muito claro */
+  border: 2px solid #3b82f6; /* Azul */
   font-weight: var(--font-semibold);
+  color: var(--text-primary);
 }
 
 .react-calendar__tile--now:enabled:hover {
-  background: var(--primary-100);
+  background: #bfdbfe; /* Azul um pouco mais escuro no hover */
+  border-color: #2563eb;
 }
 
 /* Active (selected) date */
 .react-calendar__tile--active {
-  background: var(--color-primary) !important;
-  color: var(--text-inverse) !important;
-  border-color: var(--color-primary) !important;
+  background: #dbeafe !important; /* Azul muito claro */
+  color: var(--text-primary) !important;
+  border: 2px solid #3b82f6 !important; /* Azul */
+  font-weight: var(--font-semibold) !important;
 }
 
 .react-calendar__tile--active:enabled:hover {
-  background: var(--color-primary-hover) !important;
+  background: #bfdbfe !important; /* Azul um pouco mais escuro no hover */
+  border-color: #2563eb !important;
+}
+
+/* Range tiles */
+.react-calendar__tile--range {
+  background: #dbeafe !important; /* Azul muito claro */
+  border: 2px solid #3b82f6 !important; /* Azul */
+  color: var(--text-primary) !important;
+}
+
+.react-calendar__tile--rangeStart,
+.react-calendar__tile--rangeEnd,
+.react-calendar__tile--rangeBothEnds {
+  background: #dbeafe !important; /* Azul muito claro */
+  border: 2px solid #3b82f6 !important; /* Azul */
+  color: var(--text-primary) !important;
+  font-weight: var(--font-semibold) !important;
 }
 
 /* Weekend styling (optional) */
