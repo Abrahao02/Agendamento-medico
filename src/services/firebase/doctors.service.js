@@ -12,6 +12,7 @@ import {
 
 import { db } from "./config";
 import { COLLECTIONS, validators } from "./collections";
+import { logError, logWarning } from "../../utils/logger/logger";
 
 
 function generateSlug(name) {
@@ -73,6 +74,7 @@ export async function createDoctor({ uid, name, email, whatsapp }) {
       },
       publicScheduleConfig: {
         period: "all_future",
+        showPrice: true,
       },
       appointmentTypeConfig: {
         mode: "disabled",
@@ -86,7 +88,7 @@ export async function createDoctor({ uid, name, email, whatsapp }) {
 
     return { success: true };
   } catch (error) {
-    console.error("createDoctor error:", error);
+    logError("createDoctor error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -129,7 +131,7 @@ export async function getDoctorBySlug(slug) {
     }
 
     if (snapshot.docs.length > 1) {
-      console.warn("Slug duplicado encontrado:", slug);
+      logWarning("Slug duplicado encontrado:", slug);
     }
 
     const docSnap = snapshot.docs[0];
@@ -196,7 +198,7 @@ export async function updateDoctor(doctorId, data) {
     }
 
     if (updateData.publicScheduleConfig) {
-      const allowedPublicScheduleKeys = ["period"];
+      const allowedPublicScheduleKeys = ["period", "showPrice"];
 
       for (const key of Object.keys(updateData.publicScheduleConfig)) {
         if (!allowedPublicScheduleKeys.includes(key)) {
@@ -205,12 +207,22 @@ export async function updateDoctor(doctorId, data) {
           );
         }
       }
+
+      if (
+        updateData.publicScheduleConfig.showPrice !== undefined &&
+        typeof updateData.publicScheduleConfig.showPrice !== "boolean"
+      ) {
+        throw new Error(
+          "publicScheduleConfig.showPrice deve ser boolean"
+        );
+      }
     }
 
     if (updateData.appointmentTypeConfig) {
       const allowedAppointmentTypeKeys = [
         "mode",
         "fixedType",
+        "selection",
         "defaultValueOnline",
         "defaultValuePresencial",
         "locations",
@@ -220,6 +232,16 @@ export async function updateDoctor(doctorId, data) {
         if (!allowedAppointmentTypeKeys.includes(key)) {
           throw new Error(
             `Campo inválido em appointmentTypeConfig: ${key}`
+          );
+        }
+      }
+
+      // Validar selection se fornecido
+      if (updateData.appointmentTypeConfig.selection) {
+        const validSelections = ["online_only", "presencial_only", "both"];
+        if (!validSelections.includes(updateData.appointmentTypeConfig.selection)) {
+          throw new Error(
+            `Valor inválido para selection: ${updateData.appointmentTypeConfig.selection}. Deve ser um de: ${validSelections.join(", ")}`
           );
         }
       }
@@ -247,7 +269,7 @@ export async function updateDoctor(doctorId, data) {
 
     return { success: true };
   } catch (error) {
-    console.error("updateDoctor error:", error);
+    logError("updateDoctor error:", error);
     return { success: false, error: error.message };
   }
 }

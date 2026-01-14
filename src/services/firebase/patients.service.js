@@ -11,11 +11,13 @@ import {
   query,
   where,
   getDocs,
+  onSnapshot,
   serverTimestamp,
 } from "firebase/firestore";
 
 import { db } from "./config";
 import { COLLECTIONS, getPatientId } from "./collections";
+import { logError } from "../../utils/logger/logger";
 
 /* ==============================
    CREATE PATIENT (SAFE)
@@ -29,10 +31,10 @@ export async function createPatient(doctorId, patientData) {
     const patientId = getPatientId(doctorId, patientData.whatsapp);
     const patientRef = doc(db, COLLECTIONS.PATIENTS, patientId);
 
-    const patientSnap = await getDoc(patientRef);
+    const patientSnapshot = await getDoc(patientRef);
 
     // 🔒 Não sobrescreve paciente existente
-    if (patientSnap.exists()) {
+    if (patientSnapshot.exists()) {
       return {
         success: true,
         id: patientId,
@@ -58,7 +60,7 @@ export async function createPatient(doctorId, patientData) {
       alreadyExists: false,
     };
   } catch (error) {
-    console.error("createPatient error:", error);
+    logError("createPatient error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -88,7 +90,7 @@ export async function getPatient(doctorId, whatsapp) {
       },
     };
   } catch (error) {
-    console.error("getPatient error:", error);
+    logError("getPatient error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -116,8 +118,46 @@ export async function getPatients(doctorId) {
 
     return { success: true, data: patients };
   } catch (error) {
-    console.error("getPatients error:", error);
+    logError("getPatients error:", error);
     return { success: false, error: error.message };
+  }
+}
+
+/* ==============================
+   SUBSCRIBE TO PATIENTS (REAL-TIME)
+================================ */
+export function subscribeToPatients(doctorId, callback) {
+  try {
+    if (!doctorId) {
+      throw new Error("doctorId não informado");
+    }
+
+    const q = query(
+      collection(db, COLLECTIONS.PATIENTS),
+      where("doctorId", "==", doctorId)
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const patients = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        callback({ success: true, data: patients });
+      },
+      (error) => {
+        logError("subscribeToPatients error:", error);
+        callback({ success: false, error: error.message });
+      }
+    );
+
+    return unsubscribe;
+  } catch (error) {
+    logError("subscribeToPatients error:", error);
+    callback({ success: false, error: error.message });
+    return () => {}; // Retorna função vazia para não quebrar o código
   }
 }
 
@@ -159,7 +199,7 @@ export async function updatePatient(doctorId, whatsapp, data) {
 
     return { success: true };
   } catch (error) {
-    console.error("updatePatient error:", error);
+    logError("updatePatient error:", error);
     return { success: false, error: error.message };
   }
 }

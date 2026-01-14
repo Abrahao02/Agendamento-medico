@@ -1,4 +1,5 @@
 // src/services/email.service.js
+import { logError, logWarning } from "../../utils/logger/logger";
 
 export const sendAppointmentEmail = async ({
   doctor,
@@ -81,7 +82,7 @@ Não esqueça de entrar em contato com o paciente para confirmar a consulta!`
     //const emailEndpoint = import.meta.env.VITE_APPS_SCRIPT_URL;
 
     if (!emailEndpoint) {
-      console.warn("Endpoint de e-mail não configurado");
+      logWarning("Endpoint de e-mail não configurado");
       return;
     }
 
@@ -90,7 +91,7 @@ Não esqueça de entrar em contato com o paciente para confirmar a consulta!`
       body: formData,
     });
   } catch (error) {
-    console.error("Erro ao enviar email:", error);
+    logError("Erro ao enviar email:", error);
     // ⚠️ Não quebra o fluxo de agendamento
   }
 };

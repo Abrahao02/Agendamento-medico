@@ -2,6 +2,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import app from '../../services/firebase/config';
 import { STRIPE_CONFIG } from './stripe.config';
+import { log, logError } from '../../utils/logger/logger';
 
 let stripePromise = null;
 
@@ -25,12 +26,12 @@ export const createCheckoutSession = async (userId, userEmail) => {
       cancelUrl: STRIPE_CONFIG.cancelUrl,
     });
 
-    console.log('Resultado completo da função:', result);
-    console.log('Dados retornados:', result.data);
-    console.log('URL disponível?', !!result.data?.url);
+    log('Resultado completo da função:', result);
+    log('Dados retornados:', result.data);
+    log('URL disponível?', !!result.data?.url);
 
     if (!result.data?.url) {
-      console.error('URL não retornada pela função!', result.data);
+      logError('URL não retornada pela função!', result.data);
       throw new Error('URL de checkout não foi retornada pela função');
     }
 
@@ -39,7 +40,7 @@ export const createCheckoutSession = async (userId, userEmail) => {
       url: result.data.url,
     };
   } catch (error) {
-    console.error('Erro ao criar sessão de checkout:', error);
+    logError('Erro ao criar sessão de checkout:', error);
     throw new Error(error.message || 'Erro ao criar sessão de checkout');
   }
 };
