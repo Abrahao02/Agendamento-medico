@@ -819,7 +819,7 @@ const message = generateWhatsappMessage({
   showValue: true
 });
 
-console.log(message);
+// message contém a mensagem formatada
 // ➜ "Olá João
 //    
 //    Sua sessão está agendada

@@ -42,8 +42,6 @@ src/hooks/
 │   └── usePatients.js
 ├── settings/
 │   └── useSettings.js
-├── settings/
-│   └── useSettings.js
 └── stripe/
     ├── useStripeCheckout.js
     ├── useCancelSubscription.js
@@ -816,6 +814,130 @@ function Settings() {
 
 ---
 
+## 💳 Stripe Hooks
+
+### `useStripeCheckout()`
+
+**Arquivo:** `src/hooks/stripe/useStripeCheckout.js`
+
+Hook para iniciar processo de checkout do Stripe.
+
+#### **Uso**
+
+```javascript
+import { useStripeCheckout } from '@/hooks/stripe/useStripeCheckout';
+
+function Component() {
+  const { handleCheckout, loading, error } = useStripeCheckout();
+
+  return (
+    <button onClick={handleCheckout} disabled={loading}>
+      {loading ? 'Processando...' : 'Assinar PRO'}
+    </button>
+  );
+}
+```
+
+#### **Estados Retornados**
+
+```typescript
+{
+  handleCheckout: () => Promise<void>,
+  loading: boolean,
+  error: string | null
+}
+```
+
+**Nota:** Para documentação completa, consulte [DocumentacaoStripe.md](./DocumentacaoStripe.md).
+
+---
+
+### `useCancelSubscription()`
+
+**Arquivo:** `src/hooks/stripe/useCancelSubscription.js`
+
+Hook para cancelar assinatura.
+
+#### **Uso**
+
+```javascript
+import { useCancelSubscription } from '@/hooks/stripe/useCancelSubscription';
+
+function Component() {
+  const { handleCancel, loading, error } = useCancelSubscription();
+
+  const handleClick = async () => {
+    const result = await handleCancel();
+    if (result.success) {
+      alert('Assinatura será cancelada no final do período pago');
+    }
+  };
+
+  return (
+    <button onClick={handleClick} disabled={loading}>
+      {loading ? 'Cancelando...' : 'Cancelar Assinatura'}
+    </button>
+  );
+}
+```
+
+#### **Estados Retornados**
+
+```typescript
+{
+  handleCancel: () => Promise<{ success: boolean, message?: string, error?: string }>,
+  loading: boolean,
+  error: string | null
+}
+```
+
+**Nota:** Para documentação completa, consulte [DocumentacaoStripe.md](./DocumentacaoStripe.md).
+
+---
+
+### `useReactivateSubscription()`
+
+**Arquivo:** `src/hooks/stripe/useReactivateSubscription.js`
+
+Hook para reativar assinatura cancelada.
+
+#### **Uso**
+
+```javascript
+import { useReactivateSubscription } from '@/hooks/stripe/useReactivateSubscription';
+
+function Component() {
+  const { handleReactivate, loading, error } = useReactivateSubscription();
+
+  const handleClick = async () => {
+    const result = await handleReactivate();
+    if (result.success) {
+      alert('Assinatura reativada com sucesso!');
+    }
+  };
+
+  return (
+    <button onClick={handleClick} disabled={loading}>
+      {loading ? 'Reativando...' : 'Reativar Assinatura'}
+    </button>
+  );
+}
+```
+
+#### **Estados Retornados**
+
+```typescript
+{
+  handleReactivate: () => Promise<{ success: boolean, message?: string, error?: string }>,
+  loading: boolean,
+  error: string | null
+}
+```
+
+**Nota:** Para documentação completa, consulte [DocumentacaoStripe.md](./DocumentacaoStripe.md).
+
+---
+
 ## 🎨 Common Hooks
 
 ### `useDashboardLayout()`
@@ -1128,4 +1250,4 @@ function Login() {
 
 **Documentação criada por:** Assistente IA  
 **Data:** Janeiro 2026  
-**Versão:** 1.0
+**Versão:** 1.2

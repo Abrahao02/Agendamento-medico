@@ -14,7 +14,10 @@ service cloud.firestore {
     }
 
     match /appointments/{appointmentId} {
-      allow create: if true;
+      // ✅ SECURITY: Block direct client-side creation from public (unauthenticated) users
+      // Public appointments must be created via Cloud Function (createPublicAppointment)
+      // Authenticated users (doctors) can create appointments directly (they control their own data)
+      allow create: if request.auth != null && request.resource.data.doctorId == request.auth.uid;
       allow read, update: if request.auth != null
                           && resource.data.doctorId == request.auth.uid;
       allow delete: if false;

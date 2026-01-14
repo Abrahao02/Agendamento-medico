@@ -44,7 +44,10 @@ src/components/
 │   ├── StatusSummary/
 │   ├── AppointmentsChart/
 │   ├── UpcomingAppointments/
-│   └── PublicLinkCard/
+│   ├── PublicLinkCard/
+│   ├── DetailsSummary/
+│   ├── FinancialChart/
+│   └── MonthlyComparison/
 ├── layout/              # Componentes de layout
 │   ├── Header/
 │   └── Sidebar/
@@ -100,7 +103,7 @@ import Badge, { StatusBadge, BadgeGroup } from "@/components/common/Badge";
 <Badge variant="warning" icon={<AlertIcon />}>Atenção</Badge>
 
 // Badge removível
-<Badge variant="info" onRemove={() => console.log("removed")}>
+<Badge variant="info" onRemove={() => {/* handle remove */}}>
   Tag
 </Badge>
 
@@ -223,7 +226,7 @@ import Card, { CardSection } from "@/components/common/Card";
 <Card 
   clickable 
   hoverable
-  onClick={() => console.log("clicked")}
+  onClick={() => {/* handle click */}}
 >
   <p>Card clicável</p>
 </Card>
@@ -715,6 +718,117 @@ import PublicLinkCard from "@/components/dashboard/PublicLinkCard/PublicLinkCard
   slug: string
 }
 ```
+
+---
+
+### `DetailsSummary`
+
+**Arquivo:** `src/components/dashboard/DetailsSummary/DetailsSummary.jsx`
+
+Componente para mostrar métricas detalhadas com barras de progresso.
+
+#### **Uso**
+
+```javascript
+import DetailsSummary from "@/components/dashboard/DetailsSummary/DetailsSummary";
+
+<DetailsSummary
+  newPatients={10}
+  newPatientsTotal={50}
+  messagesSent={25}
+  messagesSentTotal={50}
+  noShow={5}
+  noShowTotal={50}
+  cancelled={10}
+  cancelledTotal={50}
+/>
+```
+
+#### **Props**
+
+```typescript
+{
+  newPatients?: number,
+  newPatientsTotal?: number,
+  messagesSent?: number,
+  messagesSentTotal?: number,
+  noShow?: number,
+  noShowTotal?: number,
+  cancelled?: number,
+  cancelledTotal?: number
+}
+```
+
+**Comportamento:**
+- Exibe métricas com barras de progresso
+- Calcula percentuais automaticamente
+- Cores diferentes para cada métrica (blue, orange, red, gray)
+
+---
+
+### `FinancialChart`
+
+**Arquivo:** `src/components/dashboard/FinancialChart/FinancialChart.jsx`
+
+Gráfico de linha mostrando evolução financeira ao longo do tempo.
+
+#### **Uso**
+
+```javascript
+import FinancialChart from "@/components/dashboard/FinancialChart/FinancialChart";
+
+<FinancialChart data={financialChartData} />
+```
+
+#### **Props**
+
+```typescript
+{
+  data: Array<{
+    date: string,
+    revenue: number
+  }>
+}
+```
+
+**Comportamento:**
+- Gráfico de linha usando Recharts
+- Formata valores em R$
+- Exibe estado vazio quando não há dados
+
+---
+
+### `MonthlyComparison`
+
+**Arquivo:** `src/components/dashboard/MonthlyComparison/MonthlyComparison.jsx`
+
+Comparativo mensal financeiro em formato de lista.
+
+#### **Uso**
+
+```javascript
+import MonthlyComparison from "@/components/dashboard/MonthlyComparison/MonthlyComparison";
+
+<MonthlyComparison data={monthlyData} />
+```
+
+#### **Props**
+
+```typescript
+{
+  data: Array<{
+    key: string,
+    name: string,
+    revenue: number,
+    trend?: 'up' | 'down'
+  }>
+}
+```
+
+**Comportamento:**
+- Lista de meses com valores de receita
+- Indicadores de tendência (↑ ou ↓)
+- Exibe estado vazio quando não há dados
 
 ---
 
@@ -1348,4 +1462,4 @@ ComponentName/
 
 **Documentação criada por:** Assistente IA  
 **Data:** Janeiro 2026  
-**Versão:** 1.0
+**Versão:** 1.2

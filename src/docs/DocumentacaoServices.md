@@ -1,5 +1,8 @@
 # 📚 Documentação Completa - Firebase Services
 
+> **Versão:** 1.1  
+> **Última atualização:** Janeiro 2026
+
 ## 📋 Índice
 
 1. [Visão Geral](#-visão-geral)
@@ -32,6 +35,19 @@ src/services/firebase/
 
 src/services/api/
 └── email.service.js      # Envio de emails
+
+src/services/appointments/
+├── limitValidation.service.js      # Validação de limites de plano
+├── locationValidation.service.js   # Validação de locais
+└── publicAppointment.service.js    # Criação de agendamentos públicos
+
+src/services/common/
+└── errorHandler.service.js         # Tratamento de erros
+
+src/services/stripe/
+├── stripe.service.js               # Serviço principal do Stripe
+├── subscription.service.js         # Gerenciamento de assinaturas
+└── stripe.config.js                # Configuração do Stripe
 ```
 
 ### Padrão de Retorno
@@ -234,10 +250,10 @@ import { registerUser } from "@/services/firebase";
 const result = await registerUser("user@example.com", "SenhaForte@123");
 
 if (result.success) {
-  console.log("Usuário criado:", result.user.uid);
-  console.log("Email de verificação enviado!");
+  // Usuário criado com sucesso
+  // Email de verificação enviado automaticamente
 } else {
-  console.error(result.message);
+  // Tratar erro: result.message
   // ➜ "Este email já está cadastrado"
 }
 ```
@@ -279,10 +295,11 @@ import { loginUser } from "@/services/firebase";
 const result = await loginUser("user@example.com", "senha123");
 
 if (result.success) {
-  console.log("Login bem-sucedido:", result.user.email);
-  console.log("Verificado:", result.user.emailVerified);
+  // Login bem-sucedido
+  // result.user.email contém o email do usuário
+  // result.user.emailVerified indica se o email foi verificado
 } else {
-  console.error(result.message);
+  // Tratar erro: result.message
   // ➜ "Senha incorreta"
 }
 ```
@@ -310,7 +327,7 @@ import { logoutUser } from "@/services/firebase";
 const result = await logoutUser();
 
 if (result.success) {
-  console.log("Logout realizado");
+  // Logout realizado com sucesso
   // Redirecionar para login
 }
 ```
@@ -361,7 +378,7 @@ const result = await createDoctor({
 });
 
 if (result.success) {
-  console.log("Médico criado com slug único!");
+  // Médico criado com slug único
 }
 ```
 
@@ -428,7 +445,7 @@ import { getDoctor } from "@/services/firebase";
 const result = await getDoctor("doc123");
 
 if (result.success) {
-  console.log(result.data);
+  // result.data contém os dados do médico
   // ➜ { id: "doc123", name: "Dr. João", slug: "dr-joao", ... }
 }
 ```
@@ -470,9 +487,9 @@ import { getDoctorBySlug } from "@/services/firebase";
 const result = await getDoctorBySlug("dr-joao-silva");
 
 if (result.success) {
-  console.log("Médico encontrado:", result.data.name);
+  // Médico encontrado: result.data.name
 } else {
-  console.log("Médico não encontrado");
+  // Médico não encontrado
 }
 ```
 
@@ -549,9 +566,9 @@ const result = await createPatient("doc123", {
 
 if (result.success) {
   if (result.alreadyExists) {
-    console.log("Paciente já existia:", result.id);
+    // Paciente já existia: result.id
   } else {
-    console.log("Paciente criado:", result.id);
+    // Paciente criado: result.id
   }
 }
 ```
@@ -596,10 +613,10 @@ import { getPatient } from "@/services/firebase";
 const result = await getPatient("doc123", "11987654321");
 
 if (result.success) {
-  console.log(result.data);
+  // result.data contém os dados do médico
   // ➜ { id: "doc123_11987654321", name: "João", ... }
 } else {
-  console.log("Paciente não encontrado");
+  // Paciente não encontrado
 }
 ```
 
@@ -637,7 +654,7 @@ const result = await getPatients("doc123");
 
 if (result.success) {
   result.data.forEach(patient => {
-    console.log(`${patient.name} - R$ ${patient.price}`);
+    // patient.name e patient.price disponíveis
   });
 }
 ```
@@ -710,7 +727,7 @@ const result = await createAppointment({
 });
 
 if (result.success) {
-  console.log("Agendamento criado:", result.appointmentId);
+  // Agendamento criado: result.appointmentId
 }
 ```
 
@@ -787,7 +804,7 @@ import { deleteAppointment } from "@/services/firebase";
 const result = await deleteAppointment("appt123");
 
 if (result.success) {
-  console.log("Agendamento removido");
+  // Agendamento removido com sucesso
 }
 ```
 
@@ -808,7 +825,7 @@ import { getAppointmentsByDoctor } from "@/services/firebase";
 const result = await getAppointmentsByDoctor("doc123");
 
 if (result.success) {
-  console.log(`Total: ${result.data.length} agendamentos`);
+  // Total de agendamentos: result.data.length
 }
 ```
 
@@ -833,7 +850,7 @@ const result = await getAppointmentsByDate("doc123", "2026-01-15");
 
 if (result.success) {
   result.data.forEach(appt => {
-    console.log(`${appt.time} - ${appt.patientName}`);
+    // appt.time e appt.patientName disponíveis
   });
 }
 ```
@@ -862,7 +879,7 @@ const result = await getAppointmentsByPatient(
 );
 
 if (result.success) {
-  console.log(`Histórico: ${result.data.length} consultas`);
+  // Histórico: result.data.length consultas
 }
 ```
 
@@ -882,7 +899,7 @@ import { saveAvailability } from "@/services/firebase";
 const result = await saveAvailability("doc123", "2026-01-15", "14:00");
 
 if (result.success) {
-  console.log("Horário adicionado!");
+  // Horário adicionado com sucesso
 }
 ```
 
@@ -914,7 +931,7 @@ import { removeAvailability } from "@/services/firebase";
 const result = await removeAvailability("doc123", "2026-01-15", "14:00");
 
 if (result.success) {
-  console.log("Horário removido!");
+  // Horário removido com sucesso
 }
 ```
 
@@ -941,7 +958,7 @@ const result = await getAvailability("doc123");
 
 if (result.success) {
   result.data.forEach(day => {
-    console.log(`${day.date}: ${day.slots.join(", ")}`);
+    // day.date e day.slots disponíveis
   });
 }
 ```
@@ -1120,13 +1137,13 @@ async function retryOperation(operation, maxRetries = 3) {
 ```javascript
 // ANTES
 } catch (error) {
-  console.error("createAppointment error:", error);
+  logError("createAppointment error:", error);
   return { success: false, error: error.message };
 }
 
 // DEPOIS
 } catch (error) {
-  console.error("createAppointment error:", error);
+  logError("createAppointment error:", error);
 
   // Mapear erros do Firebase para mensagens amigáveis
   const errorMessages = {
@@ -1348,7 +1365,7 @@ const result = await createPatient("doc123", {
 });
 
 if (result.alreadyExists) {
-  console.log("Paciente já existia");
+  // Paciente já existia
 }
 
 // 2. Listar pacientes
@@ -1436,7 +1453,7 @@ export function useDashboard(user) {
         }
 
       } catch (error) {
-        console.error("Erro ao carregar dados:", error);
+        logError("Erro ao carregar dados:", error);
       } finally {
         setLoading(false);
       }
@@ -1482,7 +1499,7 @@ export function useDashboard(user) {
 - ✅ Padrão de retorno consistente
 - ✅ Validações robustas
 - ✅ IDs previsíveis e eficientes
-- ✅ Documentação implícita (console.log)
+- ✅ Documentação completa com exemplos
 - ✅ Tratamento de erros em todos os métodos
 - ✅ Segurança (allowedFields em updates)
 
@@ -1544,4 +1561,4 @@ firestore/
 
 **Documentação criada por:** Assistente IA  
 **Data:** Janeiro 2026  
-**Versão:** 1.0
+**Versão:** 1.1
