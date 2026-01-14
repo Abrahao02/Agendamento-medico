@@ -6,11 +6,11 @@ import { useNavigate } from "react-router-dom";
 import { registerUser } from "../../services/firebase/auth.service";
 import { createDoctor } from "../../services/firebase/doctors.service";
 
-// ✅ Imports de utils
 import { validatePassword, isPasswordValid } from "../../utils/validators/passwordValidation";
 import { validateFormField } from "../../utils/validators/formValidation";
 import { formatWhatsapp } from "../../utils/formatter/formatWhatsapp";
 import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
+import { logError } from "../../utils/logger/logger";
 
 export function useRegister() {
   const navigate = useNavigate();
@@ -40,7 +40,6 @@ export function useRegister() {
     setTouched(prev => ({ ...prev, [name]: true }));
   }
 
-  // ✅ Validação usando util validateFormField
   function validateForm() {
     const newErrors = {};
 
@@ -123,7 +122,6 @@ export function useRegister() {
         return;
       }
 
-      // ✅ Cria médico com WhatsApp limpo
       const doctorResult = await createDoctor({
         uid: user.uid,
         name: form.name.trim(),
@@ -137,7 +135,7 @@ export function useRegister() {
 
       navigate("/login");
     } catch (error) {
-      console.error("Erro no registro:", error);
+      logError("Erro no registro:", error);
       setErrors(prev => ({ 
         ...prev, 
         general: "Erro ao criar conta. Tente novamente." 

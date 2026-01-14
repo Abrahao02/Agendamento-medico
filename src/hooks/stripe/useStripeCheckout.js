@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createCheckoutSession, redirectToCheckout } from '../../services/stripe/stripe.service';
 import { auth } from '../../services/firebase';
+import { logError } from '../../utils/logger/logger';
 
 export const useStripeCheckout = () => {
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ export const useStripeCheckout = () => {
       await redirectToCheckout(checkoutData);
     } catch (err) {
       setError(err.message || 'Erro ao processar checkout');
-      console.error('Erro no checkout:', err);
+      logError('Erro no checkout:', err);
       setLoading(false);
     }
   };

@@ -1,8 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import * as DoctorService from "../../services/firebase/doctors.service";
 import { generateWhatsappMessage } from "../../utils/message/generateWhatsappMessage";
 import { useCancelSubscription } from "../stripe/useCancelSubscription";
 import { useReactivateSubscription } from "../stripe/useReactivateSubscription";
+import { modeToSelection, selectionToMode, APPOINTMENT_TYPE_SELECTION } from "../../constants/appointmentType";
+import { logError } from "../../utils/logger/logger";
 
 export function useSettings(user) {
   const [loading, setLoading] = useState(true);
@@ -10,6 +12,13 @@ export function useSettings(user) {
   const [doctor, setDoctor] = useState(null);
   const [newLocationName, setNewLocationName] = useState("");
   const [newLocationValue, setNewLocationValue] = useState("");
+  
+  // Store initial saved state for comparison
+  const savedStateRef = useRef({
+    whatsappConfig: null,
+    publicScheduleConfig: null,
+    appointmentTypeConfig: null,
+  });
   
   // Subscription hooks
   const { handleCancel, loading: cancelLoading, error: cancelError } = useCancelSubscription();
@@ -24,9 +33,11 @@ export function useSettings(user) {
 
   const [publicScheduleConfig, setPublicScheduleConfig] = useState({
     period: "all_future",
+    showPrice: true,
   });
 
   const [appointmentTypeConfig, setAppointmentTypeConfig] = useState({
+    selection: APPOINTMENT_TYPE_SELECTION.ONLINE_ONLY,
     mode: "disabled",
     fixedType: "online",
     defaultValueOnline: 0,
@@ -61,18 +72,51 @@ export function useSettings(user) {
 
           setPublicScheduleConfig({
             period: data.publicScheduleConfig?.period || "all_future",
+            showPrice: data.publicScheduleConfig?.showPrice ?? true,
           });
 
+          // Converter mode + fixedType para selection (compatibilidade retroativa)
+          const mode = data.appointmentTypeConfig?.mode || "disabled";
+          const fixedType = data.appointmentTypeConfig?.fixedType || "online";
+          const selection = data.appointmentTypeConfig?.selection || modeToSelection(mode, fixedType);
+
           setAppointmentTypeConfig({
+            selection,
             mode: data.appointmentTypeConfig?.mode || "disabled",
             fixedType: data.appointmentTypeConfig?.fixedType || "online",
             defaultValueOnline: data.appointmentTypeConfig?.defaultValueOnline || 0,
             defaultValuePresencial: data.appointmentTypeConfig?.defaultValuePresencial || 0,
             locations: data.appointmentTypeConfig?.locations || [],
           });
+
+          // Store saved state for comparison
+          savedStateRef.current = {
+            whatsappConfig: {
+              intro: data.whatsappConfig?.intro || "Olá",
+              body: data.whatsappConfig?.body || "Sua sessão está agendada",
+              footer: data.whatsappConfig?.footer ||
+                "Caso não possa comparecer, por favor avisar com antecedência. Obrigado!",
+              showValue: data.whatsappConfig?.showValue ?? true,
+            },
+            publicScheduleConfig: {
+              period: data.publicScheduleConfig?.period || "all_future",
+              showPrice: data.publicScheduleConfig?.showPrice ?? true,
+            },
+            appointmentTypeConfig: {
+              selection: data.appointmentTypeConfig?.selection || modeToSelection(
+                data.appointmentTypeConfig?.mode || "disabled",
+                data.appointmentTypeConfig?.fixedType || "online"
+              ),
+              mode: data.appointmentTypeConfig?.mode || "disabled",
+              fixedType: data.appointmentTypeConfig?.fixedType || "online",
+              defaultValueOnline: data.appointmentTypeConfig?.defaultValueOnline || 0,
+              defaultValuePresencial: data.appointmentTypeConfig?.defaultValuePresencial || 0,
+              locations: data.appointmentTypeConfig?.locations || [],
+            },
+          };
         }
       } catch (error) {
-        console.error("Erro ao buscar configurações:", error);
+        logError("Erro ao buscar configurações:", error);
       } finally {
         setLoading(false);
       }
@@ -90,7 +134,11 @@ export function useSettings(user) {
     try {
       setSaving(true);
 
-      return await DoctorService.updateDoctor(user.uid, {
+      // Converter selection para mode + fixedType antes de salvar (compatibilidade)
+      const selection = appointmentTypeConfig.selection || APPOINTMENT_TYPE_SELECTION.ONLINE_ONLY;
+      const { mode, fixedType } = selectionToMode(selection);
+
+      const newConfig = {
         whatsappConfig: {
           intro: whatsappConfig.intro,
           body: whatsappConfig.body,
@@ -99,17 +147,32 @@ export function useSettings(user) {
         },
         publicScheduleConfig: {
           period: publicScheduleConfig.period,
+          showPrice: publicScheduleConfig.showPrice ?? true,
         },
         appointmentTypeConfig: {
-          mode: appointmentTypeConfig.mode,
-          fixedType: appointmentTypeConfig.fixedType,
+          selection, // Salvar novo campo
+          mode, // Salvar para compatibilidade
+          fixedType, // Salvar para compatibilidade
           defaultValueOnline: Number(appointmentTypeConfig.defaultValueOnline) || 0,
           defaultValuePresencial: Number(appointmentTypeConfig.defaultValuePresencial) || 0,
-          locations: appointmentTypeConfig.locations,
+          locations: appointmentTypeConfig.locations || [],
         },
-      });
+      };
+
+      const result = await DoctorService.updateDoctor(user.uid, newConfig);
+
+      // Update saved state after successful save
+      if (result.success) {
+        savedStateRef.current = {
+          whatsappConfig: { ...newConfig.whatsappConfig },
+          publicScheduleConfig: { ...newConfig.publicScheduleConfig },
+          appointmentTypeConfig: { ...newConfig.appointmentTypeConfig },
+        };
+      }
+
+      return result;
     } catch (error) {
-      console.error("Erro ao salvar configurações:", error);
+      logError("Erro ao salvar configurações:", error);
       return { success: false, error: error.message };
     } finally {
       setSaving(false);
@@ -131,10 +194,21 @@ export function useSettings(user) {
   };
 
   const updateAppointmentTypeField = (field, value) => {
-    setAppointmentTypeConfig((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setAppointmentTypeConfig((prev) => {
+      const updated = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Se selection foi alterado, converter para mode + fixedType automaticamente
+      if (field === "selection") {
+        const { mode, fixedType } = selectionToMode(value);
+        updated.mode = mode;
+        updated.fixedType = fixedType;
+      }
+
+      return updated;
+    });
   };
 
   const addLocation = (location) => {
@@ -215,7 +289,7 @@ export function useSettings(user) {
       endDate.setDate(endDate.getDate() + 30);
       return endDate;
     } catch (error) {
-      console.error('Erro ao calcular data:', error);
+      logError('Erro ao calcular data:', error);
       return null;
     }
   }, [doctor?.planUpdatedAt]);
@@ -223,6 +297,35 @@ export function useSettings(user) {
   const isPro = useMemo(() => {
     return doctor?.plan === "pro";
   }, [doctor?.plan]);
+
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = useMemo(() => {
+    if (!savedStateRef.current.whatsappConfig) return false;
+
+    const saved = savedStateRef.current;
+    
+    // Compare WhatsApp config
+    const whatsappChanged = 
+      saved.whatsappConfig.intro !== whatsappConfig.intro ||
+      saved.whatsappConfig.body !== whatsappConfig.body ||
+      saved.whatsappConfig.footer !== whatsappConfig.footer ||
+      saved.whatsappConfig.showValue !== whatsappConfig.showValue;
+
+    // Compare public schedule config
+    const publicScheduleChanged = 
+      saved.publicScheduleConfig.period !== publicScheduleConfig.period ||
+      (saved.publicScheduleConfig.showPrice ?? true) !== (publicScheduleConfig.showPrice ?? true);
+
+    // Compare appointment type config
+    const appointmentTypeChanged = 
+      (saved.appointmentTypeConfig.selection || modeToSelection(saved.appointmentTypeConfig.mode, saved.appointmentTypeConfig.fixedType)) !== 
+      (appointmentTypeConfig.selection || modeToSelection(appointmentTypeConfig.mode, appointmentTypeConfig.fixedType)) ||
+      saved.appointmentTypeConfig.defaultValueOnline !== appointmentTypeConfig.defaultValueOnline ||
+      saved.appointmentTypeConfig.defaultValuePresencial !== appointmentTypeConfig.defaultValuePresencial ||
+      JSON.stringify(saved.appointmentTypeConfig.locations || []) !== JSON.stringify(appointmentTypeConfig.locations || []);
+
+    return whatsappChanged || publicScheduleChanged || appointmentTypeChanged;
+  }, [whatsappConfig, publicScheduleConfig, appointmentTypeConfig]);
 
   const generatePreview = (
     patientName = "João",
@@ -260,6 +363,7 @@ export function useSettings(user) {
     cancelError,
     reactivateLoading,
     reactivateError,
+    hasUnsavedChanges,
     updateWhatsappField,
     updatePublicScheduleField,
     updateAppointmentTypeField,

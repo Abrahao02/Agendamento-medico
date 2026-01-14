@@ -5,6 +5,7 @@ import { db } from "../../services/firebase/config";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useStripeCheckout } from "../stripe/useStripeCheckout";
+import { logError } from "../../utils/logger/logger";
 
 export function useLandingPage() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export function useLandingPage() {
           setUserPlan(plan);
         }
       } catch (error) {
-        console.error("Erro ao buscar plano do usuário:", error);
+        logError("Erro ao buscar plano do usuário:", error);
       } finally {
         setPlanLoading(false);
       }

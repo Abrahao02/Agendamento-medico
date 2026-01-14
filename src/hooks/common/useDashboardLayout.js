@@ -5,9 +5,11 @@ import { useState, useEffect, useCallback } from "react";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../../services/firebase";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
-import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
-
-const APPOINTMENT_LIMIT = 10;
+import {
+  calculateMonthlyAppointmentsCount,
+  checkLimitReached,
+} from "../../utils/limits/calculateMonthlyLimit";
+import { logError } from "../../utils/logger/logger";
 
 /**
  * Hook para gerenciar sidebar responsiva
@@ -68,12 +70,6 @@ function useUserData() {
           setPlan(data.plan || "free");
 
           // Calcular consultas do mês
-          const today = new Date();
-          const year = today.getFullYear();
-          const month = String(today.getMonth() + 1).padStart(2, "0");
-          const startDate = `${year}-${month}-01`;
-          const endDate = `${year}-${month}-31`;
-
           const appointmentsSnapshot = await getDocs(
             query(
               collection(db, "appointments"),
@@ -82,22 +78,15 @@ function useUserData() {
           );
 
           const appointments = appointmentsSnapshot.docs.map(d => d.data());
-          const confirmedThisMonth = appointments.filter(
-            appointment =>
-              appointment.status === APPOINTMENT_STATUS.CONFIRMED &&
-              appointment.date >= startDate &&
-              appointment.date <= endDate
-          ).length;
+          const confirmedThisMonth = calculateMonthlyAppointmentsCount(appointments);
 
           setAppointmentsThisMonth(confirmedThisMonth);
 
           const userPlan = data.plan || "free";
-          setIsLimitReached(
-            userPlan === "free" && confirmedThisMonth >= APPOINTMENT_LIMIT
-          );
+          setIsLimitReached(checkLimitReached(userPlan, confirmedThisMonth));
         }
       } catch (error) {
-        console.error("Erro ao buscar dados do usuário:", error);
+        logError("Erro ao buscar dados do usuário:", error);
       } finally {
         setLoading(false);
       }
@@ -121,7 +110,7 @@ export function useDashboardLayout() {
       await signOut(auth);
       window.location.href = "/login";
     } catch (error) {
-      console.error("Erro ao fazer logout:", error);
+      logError("Erro ao fazer logout:", error);
     }
   }, []);
 

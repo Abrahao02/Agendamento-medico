@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser, resetPassword } from "../../services/firebase/auth.service";
 
-// ✅ Import de util
 import { validateFormField } from "../../utils/validators/formValidation";
 
 export function useLogin() {
@@ -31,7 +30,6 @@ export function useLogin() {
     setShowPassword(prev => !prev);
   }
 
-  // ✅ Validação usando util validateFormField
   function validateForm() {
     // Valida email
     const emailValidation = validateFormField("email", form.email, { 
@@ -80,7 +78,6 @@ export function useLogin() {
   }
 
   async function handleForgotPassword() {
-    // ✅ Valida email antes de enviar reset
     const emailValidation = validateFormField("email", form.email, { 
       required: true, 
       email: true 
