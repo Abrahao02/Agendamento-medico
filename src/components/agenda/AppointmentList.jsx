@@ -13,7 +13,7 @@ export default function AppointmentList({ appointments, lockedAppointments, stat
           status={statusUpdates[appt.id]}
           patientName={referenceNames[appt.id]}
           patientStatus={patientStatus[appt.id]}
-          isLocked={lockedAppointments.has(appt.id)} // ✅ NOVO
+          isLocked={lockedAppointments.has(appt.id)}
           onStatusChange={onStatusChange}
           onAddPatient={onAddPatient}
           onSendWhatsapp={onSendWhatsapp}

@@ -1,25 +1,24 @@
 // ============================================
 // 📁 src/components/agenda/AppointmentItem.jsx - VERSÃO FINAL
 // ============================================
-import { useState } from "react";
+import React, { useState } from "react";
 import { FiSmartphone, FiUserPlus } from "react-icons/fi";
 import { Lock } from "lucide-react";
 import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
 import "./AppointmentItem.css";
 
-export default function AppointmentItem({
+function AppointmentItem({
   appt,
   status,
   patientName,
   patientStatus,
-  isLocked, // ✅ NOVO
+  isLocked,
   onStatusChange,
   onAddPatient,
   onSendWhatsapp
 }) {
   const [showLockedMessage, setShowLockedMessage] = useState(false);
 
-  // ✅ NOVO: Handler que valida bloqueio
   const handleStatusChange = (e) => {
     if (isLocked) {
       setShowLockedMessage(true);
@@ -97,3 +96,5 @@ export default function AppointmentItem({
     </li>
   );
 }
+
+export default React.memo(AppointmentItem);
