@@ -269,19 +269,17 @@ export default function useAgenda(currentDate) {
 
     const { intro, body, footer, showValue } = whatsappConfig;
 
-    let message = `${intro || "Olá"} ${appt.patientName},
-
-${body || "Sua sessão está agendada"}
-
-Data: ${formatDate(appt.date)}
-Horário: ${appt.time}`;
+    let message = `${intro || "Olá"} ${appt.patientName}\n\n${body || "Sua sessão está agendada"}\n\nData: ${formatDate(appt.date)}\nHorário: ${appt.time}`;
 
     if (showValue && appt.value) {
       message += `\nValor: R$ ${appt.value}`;
     }
 
     if (footer) {
-      message += `\n\n${footer}`;
+      // Adiciona quebra de linha antes do footer
+      // Se não houver valor, adiciona apenas uma quebra de linha
+      const hasValue = showValue && appt.value;
+      message += hasValue ? `\n\n${footer}` : `\n${footer}`;
     }
 
     const phone = formatWhatsappNumber(appt.patientWhatsapp);

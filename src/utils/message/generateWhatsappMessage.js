@@ -67,10 +67,12 @@ export function generateWhatsappMessage({
     message += `Valor: R$ ${formattedValue}\n`;
   }
   
-  // Rodapé
+  // Rodapé - apenas uma quebra de linha se houver conteúdo antes
   if (footer) {
-    message += `\n${footer}`;
+    // Remove quebra de linha extra se não houver valor
+    const hasDetails = date || time || (showValue && value);
+    message += hasDetails ? `\n${footer}` : footer;
   }
   
-  return message;
+  return message.trim();
 }
