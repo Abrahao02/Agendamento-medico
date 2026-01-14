@@ -1,6 +1,5 @@
 // ============================================
 // 📁 src/components/dashboard/AppointmentsChart/AppointmentsChart.jsx
-// ✅ ATUALIZADO: Mostra todos os status do sistema
 // ============================================
 
 import React from "react";

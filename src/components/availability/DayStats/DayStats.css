@@ -17,7 +17,9 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e5e7eb;
 }
 
 .stat-card {
@@ -149,8 +151,7 @@
    Occupancy Bar - Compacto
 =========================== */
 .occupancy-bar {
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  padding-bottom: 0;
 }
 
 .occupancy-header {
@@ -238,7 +239,8 @@
 
   .stats-grid {
     gap: 0.625rem;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
   }
 
   .stat-card {
@@ -264,7 +266,7 @@
   }
 
   .occupancy-bar {
-    padding-top: 0.875rem;
+    padding-bottom: 0;
   }
 
   .occupancy-header span {
@@ -311,7 +313,7 @@
     color: #f9fafb;
   }
 
-  .occupancy-bar {
+  .stats-grid {
     border-top-color: #374151;
   }
 

@@ -10,69 +10,55 @@ export default function StatusSummary({
   confirmed = 0, 
   pending = 0, 
   cancelled = 0,
-  percentages = { confirmed: 0, pending: 0, cancelled: 0 }
+  noShow = 0,
+  percentages = { confirmed: 0, pending: 0, cancelled: 0, noShow: 0 }
 }) {
-  const total = confirmed + pending + cancelled;
-
   const items = [
     {
-      icon: CheckCircle,
       count: confirmed,
       label: "Confirmados",
-      sublabel: "Agendamentos confirmados",
       color: "confirmed",
       percentage: percentages.confirmed,
     },
     {
-      icon: Clock,
       count: pending,
       label: "Pendentes",
-      sublabel: "Aguardando confirmação",
       color: "pending",
       percentage: percentages.pending,
     },
     {
-      icon: XCircle,
       count: cancelled,
-      label: "Cancelados/Faltas",
-      sublabel: "Não compareceram ou cancelados",
+      label: "Cancelados",
       color: "cancelled",
       percentage: percentages.cancelled,
+    },
+    {
+      count: noShow,
+      label: "No-show",
+      color: "no-show",
+      percentage: percentages.noShow,
     },
   ];
 
   return (
-    <div className="status-summary">
-      {items.map((item, index) => {
-        const Icon = item.icon;
-        return (
-          <div 
-            key={item.label} 
-            className={`status-card ${item.color}`} 
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            <div className="status-header">
-              <div className={`status-icon ${item.color}`}>
-                <Icon size={20} />
-              </div>
-              <div className="status-info">
-                <h4 className="status-count">{item.count}</h4>
-                <p className="status-label">{item.label}</p>
-                <p className="status-sublabel">{item.sublabel}</p>
-              </div>
+    <div className="status-summary-horizontal">
+      <h3 className="status-title">STATUS DOS AGENDAMENTOS</h3>
+      <div className="status-bars">
+        {items.map((item, index) => (
+          <div className="status-bar-item" key={item.label}>
+            <div className="status-bar-label">
+              <span>{item.label}</span>
+              <span className="status-count">{item.count}</span>
             </div>
-            <div className="status-progress">
-              <div className="progress-bar">
-                <div
-                  className={`progress-fill ${item.color}`}
-                  style={{ width: `${item.percentage}%` }}
-                />
-              </div>
-              <span className="progress-percentage">{item.percentage}%</span>
+            <div className="status-bar-container">
+              <div 
+                className={`status-bar ${item.color}`} 
+                style={{ width: `${item.percentage}%` }}
+              />
             </div>
           </div>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 }
