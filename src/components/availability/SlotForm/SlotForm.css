@@ -1,0 +1,215 @@
+/* ============================================
+   Slot Form Styles
+   ============================================ */
+.slot-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.slot-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.slot-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.slot-form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.slot-form-label .required {
+  color: #ef4444;
+}
+
+.slot-form-input,
+.slot-form-select {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.slot-form-input:focus,
+.slot-form-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.slot-form-input:disabled,
+.slot-form-select:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.slot-form-readonly {
+  padding: 0.625rem 0.875rem;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Location Checkboxes */
+.location-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.location-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.location-checkbox-label:hover {
+  background: #f9fafb;
+}
+
+.location-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.location-checkbox-text {
+  font-size: 0.875rem;
+  color: #374151;
+  flex: 1;
+}
+
+.location-price {
+  font-weight: 600;
+  color: #059669;
+}
+
+.slot-form-help {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.slot-form-error {
+  padding: 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.slot-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.slot-form-submit,
+.slot-form-cancel {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slot-form-submit {
+  background: #3b82f6;
+  color: white;
+}
+
+.slot-form-submit:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.slot-form-submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.slot-form-cancel {
+  background: white;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.slot-form-cancel:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.slot-form-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Force 24-hour format on mobile */
+.slot-form-input[type="time"] {
+  /* Força formato 24h no mobile */
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+
+/* iOS Safari specific - força formato 24h */
+@supports (-webkit-touch-callout: none) {
+  .slot-form-input[type="time"] {
+    color-scheme: light;
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .slot-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .slot-form-actions {
+    flex-direction: column;
+  }
+
+  .slot-form-submit,
+  .slot-form-cancel {
+    width: 100%;
+  }
+
+  /* Força formato 24h no mobile */
+  .slot-form-input[type="time"] {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+  }
+}
