@@ -1,21 +1,14 @@
-// ============================================
-// 📁 src/components/availability/DayManagement/DayManagement.jsx
-// ✅ VERSÃO FINAL CORRIGIDA
-// ============================================
-
 import { useState, useMemo, useRef, useEffect } from "react";
 import { FaCalendarDay } from "react-icons/fa";
 import SlotItem from "../SlotItem/SlotItem";
+import SlotForm from "../SlotForm/SlotForm";
 import DayStats from "../DayStats/DayStats";
 import DeleteConfirmationModal from "../DeleteConfirmationModal/DeleteConfirmationModal";
 import { STATUS_GROUPS } from "../../../constants/appointmentStatus";
+import { APPOINTMENT_TYPE, APPOINTMENT_TYPE_MODE, getAppointmentTypeOptions } from "../../../constants/appointmentType";
+import { normalizeSlot } from "../../../utils/availability/normalizeSlot";
+import { normalizeTo24Hour } from "../../../utils/time/normalizeTime";
 import "./DayManagement.css";
-
-const ALL_TIMES = [
-  "08:00", "09:00", "10:00", "11:00",
-  "12:00", "13:00", "14:00", "15:00",
-  "16:00", "17:00", "18:00", "19:00", "20:00",
-];
 
 export default function DayManagement({
   date,
@@ -24,16 +17,22 @@ export default function DayManagement({
   allSlots,
   appointments,
   patients,
+  doctor,
   onAddSlot,
   onRemoveSlot,
   onBookAppointment,
   onDeleteAppointment,
   onMarkAsCancelled,
+  isLimitReached = false,
 }) {
   const [mode, setMode] = useState("add");
-  const [newSlot, setNewSlot] = useState("12:00");
+  const [slotTime, setSlotTime] = useState("12:00");
+  const [slotAppointmentType, setSlotAppointmentType] = useState(APPOINTMENT_TYPE.ONLINE);
+  const [slotLocationIds, setSlotLocationIds] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedTime, setSelectedTime] = useState("12:00");
+  const [bookAppointmentType, setBookAppointmentType] = useState(APPOINTMENT_TYPE.ONLINE);
+  const [bookLocationId, setBookLocationId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -58,43 +57,101 @@ export default function DayManagement({
     return appointments.filter(a => STATUS_GROUPS.ACTIVE.includes(a.status));
   }, [appointments]);
 
+  // Get doctor config for location info
+  const appointmentTypeConfig = doctor?.appointmentTypeConfig || {
+    mode: APPOINTMENT_TYPE_MODE.DISABLED,
+    fixedType: APPOINTMENT_TYPE.ONLINE,
+    locations: [],
+  };
+
+  const locations = appointmentTypeConfig.locations || [];
+  
+  // Determine default appointment type
+  useEffect(() => {
+    if (appointmentTypeConfig.mode === APPOINTMENT_TYPE_MODE.FIXED) {
+      setSlotAppointmentType(appointmentTypeConfig.fixedType);
+      setBookAppointmentType(appointmentTypeConfig.fixedType);
+    }
+  }, [appointmentTypeConfig]);
+
+  // Auto-select single location if only one exists
+  useEffect(() => {
+    if (bookAppointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length === 1) {
+      if (!bookLocationId) {
+        setBookLocationId(locations[0].name);
+      }
+    } else if (bookAppointmentType === APPOINTMENT_TYPE.ONLINE) {
+      setBookLocationId("");
+    }
+  }, [bookAppointmentType, locations, bookLocationId]);
+
+  // Determine if location is required/show location selector
+  const showAppointmentType = appointmentTypeConfig.mode !== APPOINTMENT_TYPE_MODE.DISABLED;
+  const isFixed = appointmentTypeConfig.mode === APPOINTMENT_TYPE_MODE.FIXED;
+  const showLocationSelector = bookAppointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length > 0;
+  const requiresLocation = bookAppointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length > 1;
+
   /* ==============================
      COMBINED SLOTS
-     ✅ Combina slots + appointments ATIVOS
+     ✅ CORRIGIDO: Combina slots + TODOS os appointments (ativos e cancelados)
+     Now handles both string and object slot formats
   ============================== */
   const combinedSlots = useMemo(() => {
-    const activeBookedTimes = activeAppointments.map((a) => a.time);
-    const combined = [...new Set([...allSlots, ...activeBookedTimes])];
+    // Extract times from slots (handle both formats)
+    const slotTimes = allSlots.map(slot => {
+      if (typeof slot === "string") return slot;
+      if (typeof slot === "object" && slot.time) return slot.time;
+      return null;
+    }).filter(Boolean);
+    
+    // ✅ MUDANÇA: Incluir TODOS os appointments (não apenas ativos)
+    const allBookedTimes = appointments.map((a) => a.time);
+    const combined = [...new Set([...slotTimes, ...allBookedTimes])];
     return combined.sort();
-  }, [allSlots, activeAppointments]);
+  }, [allSlots, appointments]);
 
   /* ==============================
      GET APPOINTMENT BY SLOT
      ✅ CORRIGIDO: Prioriza appointments ATIVOS
+     Now handles both string and object slot formats
   ============================== */
   const getAppointmentBySlot = (slot) => {
+    // Extract time from slot
+    const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
+    if (!slotTime) return null;
+
     // Primeiro tenta encontrar um appointment ATIVO
     const active = appointments.find(a => 
-      a.time === slot && STATUS_GROUPS.ACTIVE.includes(a.status)
+      a.time === slotTime && STATUS_GROUPS.ACTIVE.includes(a.status)
     );
     
     // Se encontrou ativo, retorna ele
     if (active) return active;
     
     // Se não tem ativo, retorna cancelado (para mostrar histórico)
-    return appointments.find(a => a.time === slot);
+    return appointments.find(a => a.time === slotTime);
+  };
+
+  /* ==============================
+     GET SLOT DISPLAY TEXT
+     Handles both string and object formats
+  ============================== */
+  const getSlotDisplayText = (slot) => {
+    if (typeof slot === "string") return slot;
+    if (typeof slot === "object" && slot.time) return slot.time;
+    return "";
   };
 
   /* ==============================
      HANDLE ADD SLOT
+     Now handles slot objects with location info
   ============================== */
-  const handleAddSlot = async () => {
-    if (!newSlot) {
-      setError("Selecione um horário válido");
-      return;
-    }
-
-    if (combinedSlots.includes(newSlot)) {
+  const handleAddSlotSubmit = async (slotData) => {
+    const slotTime = slotData.time;
+    
+    // Check if slot with this time already exists
+    const slotExists = combinedSlots.includes(slotTime);
+    if (slotExists) {
       setError("Este horário já existe");
       return;
     }
@@ -102,10 +159,22 @@ export default function DayManagement({
     setLoading(true);
     setError("");
 
-    const result = await onAddSlot(newSlot);
+    // Create slot object
+    const slot = {
+      time: slotTime,
+      appointmentType: slotData.appointmentType,
+      allowedLocationIds: slotData.allowedLocationIds || [],
+    };
+
+    const result = await onAddSlot(slot);
 
     if (result.success) {
-      setNewSlot("12:00");
+      // Reset form
+      setSlotTime("12:00");
+      setSlotAppointmentType(appointmentTypeConfig.mode === APPOINTMENT_TYPE_MODE.FIXED 
+        ? appointmentTypeConfig.fixedType 
+        : APPOINTMENT_TYPE.ONLINE);
+      setSlotLocationIds([]);
     } else {
       setError(result.error || "Erro ao adicionar horário");
     }
@@ -115,10 +184,13 @@ export default function DayManagement({
 
   /* ==============================
      HANDLE REMOVE SLOT
+     Handles both string and object slot formats
   ============================== */
   const handleRemoveSlot = async (slot) => {
     setLoading(true);
-    const result = await onRemoveSlot(slot);
+    // Extract time from slot for removal
+    const slotToRemove = typeof slot === "string" ? slot : (slot?.time || slot);
+    const result = await onRemoveSlot(slotToRemove);
     if (!result.success) {
       setError(result.error || "Erro ao remover horário");
     }
@@ -183,14 +255,35 @@ export default function DayManagement({
       return;
     }
 
+    // Validar formato de horário (HH:mm)
+    const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timeRegex.test(selectedTime)) {
+      setError("Horário inválido. Use o formato HH:mm (ex: 14:30)");
+      return;
+    }
+
+    // Verificar se o horário já está ocupado
+    if (isTimeBooked(selectedTime)) {
+      setError("Este horário já está ocupado. Selecione outro horário.");
+      return;
+    }
+
+    // Validar local quando presencial
+    if (requiresLocation && !bookLocationId) {
+      setError("Selecione pelo menos um local para atendimento presencial");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
-    const result = await onBookAppointment(selectedPatient, selectedTime);
+    const result = await onBookAppointment(selectedPatient, selectedTime, bookAppointmentType, bookLocationId || null);
 
     if (result.success) {
       setSelectedPatient("");
       setSelectedTime("");
+      setBookAppointmentType(APPOINTMENT_TYPE.ONLINE);
+      setBookLocationId("");
     } else {
       setError(result.error || "Erro ao marcar consulta");
     }
@@ -199,12 +292,13 @@ export default function DayManagement({
   };
 
   /* ==============================
-     AVAILABLE TIMES FOR BOOKING
+     VALIDATE TIME FOR BOOKING
+     Verifica se o horário selecionado já está ocupado
   ============================== */
-  const bookedTimes = activeAppointments.map((a) => a.time);
-  const availableTimesForBooking = ALL_TIMES.filter(
-    (t) => !bookedTimes.includes(t)
-  );
+  const isTimeBooked = (time) => {
+    const bookedTimes = activeAppointments.map((a) => a.time);
+    return bookedTimes.includes(time);
+  };
 
   /* ==============================
      SORTED PATIENTS
@@ -236,8 +330,14 @@ export default function DayManagement({
         {combinedSlots.length === 0 ? (
           <p className="empty-message">Nenhum horário cadastrado</p>
         ) : (
-          combinedSlots.map((slot, i) => {
-            const appointment = getAppointmentBySlot(slot);
+          combinedSlots.map((slotTime, i) => {
+            // Find the original slot object if it exists in allSlots
+            const originalSlot = allSlots.find(slot => {
+              const time = typeof slot === "string" ? slot : (slot?.time || null);
+              return time === slotTime;
+            }) || slotTime; // Fallback to string if not found
+            
+            const appointment = getAppointmentBySlot(slotTime);
             let displayName = null;
 
             if (appointment) {
@@ -248,12 +348,15 @@ export default function DayManagement({
             return (
               <SlotItem
                 key={i}
-                slot={slot}
+                slot={slotTime}
+                slotData={originalSlot}
                 isBooked={!!appointment}
                 patientName={displayName}
                 status={appointment?.status}
-                onRemove={handleRemoveSlot}
-                onDelete={handleOpenModal}
+                appointment={appointment}
+                onRemove={() => handleRemoveSlot(originalSlot)}
+                onDelete={() => handleOpenModal(slotTime)}
+                doctor={doctor}
               />
             );
           })
@@ -275,6 +378,10 @@ export default function DayManagement({
           onClick={() => {
             setMode("book");
             setError("");
+            // Sempre inicia com 12:00 ao entrar no modo "Marcar Consulta"
+            if (!selectedTime) {
+              setSelectedTime("12:00");
+            }
           }}
         >
           Marcar Consulta
@@ -283,17 +390,19 @@ export default function DayManagement({
 
       <div ref={formSectionRef}>
         {mode === "add" && (
-          <div className="add-slot">
-            <input
-              type="time"
-              value={newSlot}
-              onChange={(e) => setNewSlot(e.target.value)}
-              disabled={loading}
-            />
-            <button onClick={handleAddSlot} disabled={loading}>
-              {loading ? "Adicionando..." : "Adicionar"}
-            </button>
-          </div>
+          <SlotForm
+            time={slotTime}
+            onTimeChange={setSlotTime}
+            appointmentType={slotAppointmentType}
+            onAppointmentTypeChange={setSlotAppointmentType}
+            selectedLocationIds={slotLocationIds}
+            onLocationIdsChange={setSlotLocationIds}
+            locations={locations}
+            appointmentTypeConfig={appointmentTypeConfig}
+            onSubmit={handleAddSlotSubmit}
+            loading={loading || isLimitReached}
+            error={error}
+          />
         )}
 
         {mode === "book" && (
@@ -301,7 +410,8 @@ export default function DayManagement({
             <select
               value={selectedPatient}
               onChange={(e) => setSelectedPatient(e.target.value)}
-              disabled={loading}
+              disabled={loading || isLimitReached}
+              title={isLimitReached ? "Limite do plano atingido" : ""}
             >
               <option value="">Selecione o paciente</option>
               {sortedPatients.map((p) => (
@@ -311,20 +421,62 @@ export default function DayManagement({
               ))}
             </select>
 
-            <select
-              value={selectedTime}
-              onChange={(e) => setSelectedTime(e.target.value)}
-              disabled={loading}
-            >
-              <option value="">Selecione o horário</option>
-              {availableTimesForBooking.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+            {showAppointmentType && !isFixed && (
+              <select
+                value={bookAppointmentType}
+                onChange={(e) => {
+                  setBookAppointmentType(e.target.value);
+                  setBookLocationId("");
+                }}
+                disabled={loading || isLimitReached}
+                title={isLimitReached ? "Limite do plano atingido" : ""}
+              >
+                {getAppointmentTypeOptions().map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            )}
 
-            <button onClick={handleBookAppointment} disabled={loading}>
+            {showLocationSelector && (
+              <select
+                value={bookLocationId}
+                onChange={(e) => setBookLocationId(e.target.value)}
+                disabled={loading || isLimitReached || locations.length === 1}
+                required={requiresLocation}
+                title={isLimitReached ? "Limite do plano atingido" : ""}
+              >
+                <option value="">Selecione um local</option>
+                {locations.map((location, index) => (
+                  <option key={location.name || `location-${index}`} value={location.name}>
+                    {location.name}
+                    {location.defaultValue > 0 && ` - R$ ${location.defaultValue.toFixed(2)}`}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <input
+              type="time"
+              value={selectedTime}
+              onChange={(e) => {
+                // Normaliza para formato 24h mesmo no mobile
+                const normalizedTime = normalizeTo24Hour(e.target.value);
+                setSelectedTime(normalizedTime);
+              }}
+              disabled={loading || isLimitReached}
+              min="00:00"
+              max="23:59"
+              step="60"
+              lang="pt-BR"
+              className="book-slot-time-input"
+              placeholder="Selecione o horário"
+              title={isLimitReached ? "Limite do plano atingido" : "Selecione o horário"}
+              data-format="24"
+            />
+
+            <button onClick={handleBookAppointment} disabled={loading || isLimitReached} title={isLimitReached ? "Limite do plano atingido" : ""}>
               {loading ? "Confirmando..." : "Confirmar"}
             </button>
           </div>
