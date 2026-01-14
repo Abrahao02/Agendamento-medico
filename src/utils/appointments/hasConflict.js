@@ -1,6 +1,5 @@
 // ============================================
 // 📁 src/utils/appointments/hasConflict.js
-// ✅ ATUALIZADO: Ignora appointments cancelados
 // ============================================
 
 /**
@@ -30,6 +29,6 @@ export function hasAppointmentConflict(appointments, date, time) {
   return appointments.some(apt => 
     apt.date === date && 
     apt.time === time &&
-    STATUS_GROUPS.ACTIVE.includes(apt.status) // ✅ MUDANÇA PRINCIPAL
+    STATUS_GROUPS.ACTIVE.includes(apt.status)
   );
 }

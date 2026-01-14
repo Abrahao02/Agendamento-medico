@@ -1,14 +1,21 @@
 // ============================================
 // 📁 src/utils/filters/availabilityFilters.js
-// ✅ ATUALIZADO: Considera apenas appointments ATIVOS
 // ============================================
 
 import { getTodayString } from "./dateFilters";
 import { STATUS_GROUPS } from "../../constants/appointmentStatus";
 
 /**
+ * Helper to extract time from slot (handles both string and object formats)
+ */
+function getSlotTime(slot) {
+  if (typeof slot === "string") return slot;
+  if (typeof slot === "object" && slot?.time) return slot.time;
+  return null;
+}
+
+/**
  * Remove slots já agendados da disponibilidade
- * ✅ ATUALIZADO: Considera apenas appointments ATIVOS como ocupados
  */
 export const filterAvailableSlots = (availability, appointments) => {
   if (!Array.isArray(availability) || !Array.isArray(appointments)) {
@@ -17,18 +24,20 @@ export const filterAvailableSlots = (availability, appointments) => {
 
   return availability
     .map(day => {
-      // ✅ Busca apenas horários ATIVOS agendados nessa data
       const bookedSlots = appointments
         .filter(a => 
           a.date === day.date && 
-          STATUS_GROUPS.ACTIVE.includes(a.status) // ✅ MUDANÇA PRINCIPAL
+          STATUS_GROUPS.ACTIVE.includes(a.status)
         )
         .map(a => a.time);
 
-      // Retorna apenas slots livres
+      // Retorna apenas slots livres (handles both string and object formats)
       return {
         ...day,
-        slots: (day.slots || []).filter(slot => !bookedSlots.includes(slot))
+        slots: (day.slots || []).filter(slot => {
+          const slotTime = getSlotTime(slot);
+          return slotTime && !bookedSlots.includes(slotTime);
+        })
       };
     })
     .filter(day => day.slots.length > 0); // Remove dias sem slots
@@ -77,7 +86,6 @@ export const getAvailableSlotsForDate = (availability, appointments, date) => {
     return [];
   }
 
-  // ✅ Busca apenas appointments ATIVOS
   const bookedSlots = appointments
     .filter(a => 
       a.date === date && 

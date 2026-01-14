@@ -2,8 +2,8 @@
 // 📁 src/utils/filters/appointmentFilters.js
 // ============================================
 
-// ✅ IMPORTAR funções de dateFilters
 import { isDateInRange, isDateInMonthYear, isFutureDate } from "./dateFilters";
+import { STATUS_GROUPS } from "../../constants/appointmentStatus";
 
 /**
  * Configuração de filtros para appointments
@@ -17,6 +17,21 @@ import { isDateInRange, isDateInMonthYear, isFutureDate } from "./dateFilters";
  * @property {boolean} [futureOnly] - Apenas datas futuras
  * @property {string} [specificDate] - Data específica (YYYY-MM-DD)
  */
+
+/**
+ * Filtra appointments ativos (status em STATUS_GROUPS.ACTIVE)
+ * @param {Array} appointments - Lista de appointments
+ * @returns {Array} Appointments ativos
+ * @example
+ * const active = filterActiveAppointments(appointments);
+ */
+export function filterActiveAppointments(appointments) {
+  if (!Array.isArray(appointments)) return [];
+  
+  return appointments.filter(appointment => 
+    STATUS_GROUPS.ACTIVE.includes(appointment.status)
+  );
+}
 
 /**
  * Filtra appointments com base em múltiplos critérios
@@ -93,16 +108,9 @@ export const filterAppointments = (appointments, config = {}) => {
 export const sortAppointments = (appointments, ascending = true) => {
   if (!Array.isArray(appointments)) return [];
 
-  const sorted = [...appointments].sort((a, b) => {
-    // Primeiro por data
-    const dateCompare = a.date.localeCompare(b.date);
-    if (dateCompare !== 0) return dateCompare;
-
-    // Depois por hora
-    const timeA = a.time || "00:00";
-    const timeB = b.time || "00:00";
-    return timeA.localeCompare(timeB);
+  return [...appointments].sort((a, b) => {
+    const dateA = new Date(`${a.date}T${a.time || "00:00"}`);
+    const dateB = new Date(`${b.date}T${b.time || "00:00"}`);
+    return ascending ? dateA - dateB : dateB - dateA;
   });
-
-  return ascending ? sorted : sorted.reverse();
 };
