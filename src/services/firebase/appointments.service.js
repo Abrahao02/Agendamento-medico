@@ -1,5 +1,6 @@
 import {
   doc,
+  getDoc,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -11,7 +12,13 @@ import {
 } from "firebase/firestore";
 
 import { db } from "./config";
-import { COLLECTIONS, validators } from "./collections";
+import { COLLECTIONS, validators, getAvailabilityId } from "./collections";
+import { validateAppointmentLimit } from "../appointments/limitValidation.service";
+import { validateAppointmentAgainstSlot } from "../appointments/locationValidation.service";
+import { normalizeSlot } from "../../utils/availability/normalizeSlot";
+import * as DoctorService from "./doctors.service";
+import { logError, logWarning } from "../../utils/logger/logger";
+import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
 
 export async function createAppointment(data) {
   try {
@@ -38,6 +45,51 @@ export async function createAppointment(data) {
       throw new Error("Horário inválido. Use formato HH:mm");
     }
 
+    // Validate limit before creating appointment
+    const limitValidation = await validateAppointmentLimit(data.doctorId);
+    if (!limitValidation.allowed) {
+      return {
+        success: false,
+        error: "Atenção: você chegou ao limite permitido de consultas atendidas no mês.",
+      };
+    }
+
+    // Validate appointment against slot constraints (if slot exists)
+    try {
+      const availabilityRef = doc(db, COLLECTIONS.AVAILABILITY, getAvailabilityId(data.doctorId, data.date));
+      const availabilityDoc = await getDoc(availabilityRef);
+      
+      if (availabilityDoc.exists()) {
+        const slots = availabilityDoc.data().slots || [];
+        const slot = slots.find(s => {
+          // Handle both string and object formats
+          if (typeof s === "string") return s === data.time;
+          if (typeof s === "object" && s.time) return s.time === data.time;
+          return false;
+        });
+
+        if (slot) {
+          // Get doctor config for validation
+          const doctorResult = await DoctorService.getDoctor(data.doctorId);
+          if (doctorResult.success) {
+            const normalizedSlot = normalizeSlot(slot, doctorResult.data);
+            const validation = validateAppointmentAgainstSlot(data, normalizedSlot, doctorResult.data);
+            
+            if (!validation.valid) {
+              return {
+                success: false,
+                error: validation.error,
+              };
+            }
+          }
+        }
+      }
+    } catch (validationError) {
+      // Don't block appointment creation on validation errors
+      // This allows backward compatibility and graceful degradation
+      logWarning("Erro ao validar agendamento contra slot:", validationError);
+    }
+
     const value = Number(data.value) || 0;
 
     // Cria documento com ID automático
@@ -52,7 +104,7 @@ export async function createAppointment(data) {
       date: data.date,
       time: data.time,
       value,
-      status: data.status || "Pendente",
+      status: data.status || APPOINTMENT_STATUS.PENDING,
       appointmentType: data.appointmentType || null,
       location: data.location || null,
       createdAt: serverTimestamp(),
@@ -63,7 +115,7 @@ export async function createAppointment(data) {
       appointmentId: newAppointmentRef.id,
     };
   } catch (error) {
-    console.error("createAppointment error:", error);
+    logError("createAppointment error:", error);
     return {
       success: false,
       error: error.message,
@@ -118,7 +170,7 @@ export async function updateAppointment(appointmentId, data) {
 
     return { success: true };
   } catch (error) {
-    console.error("updateAppointment error:", error);
+    logError("updateAppointment error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -134,7 +186,7 @@ export async function deleteAppointment(appointmentId) {
 
     return { success: true };
   } catch (error) {
-    console.error("deleteAppointment error:", error);
+    logError("deleteAppointment error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -159,7 +211,7 @@ export async function getAppointmentsByDoctor(doctorId) {
 
     return { success: true, data: appointments };
   } catch (error) {
-    console.error("getAppointmentsByDoctor error:", error);
+    logError("getAppointmentsByDoctor error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -189,7 +241,7 @@ export async function getAppointmentsByDate(doctorId, date) {
 
     return { success: true, data: appointments };
   } catch (error) {
-    console.error("getAppointmentsByDate error:", error);
+    logError("getAppointmentsByDate error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -215,7 +267,7 @@ export async function getAppointmentsByPatient(doctorId, patientId) {
 
     return { success: true, data: appointments };
   } catch (error) {
-    console.error("getAppointmentsByPatient error:", error);
+    logError("getAppointmentsByPatient error:", error);
     return { success: false, error: error.message };
   }
 }
