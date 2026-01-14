@@ -5,7 +5,7 @@
 
 .stats-card {
   background: var(--white);
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
   transition: var(--transition-base);
@@ -61,8 +61,8 @@
 
 /* Icon Container */
 .stats-icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
@@ -108,12 +108,19 @@
   min-width: 0;
 }
 
-.stats-value {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
+.stats-value-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
   margin-bottom: var(--spacing-xs);
-  line-height: 1.2;
+  flex-wrap: wrap;
+}
+
+.stats-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
 }
 
 .stats-title {
@@ -131,43 +138,23 @@
   font-weight: var(--font-medium);
 }
 
-/* ✨ NOVO: Comparação com período anterior */
-.stats-comparison {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  margin-top: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-md);
+/* ✨ NOVO: Comparação inline ao lado do número */
+.stats-comparison-inline {
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
-  width: fit-content;
+  white-space: nowrap;
 }
 
-.stats-comparison.up {
-  background: var(--success-100);
-  color: var(--success-700);
+.stats-comparison-inline.up {
+  color: #16a34a; /* Verde mais visível */
 }
 
-.stats-comparison.down {
-  background: var(--danger-100);
-  color: var(--danger-700);
+.stats-comparison-inline.down {
+  color: #ef4444; /* Vermelho mais visível */
 }
 
-.stats-comparison.neutral {
-  background: var(--gray-100);
+.stats-comparison-inline.neutral {
   color: var(--gray-600);
-}
-
-.stats-comparison svg {
-  flex-shrink: 0;
-}
-
-.comparison-label {
-  font-size: var(--text-xs);
-  font-weight: var(--font-normal);
-  opacity: 0.8;
-  margin-left: var(--spacing-xs);
 }
 
 /* Loading Spinner */

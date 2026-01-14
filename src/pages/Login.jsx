@@ -74,15 +74,17 @@ export default function Login() {
             Registrar-se
           </button>
 
-          <span 
-            className="forgot-link" 
-            onClick={handleForgotPassword}
-            role="button"
-            tabIndex={0}
-            onKeyPress={(e) => e.key === 'Enter' && handleForgotPassword()}
-          >
-            Esqueci minha senha
-          </span>
+          <div className="forgot-link-wrapper">
+            <span 
+              className="forgot-link" 
+              onClick={handleForgotPassword}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && handleForgotPassword()}
+            >
+              Esqueci minha senha
+            </span>
+          </div>
 
           {resetError && <span className="error">{resetError}</span>}
           {resetEmailSent && (

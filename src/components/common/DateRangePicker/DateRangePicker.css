@@ -1,0 +1,169 @@
+/* ============================================
+   📁 src/components/common/DateRangePicker/DateRangePicker.css
+   Estilos do dropdown do calendário (usando padrão do site)
+   ============================================ */
+@import url('../../../styles/variables.css');
+
+.date-range-picker-dropdown {
+  position: absolute;
+  top: calc(100% + var(--spacing-sm));
+  right: 0;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+  z-index: 1000;
+  padding: var(--spacing-lg);
+  min-width: 350px;
+}
+
+/* ========== React Calendar Customization (mesmo estilo do CalendarWrapper) ========== */
+.date-range-picker-dropdown .react-calendar {
+  width: 100%;
+  border: none;
+  font-family: var(--font-family-base);
+  font-size: var(--text-base);
+}
+
+/* Navigation */
+.date-range-picker-dropdown .react-calendar__navigation {
+  display: flex;
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-xs);
+}
+
+.date-range-picker-dropdown .react-calendar__navigation button {
+  min-width: 44px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.date-range-picker-dropdown .react-calendar__navigation button:enabled:hover,
+.date-range-picker-dropdown .react-calendar__navigation button:enabled:focus {
+  background: var(--bg-tertiary);
+}
+
+.date-range-picker-dropdown .react-calendar__navigation button:disabled {
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+/* Weekdays */
+.date-range-picker-dropdown .react-calendar__month-view__weekdays {
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: var(--text-sm);
+  padding-bottom: var(--spacing-sm);
+}
+
+.date-range-picker-dropdown .react-calendar__month-view__weekdays__weekday {
+  padding: var(--spacing-sm);
+  text-align: center;
+}
+
+.date-range-picker-dropdown .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+/* Tiles (Days) */
+.date-range-picker-dropdown .react-calendar__tile {
+  padding: var(--spacing-md) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  background: transparent;
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.date-range-picker-dropdown .react-calendar__tile:enabled:hover {
+  background: var(--secondary-50);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.date-range-picker-dropdown .react-calendar__tile:disabled {
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+/* Today's date */
+.date-range-picker-dropdown .react-calendar__tile--now {
+  background: #dbeafe; /* Azul muito claro */
+  border: 2px solid #3b82f6; /* Azul */
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.date-range-picker-dropdown .react-calendar__tile--now:enabled:hover {
+  background: #bfdbfe; /* Azul um pouco mais escuro no hover */
+  border-color: #2563eb;
+}
+
+/* Active (selected) date */
+.date-range-picker-dropdown .react-calendar__tile--active {
+  background: #dbeafe !important; /* Azul muito claro */
+  color: var(--text-primary) !important;
+  border: 2px solid #3b82f6 !important; /* Azul */
+  font-weight: var(--font-semibold) !important;
+}
+
+.date-range-picker-dropdown .react-calendar__tile--active:enabled:hover {
+  background: #bfdbfe !important; /* Azul um pouco mais escuro no hover */
+  border-color: #2563eb !important;
+}
+
+/* Range tiles */
+.date-range-picker-dropdown .react-calendar__tile--range {
+  background: #dbeafe !important; /* Azul muito claro */
+  border: 2px solid #3b82f6 !important; /* Azul */
+  color: var(--text-primary) !important;
+}
+
+.date-range-picker-dropdown .react-calendar__tile--rangeStart,
+.date-range-picker-dropdown .react-calendar__tile--rangeEnd,
+.date-range-picker-dropdown .react-calendar__tile--rangeBothEnds {
+  background: #dbeafe !important; /* Azul muito claro */
+  border: 2px solid #3b82f6 !important; /* Azul */
+  color: var(--text-primary) !important;
+  font-weight: var(--font-semibold) !important;
+}
+
+/* Weekend styling */
+.date-range-picker-dropdown .react-calendar__month-view__days__day--weekend {
+  color: var(--text-secondary);
+}
+
+/* Neighboring month days */
+.date-range-picker-dropdown .react-calendar__month-view__days__day--neighboringMonth {
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .date-range-picker-dropdown {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: calc(100vw - var(--spacing-xl));
+    max-width: 350px;
+    padding: var(--spacing-md);
+  }
+
+  .date-range-picker-dropdown .react-calendar {
+    font-size: var(--text-sm);
+  }
+
+  .date-range-picker-dropdown .react-calendar__tile {
+    padding: var(--spacing-sm) var(--spacing-xs);
+  }
+}

@@ -21,6 +21,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
 
   // Detecta scroll (efeito visual do header)
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function Header() {
     scrollTo(id);
     setIsMobileMenuOpen(false);
     setDropdownOpen(false);
+    setMobileDropdownOpen(false);
   };
 
   return (
@@ -138,13 +140,31 @@ export default function Header() {
             <Link to="/register">Cadastrar</Link>
           </div>
         ) : (
-          <div className="mobile-auth">
-            <button onClick={() => navigate("/dashboard")}>
-              Dashboard
+          <div className={`mobile-user-section ${mobileDropdownOpen ? "open" : ""}`}>
+            <button 
+              className="mobile-user-name"
+              onClick={() => setMobileDropdownOpen((p) => !p)}
+            >
+              Olá, {doctorName}
             </button>
-            <button onClick={handleLogout}>
-              Sair <LogOut size={16} />
-            </button>
+            {mobileDropdownOpen && (
+              <div className="mobile-user-dropdown">
+                <button onClick={() => {
+                  navigate("/dashboard");
+                  setIsMobileMenuOpen(false);
+                  setMobileDropdownOpen(false);
+                }}>
+                  Dashboard
+                </button>
+                <button onClick={() => {
+                  handleLogout();
+                  setIsMobileMenuOpen(false);
+                  setMobileDropdownOpen(false);
+                }}>
+                  Sair <LogOut size={16} />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

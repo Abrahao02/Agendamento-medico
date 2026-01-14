@@ -3,11 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, AlertCircle } from "lucide-react";
 
 import { usePublicSchedule } from "../hooks/appointments/usePublicSchedule";
+import { logError } from "../utils/logger/logger";
 
 import Card from "../components/common/Card";
 import Badge from "../components/common/Badge";
 import DayCard from "../components/publicSchedule/DayCard";
 import AppointmentForm from "../components/publicSchedule/AppointmentForm/AppointmentForm";
+import LocationFilter from "../components/publicSchedule/LocationFilter/LocationFilter";
 import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
 import PublicScheduleHeader from "../components/publicSchedule/PublicScheduleHeader/PublicScheduleHeader";
 import IntroCard from "../components/publicSchedule/IntroCard/IntroCard";
@@ -25,13 +27,16 @@ export default function PublicSchedule() {
   const {
     doctor,
     availability,
+    availableLocations,
     loading,
     error,
     limitReached,
     selectedDay,
     selectedSlot,
+    selectedLocation,
     handleDaySelect,
     handleSlotSelect,
+    setSelectedLocation,
     createAppointment,
   } = usePublicSchedule(slug);
 
@@ -55,7 +60,7 @@ export default function PublicSchedule() {
         alert(result.error || "Erro ao agendar");
       }
     } catch (err) {
-      console.error(err);
+      logError("Erro ao agendar:", err);
       alert("Erro ao agendar. Tente novamente.");
     } finally {
       setSubmitting(false);
@@ -88,6 +93,17 @@ export default function PublicSchedule() {
       <IntroCard />
 
       {limitReached && <LimitReachedBanner doctor={doctor} />}
+
+      {!limitReached && availableLocations && availableLocations.length > 0 && (
+        <LocationFilter
+          locations={availableLocations}
+          selectedLocation={selectedLocation}
+          onLocationChange={setSelectedLocation}
+          showAllOption={availableLocations.length > 1}
+          showPrice={doctor?.publicScheduleConfig?.showPrice ?? true}
+          doctor={doctor}
+        />
+      )}
 
       {!limitReached && (
         <div className="availability-status">

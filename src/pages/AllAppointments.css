@@ -1,7 +1,7 @@
 @import url('../styles/variables.css');
 
 .appointments-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg-secondary);
   padding: var(--spacing-xl);
   position: relative;
@@ -15,49 +15,44 @@
   z-index: 1;
 }
 
-/* Page Header */
-.page-header {
-  background: var(--white);
-  border-radius: var(--radius-xl);
-  padding: var(--spacing-2xl);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-light);
+/* PageHeader seguindo padrão do Dashboard */
+.appointments-page .padrao-header {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  padding-left: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
   margin-bottom: var(--spacing-xl);
-  animation: fadeInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
 }
 
-.page-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--gradient-secondary);
+.appointments-page .padrao-header-title-row {
+  margin-bottom: var(--spacing-xs);
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: var(--spacing-md) !important;
+  width: auto !important;
+  justify-content: flex-start !important;
 }
 
-.page-header h2 {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
-  letter-spacing: -0.02em;
+.appointments-page .padrao-header h2 {
+  margin: 0 !important;
+  flex: 0 1 auto !important;
 }
 
-.page-header p {
-  font-size: var(--text-base);
-  color: var(--text-secondary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
-  line-height: 1.6;
+.appointments-page .padrao-header .label {
+  margin: 0 !important;
+  flex-shrink: 0 !important;
 }
 
-.page-header p strong {
+.appointments-page .padrao-header p {
+  margin-top: var(--spacing-sm);
+}
+
+.appointments-page .padrao-header p strong {
   color: var(--color-secondary);
   font-weight: var(--font-semibold);
 }
@@ -93,7 +88,7 @@
 }
 
 /* Buttons */
-.btn {
+.appointments-page .btn {
   padding: 0.625rem 1.25rem;
   border-radius: 10px;
   font-size: 0.875rem;
@@ -107,13 +102,13 @@
   font-family: inherit;
 }
 
-.btn-ghost {
+.appointments-page .btn-ghost {
   background: transparent;
   color: var(--color-secondary);
   border: 2px solid var(--secondary-200);
 }
 
-.btn-ghost:hover {
+.appointments-page .btn-ghost:hover {
   background: var(--secondary-50);
   border-color: var(--color-secondary);
   transform: translateY(-1px);
@@ -199,21 +194,8 @@
     padding: var(--spacing-md);
   }
 
-  .page-header {
-    padding: 1.5rem;
-    border-radius: 16px;
+  .appointments-page .padrao-header {
     margin-bottom: 1.5rem;
-  }
-
-  .page-header h2 {
-    font-size: 1.5rem;
-  }
-
-  .page-header p {
-    font-size: 0.875rem;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
   }
 
   .appointments-container {
@@ -231,13 +213,8 @@
     padding: 0.75rem;
   }
 
-  .page-header {
-    padding: 1.25rem;
-    border-radius: 12px;
-  }
-
-  .page-header h2 {
-    font-size: 1.25rem;
+  .appointments-page .padrao-header {
+    margin-bottom: 1rem;
   }
 
   .stats-badge {

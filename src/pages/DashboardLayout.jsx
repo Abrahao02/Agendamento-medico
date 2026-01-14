@@ -63,7 +63,6 @@ export default function DashboardLayout() {
         plan={plan}
         appointmentsThisMonth={appointmentsThisMonth}
         isLimitReached={isLimitReached}
-        handleLogout={handleLogout}
         menuItems={MENU_ITEMS}
       />
 
@@ -88,7 +87,7 @@ export default function DashboardLayout() {
       )}
 
       <main className="dashboard-content">
-        <Outlet />
+        <Outlet context={{ isLimitReached }} />
       </main>
     </div>
   );

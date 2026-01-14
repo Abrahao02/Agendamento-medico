@@ -56,7 +56,7 @@
 }
 
 .section-header svg {
-  color: #8b5cf6;
+  color: var(--color-secondary);
   flex-shrink: 0;
 }
 
@@ -102,8 +102,8 @@
 
 .settings-select:focus {
   outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--secondary-100);
 }
 
 .settings-input {
@@ -118,8 +118,8 @@
 
 .settings-input:focus {
   outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--secondary-100);
 }
 
 .values-section {
@@ -169,8 +169,8 @@
 }
 
 .location-item:focus-within {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--secondary-100);
 }
 
 .location-name-input {
@@ -185,7 +185,7 @@
 
 .location-name-input:focus {
   outline: none;
-  border-color: #8b5cf6;
+  border-color: var(--color-secondary);
 }
 
 .location-value-input {
@@ -200,7 +200,7 @@
 
 .location-value-input:focus {
   outline: none;
-  border-color: #8b5cf6;
+  border-color: var(--color-secondary);
 }
 
 .remove-location-btn {
@@ -241,7 +241,7 @@
 
 .add-location-btn {
   padding: 0.625rem var(--spacing-md);
-  background: #8b5cf6;
+  background: var(--color-secondary);
   color: var(--white);
   border: none;
   border-radius: var(--radius-sm);
@@ -257,7 +257,7 @@
 }
 
 .add-location-btn:hover:not(:disabled) {
-  background: #7c3aed;
+  background: var(--secondary-600);
   transform: translateY(-1px);
 }
 

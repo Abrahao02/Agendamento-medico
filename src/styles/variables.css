@@ -235,6 +235,27 @@
   --gradient-hero: linear-gradient(135deg, var(--primary-800) 0%, #0f1f2e 100%);
 }
 
+/* ========== Padronização de H3 ========== */
+.standardized-h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  width: 100%;
+}
+
+.standardized-h3::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: var(--gradient-secondary);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
 /* ========== Dark Mode (Opcional para futuro) ========== */
 [data-theme="dark"] {
   --bg-primary: var(--gray-900);

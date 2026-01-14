@@ -47,24 +47,21 @@ export default function StatsCard({
         {loading ? (
           <div className="spinner-small"></div>
         ) : (
-          Icon && <Icon size={24} />
+          Icon && <Icon size={20} />
         )}
       </div>
       
       <div className="stats-info">
-        <p className="stats-value">{loading ? "..." : value}</p>
+        <div className="stats-value-wrapper">
+          <p className="stats-value">{loading ? "..." : value}</p>
+          {comparison && !loading && (
+            <span className={`stats-comparison-inline ${comparison.trend}`}>
+              {comparison.value}% {comparison.trend === "up" ? "↑" : comparison.trend === "down" ? "↓" : ""} Este mês
+            </span>
+          )}
+        </div>
         <p className="stats-title">{title}</p>
         {subtitle && <p className="stats-subtitle">{subtitle}</p>}
-        
-        {comparison && !loading && (
-          <div className={`stats-comparison ${comparison.trend}`}>
-            <TrendIcon size={14} />
-            <span>
-              {comparison.value}% {comparison.trend === "up" ? "↑" : comparison.trend === "down" ? "↓" : ""}
-            </span>
-            <span className="comparison-label">vs mês anterior</span>
-          </div>
-        )}
       </div>
     </div>
   );

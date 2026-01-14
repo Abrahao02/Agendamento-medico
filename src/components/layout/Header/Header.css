@@ -330,6 +330,88 @@ a {
   color: var(--color-secondary);
 }
 
+/* ========== Mobile User Section ========== */
+.mobile-user-section {
+  margin-top: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.mobile-user-name {
+  width: 100%;
+  text-align: center;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: var(--transition-base);
+  border: none;
+  background: var(--gradient-secondary);
+  color: var(--white);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.mobile-user-name:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.mobile-user-name::after {
+  content: '▼';
+  font-size: 0.7em;
+  opacity: 0.8;
+  transition: transform var(--transition-base);
+}
+
+.mobile-user-section.open .mobile-user-name::after {
+  transform: rotate(180deg);
+}
+
+.mobile-user-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+.mobile-user-dropdown button {
+  width: 100%;
+  text-align: left;
+  padding: var(--spacing-md);
+  border-radius: 0;
+  font-weight: var(--font-medium);
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: var(--transition-base);
+  border: none;
+  background: var(--white);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.mobile-user-dropdown button:last-child {
+  border-bottom: none;
+}
+
+.mobile-user-dropdown button:hover {
+  background: var(--secondary-50);
+  color: var(--color-secondary);
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
   .nav-links,

@@ -2,11 +2,7 @@
 @import url('../styles/variables.css');
 
 /* ========== Reset e Base ========== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* Reset global removido - já está em index.css */
 
 .landing-page {
   font-family: var(--font-family-base);
@@ -79,7 +75,7 @@
 }
 
 /* ========== Buttons ========== */
-.btn {
+.landing-page .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -95,44 +91,44 @@
   font-family: inherit;
 }
 
-.btn:focus-visible {
+.landing-page .btn:focus-visible {
   outline: 2px solid var(--color-secondary);
   outline-offset: 2px;
 }
 
-.btn-primary {
+.landing-page .btn-primary {
   background: var(--gradient-secondary);
   color: var(--white);
   box-shadow: var(--shadow-secondary);
 }
 
-.btn-primary:hover {
+.landing-page .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 32px -4px rgba(59, 130, 246, 0.4);
 }
 
-.btn-primary:active {
+.landing-page .btn-primary:active {
   transform: translateY(0);
 }
 
-.btn-outline {
+.landing-page .btn-outline {
   border: 2px solid rgba(255, 255, 255, 0.5);
   color: var(--white);
   background: transparent;
 }
 
-.btn-outline:hover {
+.landing-page .btn-outline:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: var(--white);
 }
 
-.btn-accent {
+.landing-page .btn-accent {
   background: var(--gradient-accent);
   color: var(--white);
   box-shadow: var(--shadow-accent);
 }
 
-.btn-accent:hover {
+.landing-page .btn-accent:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 32px -4px rgba(229, 154, 67, 0.4);
 }
@@ -439,26 +435,26 @@
   flex-shrink: 0;
 }
 
-.pricing-card .btn {
+.landing-page .pricing-card .btn {
   width: 100%;
   justify-content: center;
 }
 
-.pricing-card.pro .btn-primary {
+.landing-page .pricing-card.pro .btn-primary {
   background: var(--white);
   color: var(--color-primary);
 }
 
-.pricing-card.pro .btn-primary:hover {
+.landing-page .pricing-card.pro .btn-primary:hover {
   background: var(--gray-100);
 }
 
-.pricing-card:not(.pro) .btn-outline {
+.landing-page .pricing-card:not(.pro) .btn-outline {
   border-color: var(--color-secondary);
   color: var(--color-secondary);
 }
 
-.pricing-card:not(.pro) .btn-outline:hover {
+.landing-page .pricing-card:not(.pro) .btn-outline:hover {
   background: var(--secondary-50);
 }
 

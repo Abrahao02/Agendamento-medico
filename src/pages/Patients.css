@@ -4,13 +4,22 @@
    CONTAINER BASE
 ========================= */
 .patients-container {
-  max-width: 950px;
+  max-width: min(950px, 90vw); /* Responsivo - nunca mais que 90% da tela */
   margin: var(--spacing-xl) auto;
   padding: var(--spacing-xl);
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
   background: var(--bg-secondary);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-md);
   font-family: var(--font-family-base);
+}
+
+@media (min-width: 1024px) {
+  .patients-container {
+    padding-left: var(--spacing-xl);
+    padding-right: var(--spacing-xl);
+  }
 }
 
 .patients-container h2 {
@@ -19,219 +28,186 @@
   color: var(--text-primary);
 }
 
-/* =========================
-   FORMULÁRIO ADICIONAR PACIENTE
-========================= */
-.add-patient-form {
-  background: var(--bg-primary);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  margin-bottom: var(--spacing-xl);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-  align-items: flex-end;
+/* PageHeader seguindo padrão do Dashboard */
+.patients-container .padrao-header {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  padding-left: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
+  margin-bottom: var(--spacing-2xl);
 }
 
-.add-patient-form h3 {
-  width: 100%;
+.patients-container .padrao-header-title-row {
   margin-bottom: var(--spacing-sm);
-  font-size: var(--text-lg);
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: var(--spacing-md) !important;
+  width: auto !important;
+  justify-content: flex-start !important;
+}
+
+.patients-container .padrao-header h2 {
+  margin: 0 !important;
+  flex: 0 1 auto !important;
+  order: 1 !important;
+}
+
+.patients-container .padrao-header .label {
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  order: 2 !important;
+}
+
+/* =========================
+   BARRA DE PESQUISA
+========================= */
+.patients-search {
+  margin-bottom: var(--spacing-lg);
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all var(--transition-base);
+}
+
+.search-input-wrapper:focus-within {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--secondary-100);
+}
+
+.search-icon {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  margin-right: var(--spacing-sm);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  outline: none;
+  font-family: inherit;
+}
+
+.search-input::placeholder {
   color: var(--text-secondary);
 }
 
-.add-patient-form input {
-  padding: 0.5rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-light);
-  transition: all var(--transition-base);
-  font-size: var(--text-sm);
-  flex: 1 1 200px;
-}
-
-.add-patient-form input:focus {
-  outline: none;
-  border-color: var(--color-secondary);
-}
-
-.add-patient-form button {
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
-  border: none;
-  cursor: pointer;
-  background: var(--color-secondary);
-  color: var(--text-inverse);
-  font-weight: var(--font-medium);
-  transition: all var(--transition-base);
-  flex: 1 1 120px;
-}
-
-.add-patient-form button:hover {
-  background: var(--secondary-600);
-}
-
-.add-patient-form input.input-error {
-  border-color: var(--danger-500);
-  background-color: var(--danger-100);
-}
-
-.error {
+.patients-container .error {
   color: var(--danger-500);
   margin-top: 0.5rem;
   font-weight: var(--font-medium);
 }
 
 /* =========================
-   TOTAL DE CLIENTES
+   RESULTADOS DE BUSCA
 ========================= */
-.patients-total {
+.patients-search-results {
   margin-bottom: var(--spacing-md);
-  font-size: var(--text-lg);
-  color: var(--text-primary);
-}
-
-.patients-total strong {
-  color: var(--color-secondary);
-}
-
-/* =========================
-   TABELA DE PACIENTES
-========================= */
-.patients-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.patients-table thead {
-  background: var(--bg-tertiary);
-}
-
-.patients-table th,
-.patients-table td {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border-light);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--secondary-50);
+  border-radius: var(--radius-md);
   font-size: var(--text-sm);
-}
-
-.patients-table th {
-  color: var(--text-secondary);
-  font-weight: var(--font-semibold);
-}
-
-.patients-table tbody tr:hover {
-  background: var(--bg-primary-light);
-}
-
-.patients-table input {
-  width: 100%;
-  max-width: 150px;
-  padding: 0.35rem 0.5rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-light);
-  transition: all var(--transition-base);
-}
-
-.patients-table input:focus {
-  outline: none;
-  border-color: var(--color-secondary);
-}
-
-.center {
-  text-align: center;
-}
-
-.whatsapp {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--secondary-700);
+  font-weight: var(--font-medium);
 }
 
 /* =========================
-   BOTÕES
+   LISTA DE PACIENTES
 ========================= */
-.save-btn,
-.edit-btn {
-  padding: 0.35rem 0.8rem;
-  border-radius: var(--radius-md);
+.patients-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.patients-empty {
+  text-align: center;
+  padding: var(--spacing-4xl) var(--spacing-xl);
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+}
+
+/* =========================
+   BOTÃO FIXO (FAB)
+========================= */
+.fab-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--secondary-700) 100%);
+  color: white;
   border: none;
   cursor: pointer;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4),
+              0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all var(--transition-base);
+  z-index: 1000;
 }
 
-.save-btn {
-  background: var(--color-secondary);
-  color: var(--text-inverse);
+.fab-button:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5),
+              0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.save-btn:hover {
-  background: var(--secondary-600);
+.fab-button:active {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4),
+              0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-.save-btn:disabled {
-  background: var(--border-medium);
-  cursor: not-allowed;
-}
-
-.edit-btn {
-  background: var(--color-success);
-  color: var(--text-inverse);
-}
-
-.edit-btn:hover {
-  background: var(--success-600);
+.fab-button:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 4px;
 }
 
 /* =========================
    RESPONSIVIDADE
 ========================= */
 @media (max-width: 768px) {
-  .patients-table,
-  .patients-table thead,
-  .patients-table tbody,
-  .patients-table th,
-  .patients-table td,
-  .patients-table tr {
-    display: block;
-    width: 100%;
-  }
-
-  .patients-table thead tr {
-    display: none;
-  }
-
-  .patients-table tbody tr {
-    margin-bottom: var(--spacing-md);
-    background: var(--bg-primary);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-md);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .patients-table td {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem 0;
-    font-size: var(--text-sm);
-  }
-
-  .patients-table td::before {
-    content: attr(data-label);
-    font-weight: var(--font-semibold);
-    color: var(--text-secondary);
-  }
-
-  .patients-table input {
-    max-width: 120px;
-  }
-
   .patients-container {
     padding: var(--spacing-md);
     margin: var(--spacing-md);
+  }
+
+  .fab-button {
+    bottom: 20px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+  }
+}
+
+@media (max-width: 640px) {
+  .fab-button {
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .fab-button svg {
+    width: 20px;
+    height: 20px;
   }
 }

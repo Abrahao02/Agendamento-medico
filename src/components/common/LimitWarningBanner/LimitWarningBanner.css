@@ -1,0 +1,61 @@
+/* ============================================
+   📁 src/components/common/LimitWarningBanner/LimitWarningBanner.css
+   ============================================ */
+
+@import url('../../../styles/variables.css');
+
+.limit-warning-banner {
+  background: var(--warning-50);
+  border: 1px solid var(--warning-200);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.limit-warning-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.limit-warning-icon {
+  color: var(--warning-600);
+  flex-shrink: 0;
+}
+
+.limit-warning-text {
+  margin: 0;
+  color: var(--warning-800);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  line-height: 1.5;
+}
+
+.limit-warning-link {
+  color: var(--color-secondary);
+  font-weight: var(--font-semibold);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+  transition: var(--transition-base);
+}
+
+.limit-warning-link:hover {
+  color: var(--secondary-700);
+  text-decoration-thickness: 2px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

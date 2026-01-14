@@ -1,6 +1,5 @@
 // ============================================
 // 📁 src/components/dashboard/UpcomingAppointments/UpcomingAppointments.jsx
-// ✅ ATUALIZADO: Mostra apenas appointments ATIVOS
 // ============================================
 
 import React from "react";
@@ -28,7 +27,7 @@ export default function UpcomingAppointments({ appointments = [] }) {
   if (appointments.length === 0) {
     return (
       <div className="upcoming-card">
-        <h3 className="upcoming-title">Próximas consultas</h3>
+        <h3 className="standardized-h3">Próximas consultas</h3>
         <div className="upcoming-empty">
           <span className="empty-icon">📅</span>
           <p>Nenhuma consulta agendada</p>
@@ -39,7 +38,7 @@ export default function UpcomingAppointments({ appointments = [] }) {
 
   return (
     <div className="upcoming-card">
-      <h3 className="upcoming-title">
+      <h3 className="standardized-h3">
         Próximas consultas
         <span className="upcoming-count">{appointments.length}</span>
       </h3>

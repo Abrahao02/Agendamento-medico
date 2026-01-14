@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useCallback } from "react";
+import { useOutletContext } from "react-router-dom";
 import { auth } from "../services/firebase/config";
 
 import useAllAppointments from "../hooks/agenda/useAllAppointments";
@@ -7,12 +8,15 @@ import Filters from "../components/common/Filters/Filters";
 import PatientsList from "../components/allAppointments/PatientsList";
 import SaveChangesBar from "../components/allAppointments/SaveChangesBar";
 import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
+import LimitWarningBanner from "../components/common/LimitWarningBanner/LimitWarningBanner";
 import { getStatusOptions } from "../utils/appointments/getStatusOptions";
+import { sendWhatsappMessage } from "../utils/whatsapp/generateWhatsappLink";
 
 import "./AllAppointments.css";
 
 export default function AllAppointments() {
   const user = auth.currentUser;
+  const { isLimitReached } = useOutletContext() || {};
 
   const {
     patientsData,
@@ -42,18 +46,17 @@ export default function AllAppointments() {
     lockedAppointments,
   } = useAllAppointments(user);
 
+  // ✅ IMPORTANTE: Todos os Hooks devem ser chamados antes de qualquer return condicional
+  const statusOptions = getStatusOptions(true);
+
+  const handleSendWhatsapp = useCallback((number, text) => {
+    sendWhatsappMessage(number, text);
+  }, []);
+
+  // Return condicional APÓS todos os Hooks
   if (loadingData) {
     return <LoadingFallback message="Carregando agendamentos..." />;
   }
-
-  const statusOptions = getStatusOptions(true);
-
-  const sendWhatsapp = (number, text) => {
-    const cleanNumber = number.replace(/\D/g, "");
-    const encodedText = encodeURIComponent(text);
-    const url = `https://wa.me/${cleanNumber}?text=${encodedText}`;
-    window.open(url, "_blank");
-  };
 
   const extraActions = (
     <>
@@ -74,6 +77,8 @@ export default function AllAppointments() {
           title="Todos os Agendamentos"
           description={`${stats.totalAppointments} agendamento(s) • R$ ${stats.totalValue.toFixed(2)} • Pacientes: ${stats.totalPatients}`}
         />
+
+        {isLimitReached && <LimitWarningBanner />}
 
         <Filters
           searchTerm={searchTerm}
@@ -106,7 +111,7 @@ export default function AllAppointments() {
           lockedAppointments={lockedAppointments}
           onTogglePatient={togglePatient}
           onStatusChange={handleStatusChange}
-          onSendWhatsapp={sendWhatsapp}
+          onSendWhatsapp={handleSendWhatsapp}
         />
 
         <SaveChangesBar changesCount={changedIds.size} saving={saving} onSave={handleSave} />

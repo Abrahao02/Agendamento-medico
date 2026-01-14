@@ -11,11 +11,118 @@
   animation: fadeIn 0.3s ease;
 }
 
+/* Botões rápidos de filtro */
+.quick-filters-wrapper {
+  margin-bottom: var(--spacing-lg);
+}
+
+.quick-filters-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.quick-filters {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.clear-filters-btn {
+  margin-left: auto;
+  padding: 0.625rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: inherit;
+  background: transparent;
+  color: var(--color-secondary);
+  border: 2px solid var(--secondary-200);
+}
+
+.clear-filters-btn:hover {
+  background: var(--secondary-50);
+  border-color: var(--color-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-secondary);
+}
+
+.clear-filters-btn:active {
+  transform: translateY(0);
+}
+
+.clear-filters-btn:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.quick-filter-custom-wrapper {
+  position: relative;
+}
+
+.quick-filter-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 2px solid var(--border-medium);
+  background: var(--white);
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.quick-filter-btn:hover {
+  background: var(--gray-50);
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-filter-btn:active {
+  transform: translateY(0);
+}
+
+.quick-filter-btn.active {
+  background: var(--gradient-secondary);
+  color: var(--text-inverse);
+  border-color: var(--color-secondary);
+  font-weight: var(--font-semibold);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-filter-btn.active:hover {
+  background: var(--gradient-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.quick-filter-btn:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
 .filters-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
+}
+
+/* Ocultar grid quando usando quick filters */
+.filters-container:has(.quick-filters-row) .filters-grid {
+  display: none;
 }
 
 /* Busca ocupa toda a largura */
@@ -103,6 +210,38 @@
   flex-wrap: wrap;
   padding-top: var(--spacing-md);
   border-top: 1px solid var(--border-light);
+}
+
+/* Botão Limpar Filtros - mesmo estilo do AllAppointments */
+.filters-actions .btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: inherit;
+}
+
+.filters-actions .btn-ghost {
+  background: transparent;
+  color: var(--color-secondary);
+  border: 2px solid var(--secondary-200);
+}
+
+.filters-actions .btn-ghost:hover {
+  background: var(--secondary-50);
+  border-color: var(--color-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-secondary);
+}
+
+.filters-actions .btn-ghost:active {
+  transform: translateY(0);
 }
 
 /* Info Badge */

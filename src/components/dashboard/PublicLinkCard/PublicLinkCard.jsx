@@ -1,9 +1,10 @@
 // src/components/dashboard/PublicLinkCard/PublicLinkCard.jsx
 import React, { useState } from "react";
-import { Copy, ExternalLink, CheckCircle } from "lucide-react";
+import { Copy, ExternalLink, CheckCircle, AlertTriangle } from "lucide-react";
 import "./PublicLinkCard.css";
+import { logError } from "../../../utils/logger/logger";
 
-export default function PublicLinkCard({ slug, baseUrl = window.location.origin }) {
+export default function PublicLinkCard({ slug, baseUrl = window.location.origin, isLimitReached = false }) {
   const [copied, setCopied] = useState(false);
   
   const fullUrl = `${baseUrl}/public/${slug}`;
@@ -14,16 +15,19 @@ export default function PublicLinkCard({ slug, baseUrl = window.location.origin 
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Erro ao copiar:", err);
+      logError("Erro ao copiar:", err);
     }
   };
 
   return (
-    <div className="public-link-card">
-      <p className="public-link-label">
-        <span className="label-icon">🔗</span>
-        Seu link público de agendamento
-      </p>
+    <div className={`public-link-card ${isLimitReached ? "limit-reached" : ""}`}>
+      <h3 className="standardized-h3">Compartilhe o link para agendamento de consultas</h3>
+      {isLimitReached && (
+        <div className="public-link-warning">
+          <AlertTriangle size={16} />
+          <span>Link temporariamente bloqueado - limite do plano atingido</span>
+        </div>
+      )}
       <div className="public-link-box">
         <div className="public-link-text-wrapper">
           <input
@@ -64,10 +68,6 @@ export default function PublicLinkCard({ slug, baseUrl = window.location.origin 
           <span>Abrir</span>
         </a>
       </div>
-      
-      <p className="public-link-hint">
-        💡 Compartilhe este link com seus pacientes para que eles possam agendar consultas
-      </p>
     </div>
   );
 }

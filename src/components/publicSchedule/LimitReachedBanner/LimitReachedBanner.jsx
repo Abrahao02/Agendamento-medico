@@ -3,27 +3,38 @@
 // ============================================
 import { AlertCircle, MessageCircle } from "lucide-react";
 import Card from "../../common/Card";
+import { cleanWhatsapp } from "../../../utils/whatsapp/cleanWhatsapp";
 
 export default function LimitReachedBanner({ doctor }) {
+  const message = "Tentei agendar uma consulta pelo seu link, mas o agendamento não está disponível devido ao limite do plano.";
+  
+  const getWhatsAppUrl = () => {
+    if (!doctor?.whatsapp) return "#";
+    const cleanNumber = cleanWhatsapp(doctor.whatsapp);
+    // Ensure country code (55 for Brazil)
+    const number = cleanNumber.startsWith("55") ? cleanNumber : `55${cleanNumber}`;
+    const encodedMessage = encodeURIComponent(message);
+    return `https://wa.me/${number}?text=${encodedMessage}`;
+  };
+
   return (
     <Card className="limit-card">
       <div className="limit-content">
         <AlertCircle size={24} />
         <div>
-          <h3>Agenda cheia este mês</h3>
+          <h3>Agendamento não disponível</h3>
           <p>
-            Todos os horários do plano gratuito foram preenchidos. Entre em
-            contato pelo WhatsApp para verificar novas datas:
+            O agendamento não está disponível devido ao limite do plano.
           </p>
-          {doctor.whatsapp && (
+          {doctor?.whatsapp && (
             <a
-              href={`https://wa.me/${doctor.whatsapp}`}
+              href={getWhatsAppUrl()}
               target="_blank"
               rel="noopener noreferrer"
               className="whatsapp-link"
             >
               <MessageCircle size={18} />
-              {doctor.whatsapp}
+              Entrar em contato pelo WhatsApp
             </a>
           )}
         </div>

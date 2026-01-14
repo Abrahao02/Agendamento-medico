@@ -54,6 +54,20 @@ export default function PublicScheduleSection({
               </p>
             )}
           </div>
+
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={publicScheduleConfig.showPrice ?? true}
+                onChange={(e) => onUpdateField("showPrice", e.target.checked)}
+              />
+              <span>Exibir preço das consultas para pacientes</span>
+            </label>
+            <p className="helper-text">
+              Quando desabilitado, o preço será oculto na página pública e será exibida a mensagem "Valor sob consulta".
+            </p>
+          </div>
         </div>
       )}
     </section>

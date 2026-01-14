@@ -1,15 +1,15 @@
 // ========================================
 // PatientsList.jsx
 // ========================================
-import React from "react";
+import React, { useCallback } from "react";
 import PatientCard from "./PatientCard";
 import "./PatientsList.css";
 
-export default function PatientsList({
+function PatientsList({
   patientsData,
   expandedPatients,
   changedIds,
-  lockedAppointments, // ✅ NOVO
+  lockedAppointments,
   onTogglePatient,
   onStatusChange,
   onSendWhatsapp,
@@ -24,16 +24,20 @@ export default function PatientsList({
     );
   }
 
+  const handleToggle = useCallback((patientName) => {
+    onTogglePatient(patientName);
+  }, [onTogglePatient]);
+
   return (
     <div className="patients-list">
       {patientsData.map((patient) => (
         <PatientCard
-          key={patient.name}
+          key={patient.whatsapp}
           patient={patient}
           isExpanded={expandedPatients.has(patient.name)}
           changedIds={changedIds}
-          lockedAppointments={lockedAppointments} // ✅ NOVO
-          onToggle={() => onTogglePatient(patient.name)}
+          lockedAppointments={lockedAppointments}
+          onToggle={handleToggle}
           onStatusChange={onStatusChange}
           onSendWhatsapp={onSendWhatsapp}
         />
@@ -41,3 +45,5 @@ export default function PatientsList({
     </div>
   );
 }
+
+export default React.memo(PatientsList);

@@ -4,16 +4,15 @@ import formatDate from "../../utils/formatter/formatDate";
 import { getStatusOptions } from "../../utils/appointments/getStatusOptions";
 import "./PatientCard.css";
 
-export default function PatientCard({
+function PatientCard({
   patient,
   isExpanded,
   changedIds,
-  lockedAppointments, // ✅ NOVO
+  lockedAppointments,
   onToggle,
   onStatusChange,
   onSendWhatsapp,
 }) {
-  // ✅ MIGRADO: Usa getStatusOptions helper com constants centralizadas
   const statusOptions = getStatusOptions();
   const handleSendReport = (e) => {
     e.stopPropagation();
@@ -25,10 +24,23 @@ export default function PatientCard({
     onSendWhatsapp(patient.whatsapp, text);
   };
 
+  const handleToggle = (e) => {
+    e.stopPropagation();
+    onToggle(patient.name);
+  };
+
+  const handleContainerClick = (e) => {
+    // Não fazer toggle se clicou no botão do WhatsApp
+    if (e.target.closest('.btn-whatsapp')) {
+      return;
+    }
+    onToggle(patient.name);
+  };
+
   return (
     <div className="patient-card">
-      <div className="patient-header-container">
-        <button className="patient-header" onClick={onToggle}>
+      <div className="patient-header-container" onClick={handleContainerClick}>
+        <button className="patient-header" onClick={handleToggle}>
           <div className="patient-info">
             <div className="patient-details">
               <h3>{patient.name}</h3>
@@ -56,7 +68,7 @@ export default function PatientCard({
       {isExpanded && (
         <div className="appointments-list">
           {patient.appointments.map((app) => {
-            const isLocked = lockedAppointments.has(app.id); // ✅ NOVO
+            const isLocked = lockedAppointments.has(app.id);
             
             return (
               <div
@@ -109,3 +121,5 @@ export default function PatientCard({
     </div>
   );
 }
+
+export default React.memo(PatientCard);

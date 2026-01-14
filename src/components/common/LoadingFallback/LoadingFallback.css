@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-900) 100%);
   position: relative;
   overflow: hidden;

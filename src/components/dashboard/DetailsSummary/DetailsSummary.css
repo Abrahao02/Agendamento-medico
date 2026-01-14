@@ -1,0 +1,127 @@
+/* ============================================
+   📁 src/components/dashboard/DetailsSummary/DetailsSummary.css
+   ============================================ */
+@import url('../../../styles/variables.css');
+
+.details-summary-card {
+  background: var(--white);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+  animation-delay: 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.details-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: minmax(140px, auto) 1fr auto;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.detail-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  white-space: nowrap;
+  grid-column: 1;
+}
+
+.detail-progress-bar {
+  grid-column: 2;
+  height: 10px;
+  background: var(--gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+  min-width: 100px;
+  width: 100%;
+}
+
+.detail-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.detail-progress-fill.blue {
+  background: var(--color-secondary);
+}
+
+.detail-progress-fill.orange {
+  background: var(--accent-500);
+}
+
+.detail-progress-fill.red {
+  background: var(--danger-500);
+}
+
+.detail-progress-fill.gray {
+  background: var(--gray-400);
+}
+
+.detail-value {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  white-space: nowrap;
+  grid-column: 3;
+  justify-self: end;
+  min-width: fit-content;
+}
+
+.detail-current {
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+
+.detail-separator {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+}
+
+.detail-total {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .details-summary-card {
+    padding: var(--spacing-lg);
+  }
+
+  .detail-row {
+    grid-template-columns: minmax(120px, auto) 1fr auto;
+    gap: var(--spacing-sm);
+  }
+}

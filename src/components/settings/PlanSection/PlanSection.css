@@ -1,13 +1,11 @@
 @import url('../../../styles/variables.css');
 
 .plan-upgrade-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: linear-gradient(135deg, var(--primary-800) 0%, var(--secondary-500) 100%) !important;
   color: var(--text-inverse) !important;
   border: none !important;
   padding: var(--spacing-lg) !important;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
 }
 
 /* Forçar cor branca apenas em textos, não em botões */
@@ -91,7 +89,7 @@
 .upgrade-btn {
   width: 100%;
   background: var(--white);
-  color: #667eea;
+  color: var(--secondary-500);
   font-weight: var(--font-semibold);
   font-size: 0.95rem;
   padding: 0.75rem var(--spacing-lg);
@@ -107,7 +105,7 @@
 }
 
 .plan-active-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: linear-gradient(135deg, var(--primary-800) 0%, var(--secondary-500) 100%) !important;
   color: var(--text-inverse) !important;
   border: none !important;
 }
@@ -235,10 +233,22 @@
   background: rgba(239, 68, 68, 0.9);
   color: var(--white);
   border: none;
+  padding: var(--spacing-md) var(--spacing-xl);
+  min-height: 44px;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
 }
 
 .subscription-management .btn-danger:hover:not(:disabled) {
   background: rgba(239, 68, 68, 1);
+}
+
+@media (min-width: 768px) {
+  .subscription-management .btn-danger {
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    min-height: 48px;
+    font-size: var(--text-lg);
+  }
 }
 
 .subscription-management .btn-primary {

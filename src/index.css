@@ -6,3 +6,88 @@
   box-sizing: border-box;
   font-family: var(--font-family-base);
 }
+
+/* ========================================
+   IMAGENS RESPONSIVAS
+   ======================================== */
+img,
+svg,
+video,
+iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ========================================
+   TIPOGRAFIA RESPONSIVA
+   ======================================== */
+h1 {
+  font-size: var(--text-3xl); /* 30px desktop */
+  line-height: var(--leading-tight);
+}
+
+h2 {
+  font-size: var(--text-2xl); /* 24px desktop */
+  line-height: var(--leading-tight);
+}
+
+h3 {
+  font-size: var(--text-xl); /* 20px desktop */
+  line-height: var(--leading-snug);
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: var(--text-2xl); /* 24px mobile */
+  }
+  
+  h2 {
+    font-size: var(--text-xl); /* 20px mobile */
+  }
+  
+  h3 {
+    font-size: var(--text-lg); /* 18px mobile */
+  }
+}
+
+/* ========================================
+   QUEBRA DE TEXTO
+   ======================================== */
+p,
+span,
+div,
+td,
+th {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* URLs e emails quebram corretamente */
+a[href^="http"],
+a[href^="mailto"] {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* ========================================
+   LINE-HEIGHT RESPONSIVO
+   ======================================== */
+p,
+.text-content,
+.text-description {
+  line-height: var(--leading-relaxed); /* 1.625 desktop */
+}
+
+@media (max-width: 768px) {
+  p,
+  .text-content,
+  .text-description {
+    line-height: var(--leading-loose); /* 2.0 mobile - melhor leitura */
+  }
+}

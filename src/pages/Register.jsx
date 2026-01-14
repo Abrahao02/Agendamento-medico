@@ -78,13 +78,17 @@ export default function Register() {
 
           <Button type="submit" className="submit-btn">Criar conta</Button>
 
-          <Button
-            type="button"
-            className="submit-btn secondary"
-            onClick={() => navigate("/login")}
-          >
-            Já tem uma conta? Voltar para Login
-          </Button>
+          <div className="back-to-login-wrapper">
+            <span 
+              className="back-to-login-link" 
+              onClick={() => navigate("/login")}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && navigate("/login")}
+            >
+              Já tem uma conta? Voltar para Login
+            </span>
+          </div>
         </form>
       </div>
     </div>

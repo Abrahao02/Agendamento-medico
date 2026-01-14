@@ -304,6 +304,7 @@
   align-items: center;
   padding: 0 var(--spacing-lg);
   gap: var(--spacing-md);
+  cursor: pointer;
 }
 
 /* Botão WhatsApp flutuando */

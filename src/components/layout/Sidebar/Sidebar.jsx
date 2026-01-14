@@ -1,7 +1,7 @@
 // ============================================
-// 📁 src/components/layout/Sidebar.jsx - NOVO
+// 📁 src/components/layout/Sidebar.jsx - REFATORADO
 // ============================================
-import { FiMenu, FiLogOut } from "react-icons/fi";
+import { FiMenu } from "react-icons/fi";
 import MenuItem from "./MenuItem";
 import PlanBox from "./PlanBox";
 
@@ -14,34 +14,42 @@ export default function Sidebar({
   plan,
   appointmentsThisMonth,
   isLimitReached,
-  handleLogout,
   menuItems
 }) {
+  // Separar itens de navegação principal e configurações
+  const mainNavItems = menuItems.filter(item => item.to !== "/dashboard/settings");
+  const settingsItem = menuItems.find(item => item.to === "/dashboard/settings");
+
   return (
     <nav
       className={`sidebar ${sidebarOpen ? "open" : "compact"}`}
       aria-label="Menu principal"
     >
-      {/* Header */}
+      {/* Header Compacto - Hambúrguer integrado */}
       <div className="sidebar-header">
         <button
           className="hamburger-btn"
           onClick={toggleSidebar}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggleSidebar();
+            }
+          }}
           aria-expanded={sidebarOpen}
           aria-label={sidebarOpen ? "Encolher menu" : "Expandir menu"}
           title={sidebarOpen ? "Encolher menu" : "Expandir menu"}
         >
           <FiMenu />
         </button>
-
         {sidebarOpen && (
-          <h2 className="fade-slide">Olá, {doctorName}</h2>
+          <h2 className="sidebar-user-name fade-slide">Olá, {doctorName}</h2>
         )}
       </div>
 
-      {/* Menu Items */}
-      <ul className="menu" role="menu">
-        {menuItems.map(item => (
+      {/* Navegação Principal */}
+      <ul className="menu menu-main" role="menu">
+        {mainNavItems.map(item => (
           <MenuItem
             key={item.to}
             item={item}
@@ -51,25 +59,32 @@ export default function Sidebar({
         ))}
       </ul>
 
-      {/* Plan Box */}
-      <PlanBox
-        plan={plan}
-        appointmentsThisMonth={appointmentsThisMonth}
-        isLimitReached={isLimitReached}
-        sidebarOpen={sidebarOpen}
-      />
-
-      {/* Logout Button */}
-      {sidebarOpen && (
-        <button
-          onClick={handleLogout}
-          className="logout-btn"
-          aria-label="Sair da conta"
-        >
-          <FiLogOut />
-          Sair
-        </button>
+      {/* Divisor Visual */}
+      {sidebarOpen && settingsItem && (
+        <div className="menu-divider" aria-hidden="true"></div>
       )}
+
+      {/* Seção Configurações */}
+      {settingsItem && (
+        <ul className="menu menu-settings" role="menu">
+          <MenuItem
+            key={settingsItem.to}
+            item={settingsItem}
+            isDesktop={isDesktop}
+            closeSidebar={closeSidebar}
+          />
+        </ul>
+      )}
+
+      {/* Footer Fixo - Badge do Plano */}
+      <div className="sidebar-footer">
+        <PlanBox
+          plan={plan}
+          appointmentsThisMonth={appointmentsThisMonth}
+          isLimitReached={isLimitReached}
+          sidebarOpen={sidebarOpen}
+        />
+      </div>
     </nav>
   );
 }

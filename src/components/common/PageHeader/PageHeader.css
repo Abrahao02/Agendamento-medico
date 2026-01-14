@@ -2,10 +2,19 @@
 .padrao-header {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  margin: 0 0 var(--spacing-2xl) 0;
+  text-align: left;
+  width: 100%;
+}
+
+/* Linha do título com label ao lado */
+.padrao-header-title-row {
+  display: flex;
   align-items: center;
-  margin: 0 auto var(--spacing-2xl);
-  text-align: center;
-  max-width: 600px;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .padrao-header .label {
@@ -15,16 +24,17 @@
   font-size: var(--text-xs);
   padding: var(--spacing-xs) var(--spacing-md);
   border-radius: var(--radius-full);
-  margin-bottom: var(--spacing-sm);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  flex-shrink: 0;
+  margin: 0;
 }
 
 .padrao-header h2 {
   font-size: var(--text-4xl);
   font-weight: var(--font-bold);
   color: var(--text-primary);
-  margin-bottom: var(--spacing-xs);
+  margin: 0 0 var(--spacing-xs) 0;
   line-height: var(--leading-tight);
 }
 

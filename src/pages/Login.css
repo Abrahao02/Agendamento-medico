@@ -4,7 +4,7 @@
    Login Page - MedSchedule
    =============================== */
 .login-container {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,13 +38,13 @@
   gap: var(--spacing-md);
 }
 
-.input-wrapper {
+.login-form .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.input-wrapper .icon {
+.login-form .input-wrapper .icon {
   position: absolute;
   left: 0.75rem;
   top: 50%;
@@ -52,7 +52,7 @@
   color: var(--gray-400);
 }
 
-.input-wrapper input {
+.login-form .input-wrapper input {
   width: 100%;
   padding: 0.75rem 0.75rem 0.75rem 2.5rem; /* espaço para o ícone */
   border: 1px solid var(--border-light);
@@ -62,7 +62,7 @@
   transition: border var(--transition-fast);
 }
 
-.input-wrapper input:focus {
+.login-form .input-wrapper input:focus {
   border-color: var(--color-secondary);
 }
 
@@ -79,20 +79,20 @@
 }
 
 /* Erros e mensagens de sucesso */
-.error {
+.login-container .error {
   color: var(--color-danger);
   font-size: var(--text-sm);
   margin-top: -0.25rem;
 }
 
-.success {
+.login-container .success {
   color: var(--color-success);
   font-size: var(--text-sm);
   margin-top: -0.25rem;
 }
 
 /* Botões principais e secundários */
-.submit-btn {
+.login-form .submit-btn {
   background: var(--color-secondary);
   color: var(--text-inverse);
   border: none;
@@ -103,26 +103,31 @@
   transition: background var(--transition-fast), transform var(--transition-fast);
 }
 
-.submit-btn:hover {
+.login-form .submit-btn:hover {
   background: var(--color-secondary-hover);
   transform: translateY(-2px);
 }
 
-.submit-btn.secondary {
+.login-form .submit-btn.secondary {
   background: var(--bg-primary);
   color: var(--color-secondary);
   border: 1px solid var(--color-secondary);
 }
 
-.submit-btn.secondary:hover {
+.login-form .submit-btn.secondary:hover {
   background: var(--color-secondary);
   color: var(--text-inverse);
   transform: translateY(-2px);
 }
 
 /* Link "Esqueci minha senha" */
+.forgot-link-wrapper {
+  text-align: center;
+  width: 100%;
+}
+
 .forgot-link {
-  display: inline; /* inline ocupa só o tamanho do texto */
+  display: inline-block; /* inline-block permite centralização mas ocupa só o tamanho do texto */
   font-size: var(--text-sm);
   color: var(--text-link);
   cursor: pointer;
@@ -130,6 +135,7 @@
   transition: color var(--transition-fast);
   padding: 0; /* remove qualquer padding que aumente a área */
   margin: 0;  /* remove margens que podem aumentar a área */
+  width: fit-content; /* garante que ocupe apenas o espaço do texto */
 }
 
 .forgot-link:hover {
