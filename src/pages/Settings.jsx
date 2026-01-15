@@ -2,20 +2,22 @@ import React from "react";
 import { auth } from "../services/firebase";
 import { signOut } from "firebase/auth";
 import { useSettings } from "../hooks/settings/useSettings";
-import PlanSection from "../components/settings/PlanSection/PlanSection";
-import WhatsAppSection from "../components/settings/WhatsAppSection/WhatsAppSection";
-import PublicScheduleSection from "../components/settings/PublicScheduleSection/PublicScheduleSection";
-import AppointmentTypeSection from "../components/settings/AppointmentTypeSection/AppointmentTypeSection";
+import PlanSection from "../components/settings/PlanSection";
+import WhatsAppSection from "../components/settings/WhatsAppSection";
+import PublicScheduleSection from "../components/settings/PublicScheduleSection";
+import AppointmentTypeSection from "../components/settings/AppointmentTypeSection";
 import Button from "../components/common/Button";
-import ContentLoading from "../components/common/ContentLoading/ContentLoading";
-import PageHeader from "../components/common/PageHeader/PageHeader";
+import ContentLoading from "../components/common/ContentLoading";
+import PageHeader from "../components/common/PageHeader";
 import { Save, LogOut } from "lucide-react";
 import { logError } from "../utils/logger/logger";
+import { useToast } from "../components/common/Toast";
 
 import "./Settings.css";
 
 export default function Settings() {
   const user = auth.currentUser;
+  const toast = useToast();
 
   const {
     loading,
@@ -51,9 +53,9 @@ export default function Settings() {
     const result = await saveSettings();
 
     if (result.success) {
-      alert("Configurações salvas com sucesso!");
+      toast.success("Configurações salvas com sucesso!");
     } else {
-      alert(`Erro ao salvar: ${result.error || "Tente novamente"}`);
+      toast.error(`Erro ao salvar: ${result.error || "Tente novamente"}`);
     }
   };
 

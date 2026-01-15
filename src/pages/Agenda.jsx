@@ -6,12 +6,12 @@ import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
 import useAgenda from "../hooks/agenda/useAgenda";
-import PageHeader from "../components/common/PageHeader/PageHeader";
+import PageHeader from "../components/common/PageHeader";
 import DateNavigation from "../components/agenda/DateNavigation";
 import AppointmentList from "../components/agenda/AppointmentList";
-import DayStats from "../components/availability/DayStats/DayStats";
-import AvailableSlotsList from "../components/agenda/AvailableSlotsList/AvailableSlotsList";
-import LimitWarningBanner from "../components/common/LimitWarningBanner/LimitWarningBanner";
+import DayStats from "../components/availability/DayStats";
+import AvailableSlotsList from "../components/agenda/AvailableSlotsList";
+import LimitWarningBanner from "../components/common/LimitWarningBanner";
 import formatDate from "../utils/formatter/formatDate";
 
 import "./Agenda.css";
@@ -80,8 +80,10 @@ export default function Agenda() {
       {totalSlots > 0 && (
         <div className="agenda-stats-card">
           <DayStats
-            appointments={appointments}
-            activeAppointments={activeAppointments}
+            confirmedCount={stats.confirmed}
+            pendingCount={stats.pending}
+            occupancyRate={occupancyRate}
+            activeCount={activeAppointments.length}
             totalSlots={totalSlots}
           />
         </div>

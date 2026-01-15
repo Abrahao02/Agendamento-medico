@@ -8,7 +8,7 @@
   max-width: 1400px;
   margin: 0 auto;
   animation: fadeIn 0.4s ease;
-  background: #f9fafb; /* Cinza muito claro */
+  background: var(--bg-secondary);
   min-height: 100dvh;
 }
 
@@ -58,34 +58,9 @@
   width: fit-content;
 }
 
+/* Botões usam `src/components/common/Button` (classe extra só para layout) */
 .view-toggle-btn {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-weight: var(--font-medium);
-  font-size: var(--text-base);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
   white-space: nowrap;
-}
-
-.view-toggle-btn:hover {
-  background: var(--gray-100);
-  color: var(--text-primary);
-}
-
-.view-toggle-btn.active {
-  background: var(--gradient-secondary);
-  color: var(--text-inverse);
-  font-weight: var(--font-semibold);
-  box-shadow: var(--shadow-sm);
-}
-
-.view-toggle-btn:focus-visible {
-  outline: 2px solid var(--color-secondary);
-  outline-offset: 2px;
 }
 
 /* Stats Grid - Mobile-first */
@@ -198,27 +173,9 @@
   font-weight: var(--font-medium);
 }
 
-/* ✨ NOVO: Destaque visual para métricas importantes */
+/* Destaque visual: evitar emojis decorativos */
 .dashboard-page-content .stats-grid .stats-card:first-child {
   position: relative;
-}
-
-.dashboard-page-content .stats-grid .stats-card:first-child::before {
-  content: '✨';
-  position: absolute;
-  top: var(--spacing-md);
-  right: var(--spacing-md);
-  font-size: var(--text-lg);
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
 }
 
 /* Responsive */

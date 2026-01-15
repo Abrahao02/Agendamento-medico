@@ -6,14 +6,16 @@ import React, { useState, useMemo } from "react";
 import { auth } from "../services/firebase";
 import { usePatients } from "../hooks/patients/usePatients";
 import { UserPlus, Search } from "lucide-react";
-import PageHeader from "../components/common/PageHeader/PageHeader";
-import PatientItem from "../components/patients/PatientItem/PatientItem";
-import AddPatientModal from "../components/patients/AddPatientModal/AddPatientModal";
+import PageHeader from "../components/common/PageHeader";
+import PatientItem from "../components/patients/PatientItem";
+import AddPatientModal from "../components/patients/AddPatientModal";
+import { useToast } from "../components/common/Toast";
 
 import "./Patients.css";
 
 export default function Patients() {
   const user = auth.currentUser;
+  const toast = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -61,7 +63,7 @@ export default function Patients() {
     const result = await addPatient();
     if (result.success) {
       setIsModalOpen(false);
-      alert("Paciente cadastrado com sucesso!");
+      toast.success("Paciente cadastrado com sucesso!");
     } else if (result.error && !error) {
       // Erro já é gerenciado pelo hook
     }
@@ -93,9 +95,9 @@ export default function Patients() {
   const handleSavePatient = async (patient) => {
     const result = await savePatient(patient);
     if (result.success) {
-      alert(`Dados salvos para ${patient.name}`);
+      toast.success(`Dados salvos para ${patient.name}`);
     } else {
-      alert(`Erro ao salvar: ${result.error || "Tente novamente"}`);
+      toast.error(`Erro ao salvar: ${result.error || "Tente novamente"}`);
     }
   };
 

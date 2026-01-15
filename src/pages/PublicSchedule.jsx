@@ -8,19 +8,21 @@ import { logError } from "../utils/logger/logger";
 import Card from "../components/common/Card";
 import Badge from "../components/common/Badge";
 import DayCard from "../components/publicSchedule/DayCard";
-import AppointmentForm from "../components/publicSchedule/AppointmentForm/AppointmentForm";
-import LocationFilter from "../components/publicSchedule/LocationFilter/LocationFilter";
-import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
-import PublicScheduleHeader from "../components/publicSchedule/PublicScheduleHeader/PublicScheduleHeader";
-import IntroCard from "../components/publicSchedule/IntroCard/IntroCard";
-import LimitReachedBanner from "../components/publicSchedule/LimitReachedBanner/LimitReachedBanner";
-import EmptyState from "../components/publicSchedule/EmptyState/EmptyState";
+import AppointmentForm from "../components/publicSchedule/AppointmentForm";
+import LocationFilter from "../components/publicSchedule/LocationFilter";
+import LoadingFallback from "../components/common/LoadingFallback";
+import PublicScheduleHeader from "../components/publicSchedule/PublicScheduleHeader";
+import IntroCard from "../components/publicSchedule/IntroCard";
+import LimitReachedBanner from "../components/publicSchedule/LimitReachedBanner";
+import EmptyState from "../components/publicSchedule/EmptyState";
+import { useToast } from "../components/common/Toast";
 
 import "./PublicSchedule.css";
 
 export default function PublicSchedule() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
   const formRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -57,17 +59,20 @@ export default function PublicSchedule() {
       if (result.success) {
         navigate(`/public/${slug}/success`, { state: result.data });
       } else {
-        alert(result.error || "Erro ao agendar");
+        toast.error(result.error || "Erro ao agendar");
       }
     } catch (err) {
       logError("Erro ao agendar:", err);
-      alert("Erro ao agendar. Tente novamente.");
+      toast.error("Erro ao agendar. Tente novamente.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleCancel = () => handleSlotSelect(null);
+  const handleCancel = () => {
+    handleSlotSelect(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (loading) return <LoadingFallback message="Carregando agenda..." />;
 

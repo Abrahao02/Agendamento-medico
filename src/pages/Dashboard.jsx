@@ -8,10 +8,10 @@ import { Calendar, Users, DollarSign, Clock, UserPlus, CheckCircle } from "lucid
 
 import { useDashboard } from "../hooks/dashboard/useDashboard";
 
-import PageHeader from "../components/common/PageHeader/PageHeader";
+import PageHeader from "../components/common/PageHeader";
 import PublicLinkCard from "../components/dashboard/PublicLinkCard";
-import Filters from "../components/common/Filters/Filters";
-import LimitWarningBanner from "../components/common/LimitWarningBanner/LimitWarningBanner";
+import Filters from "../components/common/Filters";
+import LimitWarningBanner from "../components/common/LimitWarningBanner";
 import StatsCard from "../components/dashboard/StatsCard";
 import StatusSummary from "../components/dashboard/StatusSummary";
 import DetailsSummary from "../components/dashboard/DetailsSummary";
@@ -19,7 +19,8 @@ import AppointmentsChart from "../components/dashboard/AppointmentsChart";
 import UpcomingAppointments from "../components/dashboard/UpcomingAppointments";
 import FinancialChart from "../components/dashboard/FinancialChart";
 import MonthlyComparison from "../components/dashboard/MonthlyComparison";
-import ContentLoading from "../components/common/ContentLoading/ContentLoading";
+import ContentLoading from "../components/common/ContentLoading";
+import Button from "../components/common/Button";
 
 import "./Dashboard.css";
 
@@ -64,25 +65,6 @@ export default function Dashboard() {
 
       <PublicLinkCard slug={doctorSlug} isLimitReached={isLimitReached} />
 
-      {/* View Toggle */}
-      <div className="view-toggle">
-        <button
-          className={`view-toggle-btn ${viewMode === "pacientes" ? "active" : ""}`}
-          onClick={() => setViewMode("pacientes")}
-          aria-label="Visualização Pacientes & Agenda"
-          aria-pressed={viewMode === "pacientes"}
-        >
-          Pacientes & Agenda
-        </button>
-        <button
-          className={`view-toggle-btn ${viewMode === "financeiro" ? "active" : ""}`}
-          onClick={() => setViewMode("financeiro")}
-          aria-label="Visualização Financeiro"
-          aria-pressed={viewMode === "financeiro"}
-        >
-          Financeiro
-        </button>
-      </div>
 
       <Filters
         dateFrom={selectedDateFrom}
@@ -94,6 +76,32 @@ export default function Dashboard() {
         showStatus={false}
         showQuickFilters
       />
+
+      {/* View Toggle */}
+      <div className="view-toggle">
+        <Button
+          type="button"
+          size="sm"
+          variant={viewMode === "pacientes" ? "primary" : "ghost"}
+          onClick={() => setViewMode("pacientes")}
+          aria-label="Visualização Pacientes & Agenda"
+          aria-pressed={viewMode === "pacientes"}
+          className="view-toggle-btn"
+        >
+          Pacientes & Agenda
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={viewMode === "financeiro" ? "primary" : "ghost"}
+          onClick={() => setViewMode("financeiro")}
+          aria-label="Visualização Financeiro"
+          aria-pressed={viewMode === "financeiro"}
+          className="view-toggle-btn"
+        >
+          Financeiro
+        </Button>
+      </div>
 
       {viewMode === "pacientes" ? (
         <>

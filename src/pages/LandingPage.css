@@ -75,62 +75,15 @@
 }
 
 /* ========== Buttons ========== */
-.landing-page .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-xl);
-  border-radius: var(--radius-lg);
-  font-weight: var(--font-semibold);
-  text-decoration: none;
-  transition: var(--transition-base);
-  font-size: var(--text-base);
-  cursor: pointer;
-  border: none;
-  font-family: inherit;
-}
-
-.landing-page .btn:focus-visible {
-  outline: 2px solid var(--color-secondary);
-  outline-offset: 2px;
-}
-
-.landing-page .btn-primary {
-  background: var(--gradient-secondary);
+/* Botão outline no HERO precisa ser "invertido" (fundo escuro) */
+.landing-page .hero-buttons .btn-outline {
+  border-color: rgba(255, 255, 255, 0.5);
   color: var(--white);
-  box-shadow: var(--shadow-secondary);
 }
 
-.landing-page .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px -4px rgba(59, 130, 246, 0.4);
-}
-
-.landing-page .btn-primary:active {
-  transform: translateY(0);
-}
-
-.landing-page .btn-outline {
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  color: var(--white);
-  background: transparent;
-}
-
-.landing-page .btn-outline:hover {
+.landing-page .hero-buttons .btn-outline:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: var(--white);
-}
-
-.landing-page .btn-accent {
-  background: var(--gradient-accent);
-  color: var(--white);
-  box-shadow: var(--shadow-accent);
-}
-
-.landing-page .btn-accent:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px -4px rgba(229, 154, 67, 0.4);
 }
 
 /* ========== Hero Image ========== */
@@ -519,71 +472,7 @@
   font-weight: var(--font-semibold);
 }
 
-/* ========== Animations ========== */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
-}
-
-.fade-up {
-  opacity: 0;
-  animation: fadeUp 0.8s ease forwards;
-}
-
-.fade-in {
-  opacity: 0;
-  animation: fadeIn 0.6s ease forwards;
-}
-
-.scale-in {
-  opacity: 0;
-  animation: scaleIn 0.4s ease forwards;
-}
-
-.float {
-  animation: float 4s ease-in-out infinite;
-}
-
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
-.delay-5 { animation-delay: 0.5s; }
+/* Animations: movidas para `src/styles/motion.css` */
 
 /* ========== Responsive ========== */
 @media (max-width: 768px) {

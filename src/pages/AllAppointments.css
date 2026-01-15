@@ -87,33 +87,7 @@
   margin: 0;
 }
 
-/* Buttons */
-.appointments-page .btn {
-  padding: 0.625rem 1.25rem;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: inherit;
-}
-
-.appointments-page .btn-ghost {
-  background: transparent;
-  color: var(--color-secondary);
-  border: 2px solid var(--secondary-200);
-}
-
-.appointments-page .btn-ghost:hover {
-  background: var(--secondary-50);
-  border-color: var(--color-secondary);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-secondary);
-}
+/* Buttons: usar `src/components/common/Button` (evitar redefinir `.btn`) */
 
 /* Animations */
 @keyframes fadeInDown {
@@ -200,11 +174,6 @@
 
   .appointments-container {
     padding-bottom: 180px;
-  }
-
-  .btn {
-    font-size: 0.8125rem;
-    padding: 0.5rem 1rem;
   }
 }
 

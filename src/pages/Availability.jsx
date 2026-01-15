@@ -7,11 +7,11 @@ import React from "react";
 import { useAvailability } from "../hooks/appointments/useAvailability";
 
 // Components
-import PageHeader from "../components/common/PageHeader/PageHeader";
-import CalendarWrapper from "../components/availability/CalendarWrapper/CalendarWrapper";
-import DayManagement from "../components/availability/DayManagement/DayManagement";
-import ContentLoading from "../components/common/ContentLoading/ContentLoading";
-import LimitWarningBanner from "../components/common/LimitWarningBanner/LimitWarningBanner";
+import PageHeader from "../components/common/PageHeader";
+import CalendarWrapper from "../components/availability/CalendarWrapper";
+import DayManagement from "../components/availability/DayManagement";
+import ContentLoading from "../components/common/ContentLoading";
+import LimitWarningBanner from "../components/common/LimitWarningBanner";
 
 // Utils
 import formatDate from "../utils/formatter/formatDate";

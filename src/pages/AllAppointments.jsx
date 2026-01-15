@@ -3,12 +3,13 @@ import { useOutletContext } from "react-router-dom";
 import { auth } from "../services/firebase/config";
 
 import useAllAppointments from "../hooks/agenda/useAllAppointments";
-import PageHeader from "../components/common/PageHeader/PageHeader";
-import Filters from "../components/common/Filters/Filters";
+import PageHeader from "../components/common/PageHeader";
+import Filters from "../components/common/Filters";
+import Button from "../components/common/Button";
 import PatientsList from "../components/allAppointments/PatientsList";
 import SaveChangesBar from "../components/allAppointments/SaveChangesBar";
-import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
-import LimitWarningBanner from "../components/common/LimitWarningBanner/LimitWarningBanner";
+import LoadingFallback from "../components/common/LoadingFallback";
+import LimitWarningBanner from "../components/common/LimitWarningBanner";
 import { getStatusOptions } from "../utils/appointments/getStatusOptions";
 import { sendWhatsappMessage } from "../utils/whatsapp/generateWhatsappLink";
 
@@ -60,12 +61,12 @@ export default function AllAppointments() {
 
   const extraActions = (
     <>
-      <button className="btn btn-ghost" onClick={() => toggleAll(true)}>
+      <Button variant="ghost" onClick={() => toggleAll(true)}>
         Expandir Todos
-      </button>
-      <button className="btn btn-ghost" onClick={() => toggleAll(false)}>
+      </Button>
+      <Button variant="ghost" onClick={() => toggleAll(false)}>
         Contrair Todos
-      </button>
+      </Button>
     </>
   );
 

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import { FaUser, FaEnvelope, FaPhone } from "react-icons/fa"
+import { Mail, Phone, User } from "lucide-react"
 
 import Input from "../components/common/Input"
 import Button from "../components/common/Button"
@@ -29,7 +29,7 @@ export default function Register() {
             placeholder="Nome completo"
             value={form.name}
             error={errors.name}
-            leftIcon={<FaUser />}
+            leftIcon={<User size={18} />}
             onChange={handleChange}
           />
 
@@ -41,7 +41,7 @@ export default function Register() {
             placeholder="Email"
             value={form.email}
             error={errors.email}
-            leftIcon={<FaEnvelope />}
+            leftIcon={<Mail size={18} />}
             onChange={handleChange}
           />
 
@@ -72,11 +72,13 @@ export default function Register() {
             placeholder="DDD + número"
             value={formatWhatsapp(form.whatsapp)}
             error={errors.whatsapp}
-            leftIcon={<FaPhone />}
+            leftIcon={<Phone size={18} />}
             onChange={handleChange}
           />
 
-          <Button type="submit" className="submit-btn">Criar conta</Button>
+          <Button type="submit" variant="primary" fullWidth>
+            Criar conta
+          </Button>
 
           <div className="back-to-login-wrapper">
             <span 
