@@ -1,0 +1,42 @@
+import formatDate from "../../utils/formatter/formatDate";
+
+/**
+ * Hook para gerenciar lógica do cartão de paciente
+ * @param {Object} params - Parâmetros do hook
+ * @param {Object} params.patient - Dados do paciente
+ * @param {Function} params.onToggle - Callback para toggle de expansão
+ * @param {Function} params.onSendWhatsapp - Callback para enviar WhatsApp
+ * @returns {Object} Handlers
+ */
+export const usePatientCard = ({ patient, onToggle, onSendWhatsapp }) => {
+  const handleSendReport = (e) => {
+    e.stopPropagation();
+    const messages = patient.appointments.map(
+      (app) =>
+        `${formatDate(app.date)} às ${app.time} - R$ ${(app.value || 0).toFixed(2)}`
+    );
+    const text = `Seguem as datas e valores de suas consultas:\n${messages.join("\n")}`;
+    onSendWhatsapp(patient.whatsapp, text);
+  };
+
+  const handleToggle = (e) => {
+    e.stopPropagation();
+    onToggle(patient.name);
+  };
+
+  const handleContainerClick = (e) => {
+    // Não fazer toggle se clicou no botão do WhatsApp
+    if (e.target.closest('.btn-whatsapp')) {
+      return;
+    }
+    onToggle(patient.name);
+  };
+
+  return {
+    handlers: {
+      handleSendReport,
+      handleToggle,
+      handleContainerClick,
+    },
+  };
+};
