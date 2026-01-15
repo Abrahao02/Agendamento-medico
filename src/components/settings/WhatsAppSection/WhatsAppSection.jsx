@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { MessageSquare, ChevronDown } from "lucide-react";
+import { useCollapsibleSection } from "../../../hooks/common/useCollapsibleSection";
 import "./WhatsAppSection.css";
 
 export default function WhatsAppSection({
@@ -7,14 +7,14 @@ export default function WhatsAppSection({
   onUpdateField,
   preview,
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const { state, handlers } = useCollapsibleSection(true);
 
   return (
     <section className="settings-card whatsapp-section">
       <button
         className="section-header-clickable"
-        onClick={() => setIsExpanded(!isExpanded)}
-        aria-expanded={isExpanded}
+        onClick={handlers.toggleExpanded}
+        aria-expanded={state.isExpanded}
       >
         <div className="section-header">
           <MessageSquare size={20} />
@@ -22,11 +22,11 @@ export default function WhatsAppSection({
         </div>
         <ChevronDown
           size={20}
-          className={`collapse-icon ${isExpanded ? "expanded" : ""}`}
+          className={`collapse-icon ${state.isExpanded ? "expanded" : ""}`}
         />
       </button>
       
-      {isExpanded && (
+      {state.isExpanded && (
         <div className="section-content">
           <p className="helper-text section-description">
             Personalize a mensagem enviada automaticamente aos pacientes após o agendamento.

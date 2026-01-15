@@ -1,7 +1,7 @@
 // ============================================
 // 📁 src/components/layout/Sidebar.jsx - REFATORADO
 // ============================================
-import { FiMenu } from "react-icons/fi";
+import { Menu } from "lucide-react";
 import MenuItem from "./MenuItem";
 import PlanBox from "./PlanBox";
 
@@ -40,7 +40,7 @@ export default function Sidebar({
           aria-label={sidebarOpen ? "Encolher menu" : "Expandir menu"}
           title={sidebarOpen ? "Encolher menu" : "Expandir menu"}
         >
-          <FiMenu />
+          <Menu size={20} />
         </button>
         {sidebarOpen && (
           <h2 className="sidebar-user-name fade-slide">Olá, {doctorName}</h2>

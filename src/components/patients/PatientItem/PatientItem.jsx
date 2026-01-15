@@ -1,8 +1,9 @@
 // src/components/patients/PatientItem/PatientItem.jsx
-import React, { useState } from "react";
+import React from "react";
 import Button from "../../common/Button";
 import { Edit, Save, X, ChevronDown, ChevronUp, Phone, DollarSign, Calendar } from "lucide-react";
 import { formatCurrency } from "../../../utils/formatter/formatCurrency";
+import { usePatientItem } from "../../../hooks/patients/usePatientItem";
 import "./PatientItem.css";
 
 function PatientItem({
@@ -15,38 +16,15 @@ function PatientItem({
   onFieldChange,
   formatWhatsappDisplay,
 }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const handleEditClick = (e) => {
-    e.stopPropagation();
-    setIsExpanded(true);
-    onEdit();
-  };
-
-  const handleSaveClick = (e) => {
-    e.stopPropagation();
-    onSave();
-  };
-
-  const handleCancelClick = (e) => {
-    e.stopPropagation();
-    onCancel();
-  };
-
-  const handleItemClick = (e) => {
-    // Não fazer toggle se clicou em botões ou inputs
-    if (e.target.closest('button') || e.target.closest('input') || e.target.closest('.patient-item-edit-icon-btn') || e.target.closest('.patient-item-expand-btn')) {
-      return;
-    }
-    toggleExpand();
-  };
+  const { state, handlers } = usePatientItem({
+    isEditing,
+    onEdit,
+    onSave,
+    onCancel,
+  });
 
   return (
-    <div className="patient-item" onClick={handleItemClick}>
+    <div className="patient-item" onClick={handlers.handleItemClick}>
       <div className="patient-item-content">
         {/* Header com nome, WhatsApp e ações */}
         <div className="patient-item-header">
@@ -65,7 +43,7 @@ function PatientItem({
                   }
                 }}
               />
-              {!isExpanded && (
+              {!state.isExpanded && (
                 <span className="patient-item-whatsapp-badge">
                   {formatWhatsappDisplay(patient.whatsapp)}
                 </span>
@@ -79,7 +57,7 @@ function PatientItem({
               <>
                 <button
                   type="button"
-                  onClick={handleEditClick}
+                  onClick={handlers.handleEditClick}
                   className="patient-item-edit-icon-btn"
                   aria-label="Editar paciente"
                 >
@@ -87,11 +65,11 @@ function PatientItem({
                 </button>
                 <button
                   type="button"
-                  onClick={toggleExpand}
+                  onClick={handlers.toggleExpand}
                   className="patient-item-expand-btn"
-                  aria-label={isExpanded ? "Recolher" : "Expandir"}
+                  aria-label={state.isExpanded ? "Recolher" : "Expandir"}
                 >
-                  {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  {state.isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </button>
               </>
             ) : (
@@ -99,7 +77,7 @@ function PatientItem({
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={handleSaveClick}
+                  onClick={handlers.handleSaveClick}
                   disabled={isSaving}
                   loading={isSaving}
                   leftIcon={!isSaving ? <Save size={16} /> : null}
@@ -109,7 +87,7 @@ function PatientItem({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleCancelClick}
+                  onClick={handlers.handleCancelClick}
                   disabled={isSaving}
                   leftIcon={<X size={16} />}
                 >
@@ -121,7 +99,7 @@ function PatientItem({
         </div>
 
         {/* Conteúdo colapsável */}
-        {isExpanded && (
+        {state.isExpanded && (
           <div className="patient-item-details-wrapper">
             <div className="patient-item-details">
               <div className="patient-item-field">

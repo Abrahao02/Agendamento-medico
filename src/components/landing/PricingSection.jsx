@@ -2,6 +2,7 @@
 // 📁 src/components/landing/PricingSection.jsx
 // ============================================
 import { Check } from "lucide-react";
+import Button from "../common/Button";
 
 const freeFeatures = [
   "Até 10 atendimentos/mês",
@@ -47,12 +48,9 @@ export default function PricingSection({
             ))}
           </ul>
 
-          <button
-            className="btn btn-outline"
-            onClick={onNavigateToRegister}
-          >
+          <Button variant="outline" onClick={onNavigateToRegister} fullWidth>
             Começar grátis
-          </button>
+          </Button>
         </div>
 
         {/* PRO */}
@@ -72,33 +70,32 @@ export default function PricingSection({
 
           {userPlan === "pro" ? (
             <>
-              <button
-                className="btn btn-primary pro-pay-btn"
+              <Button
+                variant="primary"
+                className="pro-pay-btn"
                 disabled
-                style={{ opacity: 0.7, cursor: 'not-allowed' }}
               >
-                Você já é PRO! ✨
-              </button>
+                Você já é PRO
+              </Button>
               <p className="pro-note" style={{ color: '#10b981', marginTop: '0.5rem' }}>
                 Acesse as configurações para gerenciar sua assinatura
               </p>
             </>
           ) : (
             <>
-              <button
+              <Button
                 onClick={onProClick}
-                className="btn btn-primary pro-pay-btn"
+                variant="primary"
+                className="pro-pay-btn"
                 disabled={loading}
               >
                 Assinar PRO
-                <span className="pay-hint">
-                  Cartão de crédito ou Pix
-                </span>
-              </button>
+                <span className="pay-hint">Cartão de crédito ou Pix</span>
+              </Button>
 
               {!user && !loading && (
                 <p className="pro-note">
-                  🔒 É necessário estar logado para assinar
+                  É necessário estar logado para assinar
                 </p>
               )}
             </>

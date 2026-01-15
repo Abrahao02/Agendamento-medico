@@ -4,7 +4,7 @@
 // ============================================
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiHelpCircle, FiAlertCircle } from "react-icons/fi";
+import { AlertCircle, HelpCircle } from "lucide-react";
 
 export default function PlanBox({ 
   plan, 
@@ -34,7 +34,7 @@ export default function PlanBox({
           {plan === "free" ? (
             isLimitReached ? (
               <>
-                <FiAlertCircle className="limit-icon" />
+                <AlertCircle className="limit-icon" size={16} />
                 <span>Limite atingido</span>
               </>
             ) : (
@@ -56,7 +56,7 @@ export default function PlanBox({
               aria-label="Informações sobre o plano gratuito"
               aria-expanded={showTooltip}
             >
-              <FiHelpCircle />
+              <HelpCircle size={16} />
             </button>
             {showTooltip && (
               <div className="plan-tooltip" role="tooltip">

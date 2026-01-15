@@ -3,7 +3,7 @@
 // ============================================
 
 import React from "react";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, CalendarX, Clock } from "lucide-react";
 import formatDate from "../../../utils/formatter/formatDate";
 import { STATUS_CONFIG } from "../../../constants/appointmentStatus";
 import "./UpcomingAppointments.css";
@@ -29,7 +29,9 @@ export default function UpcomingAppointments({ appointments = [] }) {
       <div className="upcoming-card">
         <h3 className="standardized-h3">Próximas consultas</h3>
         <div className="upcoming-empty">
-          <span className="empty-icon">📅</span>
+          <span className="empty-icon" aria-hidden="true">
+            <CalendarX size={40} />
+          </span>
           <p>Nenhuma consulta agendada</p>
         </div>
       </div>

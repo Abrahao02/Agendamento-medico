@@ -3,8 +3,9 @@
 // Modal para cadastro de novo paciente
 // ============================================
 import { createPortal } from 'react-dom';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { UserPlus, X } from 'lucide-react';
+import { useModal } from '../../../hooks/common/useModal';
 import './AddPatientModal.css';
 
 export default function AddPatientModal({
@@ -18,32 +19,7 @@ export default function AddPatientModal({
   error,
   loading = false,
 }) {
-  // Gerencia overflow do body quando modal está aberto
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  // Fecha modal ao clicar no backdrop
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  // Fecha modal com tecla ESC
-  const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      onClose();
-    }
-  };
+  const { handlers } = useModal({ isOpen, onClose });
 
   // Handler de submit do formulário
   const handleSubmit = async (e) => {
@@ -55,18 +31,18 @@ export default function AddPatientModal({
 
   const modalContent = (
     <div
-      className="modal-overlay"
-      onClick={handleBackdropClick}
-      onKeyDown={handleKeyDown}
+      className="add-patient-modal__overlay"
+      onClick={handlers.handleBackdropClick}
+      onKeyDown={handlers.handleKeyDown}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="modal-title"
+      aria-labelledby="add-patient-modal-title"
     >
-      <div className="add-patient-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="add-patient-modal__container" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="modal-header">
+        <div className="add-patient-modal__header">
           <button
-            className="modal-close"
+            className="add-patient-modal__close"
             onClick={onClose}
             aria-label="Fechar modal"
             disabled={loading}
@@ -74,17 +50,17 @@ export default function AddPatientModal({
             <X />
           </button>
 
-          <div className="modal-icon">
+          <div className="add-patient-modal__icon">
             <UserPlus />
           </div>
 
-          <h2 id="modal-title" className="modal-title">
+          <h2 id="add-patient-modal-title" className="add-patient-modal__title">
             Adicionar Novo Paciente
           </h2>
         </div>
 
         {/* Body - Formulário */}
-        <form className="modal-body" onSubmit={handleSubmit}>
+        <form className="add-patient-modal__body" onSubmit={handleSubmit}>
           <div className="form-field">
             <label htmlFor="patient-name">
               Nome <span className="required">*</span>
@@ -147,17 +123,17 @@ export default function AddPatientModal({
           </div>
 
           {error && (
-            <div className="modal-error">
+            <div className="add-patient-modal__error">
               <span>{error}</span>
             </div>
           )}
         </form>
 
         {/* Footer - Botões */}
-        <div className="modal-footer">
+        <div className="add-patient-modal__footer">
           <button
             type="button"
-            className="modal-button cancel"
+            className="add-patient-modal__button add-patient-modal__button--cancel"
             onClick={onClose}
             disabled={loading}
           >
@@ -165,7 +141,7 @@ export default function AddPatientModal({
           </button>
           <button
             type="submit"
-            className="modal-button submit"
+            className="add-patient-modal__button add-patient-modal__button--submit"
             onClick={handleSubmit}
             disabled={loading}
           >

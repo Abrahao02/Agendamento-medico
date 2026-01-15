@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Stethoscope, MapPin, Plus, Trash2, ChevronDown } from "lucide-react";
 import {
   getAppointmentTypeSelectionOptions,
   APPOINTMENT_TYPE_SELECTION,
 } from "../../../constants/appointmentType";
+import { useCollapsibleSection } from "../../../hooks/common/useCollapsibleSection";
 import "./AppointmentTypeSection.css";
 
 export default function AppointmentTypeSection({
@@ -17,7 +18,7 @@ export default function AppointmentTypeSection({
   onNewLocationNameChange,
   onNewLocationValueChange,
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const { state, handlers } = useCollapsibleSection(true);
 
   const appointmentTypeVisibility = useMemo(() => {
     const selection = appointmentTypeConfig.selection || APPOINTMENT_TYPE_SELECTION.ONLINE_ONLY;
@@ -33,8 +34,8 @@ export default function AppointmentTypeSection({
     <section className="settings-card appointment-type-section">
       <button
         className="section-header-clickable"
-        onClick={() => setIsExpanded(!isExpanded)}
-        aria-expanded={isExpanded}
+        onClick={handlers.toggleExpanded}
+        aria-expanded={state.isExpanded}
       >
         <div className="section-header">
           <Stethoscope size={20} />
@@ -42,11 +43,11 @@ export default function AppointmentTypeSection({
         </div>
         <ChevronDown
           size={20}
-          className={`collapse-icon ${isExpanded ? "expanded" : ""}`}
+          className={`collapse-icon ${state.isExpanded ? "expanded" : ""}`}
         />
       </button>
       
-      {isExpanded && (
+      {state.isExpanded && (
         <div className="section-content">
           <p className="helper-text section-description">
             Configure o tipo de atendimento que estará disponível para seus pacientes.

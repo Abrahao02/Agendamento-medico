@@ -1,13 +1,13 @@
-import { useState } from "react";
 import { Calendar, ChevronDown } from "lucide-react";
 import { getPeriodOptions } from "../../../constants/publicScheduleConfig";
+import { useCollapsibleSection } from "../../../hooks/common/useCollapsibleSection";
 import "./PublicScheduleSection.css";
 
 export default function PublicScheduleSection({
   publicScheduleConfig,
   onUpdateField,
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const { state, handlers } = useCollapsibleSection(true);
   const selectedOption = getPeriodOptions().find(
     (opt) => opt.value === publicScheduleConfig.period
   );
@@ -16,8 +16,8 @@ export default function PublicScheduleSection({
     <section className="settings-card public-schedule-section">
       <button
         className="section-header-clickable"
-        onClick={() => setIsExpanded(!isExpanded)}
-        aria-expanded={isExpanded}
+        onClick={handlers.toggleExpanded}
+        aria-expanded={state.isExpanded}
       >
         <div className="section-header">
           <Calendar size={20} />
@@ -25,11 +25,11 @@ export default function PublicScheduleSection({
         </div>
         <ChevronDown
           size={20}
-          className={`collapse-icon ${isExpanded ? "expanded" : ""}`}
+          className={`collapse-icon ${state.isExpanded ? "expanded" : ""}`}
         />
       </button>
       
-      {isExpanded && (
+      {state.isExpanded && (
         <div className="section-content">
           <p className="helper-text section-description">
             Configure como sua agenda pública será exibida para os pacientes.

@@ -4,6 +4,7 @@
 // ============================================
 
 import React from "react";
+import { TrendingUp } from "lucide-react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -22,7 +23,9 @@ export default function FinancialChart({ data = [] }) {
       <div className="chart-card">
         <h3 className="chart-title">Evolução Financeira</h3>
         <div className="chart-empty">
-          <span className="empty-icon">📈</span>
+          <span className="empty-icon" aria-hidden="true">
+            <TrendingUp size={40} />
+          </span>
           <p>Nenhum dado financeiro disponível para este período</p>
         </div>
       </div>
