@@ -5,8 +5,10 @@ import { useCancelSubscription } from "../stripe/useCancelSubscription";
 import { useReactivateSubscription } from "../stripe/useReactivateSubscription";
 import { modeToSelection, selectionToMode, APPOINTMENT_TYPE_SELECTION } from "../../constants/appointmentType";
 import { logError } from "../../utils/logger/logger";
+import { useToast } from "../../components/common/Toast";
 
 export function useSettings(user) {
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [doctor, setDoctor] = useState(null);
@@ -247,10 +249,10 @@ export function useSettings(user) {
     if (confirm('Tem certeza que deseja cancelar sua assinatura? Você continuará com acesso PRO até o final do período pago.')) {
       const result = await handleCancel();
       if (result.success) {
-        alert('Assinatura cancelada com sucesso! Você continuará com acesso PRO até o final do período pago.');
+        toast.success('Assinatura cancelada com sucesso. Você continuará com acesso PRO até o final do período pago.');
         window.location.reload();
       } else {
-        alert(`Erro ao cancelar: ${result.error || 'Tente novamente'}`);
+        toast.error(`Erro ao cancelar: ${result.error || 'Tente novamente'}`);
       }
     }
   };
@@ -259,10 +261,10 @@ export function useSettings(user) {
     if (confirm('Tem certeza que deseja reativar sua assinatura? Ela continuará sendo cobrada normalmente.')) {
       const result = await handleReactivate();
       if (result.success) {
-        alert('Assinatura reativada com sucesso!');
+        toast.success('Assinatura reativada com sucesso.');
         window.location.reload();
       } else {
-        alert(`Erro ao reativar: ${result.error || 'Tente novamente'}`);
+        toast.error(`Erro ao reativar: ${result.error || 'Tente novamente'}`);
       }
     }
   };

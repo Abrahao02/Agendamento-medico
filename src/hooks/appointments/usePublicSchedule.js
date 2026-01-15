@@ -39,6 +39,7 @@ import {
 import { filterSlotsByLocation } from "../../utils/filters/slotFilters";
 import { getAvailableLocationsWithInfo } from "../../utils/locations/locationHelpers";
 import { normalizeSlotsArray } from "../../utils/availability/normalizeSlot";
+import { buildPublicScheduleAvailability } from "../../utils/availability/publicScheduleAvailability";
 
 export const usePublicSchedule = (slug) => {
   const [doctor, setDoctor] = useState(null);
@@ -121,162 +122,16 @@ export const usePublicSchedule = (slug) => {
     }
   }, [slug]);
 
-  /* ==============================
-     ✅ HELPER: Verifica se slot já passou
-  ============================== */
-  const isSlotInPast = useCallback((date, time) => {
-    if (!date || !time) return true;
-    
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-    
-    // Se a data é passada, o slot já passou
-    if (date < todayStr) return true;
-    
-    // Se a data é hoje, verifica a hora
-    if (date === todayStr) {
-      const [hours, minutes] = time.split(':').map(Number);
-      if (isNaN(hours) || isNaN(minutes)) return true;
-      
-      const slotTime = new Date();
-      slotTime.setHours(hours, minutes, 0, 0);
-      
-      // Se o horário do slot já passou, retorna true
-      return slotTime < now;
-    }
-    
-    // Se a data é futura, o slot ainda não passou
-    return false;
-  }, []);
-
-  /* ==============================
-     ✅ FILTRA SLOTS DISPONÍVEIS
-     Inclui slots com appointments cancelados (liberados)
-     Filtra slots que já passaram (data/hora atual)
-  ============================== */
-  const availableSlots = useMemo(() => {
-    // ✅ Slots livres na availability (não ocupados por ACTIVE)
-    const baseAvailableSlots = filterAvailableSlots(availability, appointments);
-    
-    // ✅ Adiciona slots com appointments cancelados que não estão na availability
-    const slotsWithCancelled = baseAvailableSlots.map(day => {
-      // Busca appointments cancelados para este dia
-      const cancelledAppointmentsForDay = allAppointments.filter(a =>
-        a.date === day.date && 
-        a.status === APPOINTMENT_STATUS.CANCELLED &&
-        a.time
-      );
-      
-      // Horários ocupados por ACTIVE
-      const bookedTimes = appointments
-        .filter(a => a.date === day.date && STATUS_GROUPS.ACTIVE.includes(a.status))
-        .map(a => a.time);
-      
-      // Slots cancelados que não estão na availability e não estão ocupados por ACTIVE
-      const cancelledSlotsNotInAvailability = cancelledAppointmentsForDay
-        .map(a => a.time)
-        .filter(time => {
-          // Verifica se não está ocupado por ACTIVE
-          if (bookedTimes.includes(time)) return false;
-          
-          // ✅ Verifica se o slot já não passou
-          if (isSlotInPast(day.date, time)) return false;
-          
-          // Verifica se não está na availability
-          return !(day.slots || []).some(slot => {
-            const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
-            return slotTime === time;
-          });
-        });
-      
-      // Combina slots da availability com slots cancelados
-      const allSlots = [
-        ...(day.slots || []),
-        ...cancelledSlotsNotInAvailability
-      ];
-      
-      // ✅ Filtra slots que já passaram (data/hora atual)
-      const validSlots = allSlots.filter(slot => {
-        const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
-        if (!slotTime) return false;
-        return !isSlotInPast(day.date, slotTime);
-      });
-      
-      return {
-        ...day,
-        slots: validSlots
-      };
-    });
-    
-    // ✅ Adiciona dias que só têm appointments cancelados (não estão na availability)
-    const cancelledDates = new Set();
-    allAppointments.forEach(a => {
-      if (a.status === APPOINTMENT_STATUS.CANCELLED && a.date && a.time) {
-        // ✅ Verifica se o slot já não passou
-        if (isSlotInPast(a.date, a.time)) return;
-        
-        // Verifica se não está na availability e não está ocupado por ACTIVE
-        const dayInAvailability = availability.find(av => av.date === a.date);
-        const hasActiveInSlot = appointments.some(apt => 
-          apt.date === a.date && 
-          apt.time === a.time && 
-          STATUS_GROUPS.ACTIVE.includes(apt.status)
-        );
-        
-        if (!dayInAvailability && !hasActiveInSlot) {
-          cancelledDates.add(a.date);
-        }
-      }
-    });
-    
-    // Cria dias para slots cancelados que não estão na availability
-    const cancelledDays = Array.from(cancelledDates).map(date => {
-      const cancelledForDate = allAppointments.filter(a =>
-        a.date === date &&
-        a.status === APPOINTMENT_STATUS.CANCELLED &&
-        a.time
-      );
-      
-      const bookedTimes = appointments
-        .filter(a => a.date === date && STATUS_GROUPS.ACTIVE.includes(a.status))
-        .map(a => a.time);
-      
-      const cancelledSlots = cancelledForDate
-        .map(a => a.time)
-        .filter(time => {
-          // Verifica se não está ocupado por ACTIVE
-          if (bookedTimes.includes(time)) return false;
-          // ✅ Verifica se o slot já não passou
-          return !isSlotInPast(date, time);
-        })
-        .sort();
-      
-      if (cancelledSlots.length > 0) {
-        return {
-          id: `cancelled_${date}`,
-          date,
-          slots: cancelledSlots
-        };
-      }
-      return null;
-    }).filter(Boolean);
-    
-    // Combina todos os dias (availability + cancelados)
-    const allDays = [...slotsWithCancelled, ...cancelledDays];
-    
-    // Remove duplicatas e ordena por data
-    const uniqueDays = allDays.reduce((acc, day) => {
-      const existing = acc.find(d => d.date === day.date);
-      if (existing) {
-        // Se já existe, combina os slots
-        const allSlots = [...new Set([...existing.slots, ...day.slots])].sort();
-        return acc.map(d => d.date === day.date ? { ...d, slots: allSlots } : d);
-      }
-      return [...acc, day];
-    }, []);
-    
-    return uniqueDays.filter(day => day.slots.length > 0).sort((a, b) => a.date.localeCompare(b.date));
-  }, [availability, appointments, allAppointments, isSlotInPast]);
+  const availableSlots = useMemo(
+    () =>
+      buildPublicScheduleAvailability({
+        availability,
+        activeAppointments: appointments,
+        allAppointments,
+        now: new Date(),
+      }),
+    [availability, appointments, allAppointments]
+  );
 
   /* ==============================
      FILTER BY LOCATION

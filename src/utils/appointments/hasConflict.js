@@ -2,6 +2,8 @@
 // 📁 src/utils/appointments/hasConflict.js
 // ============================================
 
+import { STATUS_GROUPS } from "../../constants/appointmentStatus";
+
 /**
  * Verifica se já existe um agendamento ATIVO no horário
  * ✅ Ignora appointments cancelados e não comparecidos

@@ -6,9 +6,11 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useStripeCheckout } from "../stripe/useStripeCheckout";
 import { logError } from "../../utils/logger/logger";
+import { useToast } from "../../components/common/Toast";
 
 export function useLandingPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [user, loading] = useAuthState(auth);
   const [userPlan, setUserPlan] = useState("free");
   const [planLoading, setPlanLoading] = useState(true);
@@ -56,7 +58,7 @@ export function useLandingPage() {
     }
 
     if (userPlan === "pro") {
-      alert("Você já é um usuário PRO! Acesse as configurações para gerenciar sua assinatura.");
+      toast.info("Você já é um usuário PRO. Acesse as configurações para gerenciar sua assinatura.");
       navigate("/dashboard/settings");
       return;
     }

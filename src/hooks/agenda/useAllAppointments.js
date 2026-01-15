@@ -8,9 +8,12 @@ import { generateYearRange } from "../../utils/helpers/yearHelpers";
 import { STATUS_GROUPS } from "../../constants/appointmentStatus";
 import { PatientService } from "../../services/firebase";
 import { subscribeToPatients } from "../../services/firebase/patients.service";
+import { canChangeAppointmentStatus, getLockedAppointmentIds } from "../../utils/appointments/lockedAppointments";
 import { logError, logWarning } from "../../utils/logger/logger";
+import { useToast } from "../../components/common/Toast";
 
 export default function useAllAppointments(user) {
+  const toast = useToast();
   const today = new Date();
   const currentMonth = today.getMonth() + 1;
   const currentYear = today.getFullYear();
@@ -31,38 +34,7 @@ export default function useAllAppointments(user) {
   const [lockedAppointments, setLockedAppointments] = useState(new Set());
 
   const identifyLockedAppointments = useCallback((appointmentsList) => {
-    const locked = new Set();
-
-    // Agrupa appointments por data+horário
-    const slotMap = new Map();
-    
-    appointmentsList.forEach((appt) => {
-      const slotKey = `${appt.date}_${appt.time}`;
-      
-      if (!slotMap.has(slotKey)) {
-        slotMap.set(slotKey, []);
-      }
-      slotMap.get(slotKey).push(appt);
-    });
-
-    // Para cada slot, verifica se há appointments bloqueados
-    slotMap.forEach((appointmentsInSlot) => {
-      // Se houver pelo menos um appointment ATIVO no slot
-      const hasActiveInSlot = appointmentsInSlot.some(
-        appt => STATUS_GROUPS.ACTIVE.includes(appt.status)
-      );
-
-      if (hasActiveInSlot) {
-        // Bloqueia todos os appointments INATIVOS deste slot
-        appointmentsInSlot.forEach((appt) => {
-          if (!STATUS_GROUPS.ACTIVE.includes(appt.status)) {
-            locked.add(appt.id);
-          }
-        });
-      }
-    });
-
-    setLockedAppointments(locked);
+    setLockedAppointments(getLockedAppointmentIds(appointmentsList));
   }, []);
 
   useEffect(() => {
@@ -167,27 +139,15 @@ export default function useAllAppointments(user) {
     // Bloqueia se o appointment está travado
     if (lockedAppointments.has(id)) {
       logWarning("Este agendamento não pode ter o status alterado pois o horário já foi reagendado");
-      alert("⚠️ Este horário já foi reagendado. O status não pode ser alterado.");
+      toast.info("Este horário já foi reagendado. O status não pode ser alterado.");
       return;
     }
 
-    const currentAppointment = appointments.find(a => a.id === id);
-    
-    // Se está mudando PARA cancelado/não compareceu, verifica conflito
-    if (!STATUS_GROUPS.ACTIVE.includes(newStatus)) {
-      const hasActiveInSameSlot = appointments.some(
-        other => 
-          other.id !== id &&
-          other.date === currentAppointment.date &&
-          other.time === currentAppointment.time &&
-          STATUS_GROUPS.ACTIVE.includes(other.status)
-      );
-
-      if (hasActiveInSameSlot) {
-        logWarning("Não é possível cancelar: horário já foi reagendado");
-        alert("⚠️ Este horário já foi reagendado. Não é possível cancelar.");
-        return;
-      }
+    const statusCheck = canChangeAppointmentStatus(appointments, id, newStatus);
+    if (!statusCheck.allowed) {
+      logWarning(statusCheck.error);
+      toast.error(statusCheck.error);
+      return;
     }
 
     setAppointments((prev) => {
@@ -199,7 +159,7 @@ export default function useAllAppointments(user) {
     });
     
     setChangedIds((prev) => new Set([...prev, id]));
-  }, [appointments, lockedAppointments, identifyLockedAppointments]);
+  }, [appointments, lockedAppointments, identifyLockedAppointments, toast]);
 
   const isAppointmentLocked = useCallback((appointmentId) => {
     return lockedAppointments.has(appointmentId);
@@ -214,10 +174,10 @@ export default function useAllAppointments(user) {
 
       await Promise.all(updates);
       setChangedIds(new Set());
-      alert("✅ Alterações salvas com sucesso!");
+      toast.success("Alterações salvas com sucesso!");
     } catch (err) {
       logError("Erro ao atualizar status:", err);
-      alert("❌ Erro ao salvar alterações.");
+      toast.error("Erro ao salvar alterações.");
     } finally {
       setSaving(false);
     }

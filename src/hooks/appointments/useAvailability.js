@@ -17,6 +17,8 @@ import { validateAvailability } from "../../utils/filters/availabilityFilters";
 import { getBookedSlotsForDate } from "../../utils/appointments/getBookedSlots";
 import { hasAppointmentConflict } from "../../utils/appointments/hasConflict";
 import { sortAppointments } from "../../utils/filters/appointmentFilters";
+import { getAvailableSlotTimesForDate, getCalendarTileDataForDate } from "../../utils/availability/availabilityMetrics";
+import { getSlotTime } from "../../utils/availability/slotUtils";
 
 // Constants
 import { APPOINTMENT_STATUS, STATUS_GROUPS } from "../../constants/appointmentStatus";
@@ -116,21 +118,18 @@ export const useAvailability = () => {
      GETTERS - AVAILABILITY
   ============================== */
 
-  const getAvailabilityForDate = useCallback((date) => {
-    const dayAvailability = availability.find(a => a.date === date);
-    if (!dayAvailability || !dayAvailability.slots) return [];
-
-    const bookedSlots = getBookedSlotsForDate(appointments, date);
-
-    // Handle both string and object slot formats
-    return dayAvailability.slots
-      .filter(slot => {
-        const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
-        return slotTime && !bookedSlots.includes(slotTime);
-      })
-      .map(slot => typeof slot === "string" ? slot : (slot?.time || slot))
-      .sort();
-  }, [availability, appointments]);
+  const getAvailabilityForDate = useCallback(
+    (date) => {
+      const dayAvailability = availability.find((a) => a.date === date);
+      if (!dayAvailability || !dayAvailability.slots) return [];
+      return getAvailableSlotTimesForDate({
+        slots: dayAvailability.slots,
+        appointments,
+        date,
+      });
+    },
+    [availability, appointments]
+  );
 
   const getAllSlotsForDate = useCallback((date) => {
     const dayAvailability = availability.find(a => a.date === date);
@@ -152,61 +151,23 @@ export const useAvailability = () => {
     if (!dayAvailability) return false;
 
     // Check if slot with this time exists (handles both string and object formats)
-    const slotExists = dayAvailability.slots.some(slot => {
-      const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
-      return slotTime === time;
-    });
+    const slotExists = dayAvailability.slots.some((slot) => getSlotTime(slot) === time);
 
     // ✅ hasAppointmentConflict já filtra apenas appointments ativos
     return slotExists && !hasAppointmentConflict(appointments, date, time);
   }, [availability, appointments]);
 
-  const getCalendarTileData = useCallback((dateStr) => {
-    const dayAvailability = availability.find(a => a.date === dateStr) || { slots: [] };
-
-    // ✅ Appointments ATIVOS (bloqueiam slots): Confirmado, Pendente, Msg enviada, Não Compareceu
-    const activeAppointmentsForDate = appointments.filter(a =>
-      a.date === dateStr && STATUS_GROUPS.ACTIVE.includes(a.status)
-    );
-
-    // ✅ Horários ocupados (apenas ACTIVE bloqueiam - cancelados NÃO bloqueiam mais)
-    const bookedTimes = getBookedSlotsForDate(appointments, dateStr);
-
-    // ✅ Slots livres na availability (não ocupados por ACTIVE)
-    const freeSlotsInAvailability = dayAvailability.slots.filter(slot => {
-      const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
-      return slotTime && !bookedTimes.includes(slotTime);
-    });
-
-    // ✅ Appointments cancelados (liberam slots - devem ser contados como livres)
-    const cancelledAppointmentsForDate = appointments.filter(a =>
-      a.date === dateStr && 
-      a.status === APPOINTMENT_STATUS.CANCELLED &&
-      a.time
-    );
-    
-    // ✅ Slots com appointments cancelados que não estão na availability
-    // (foram removidos da availability mas ainda têm appointment cancelado - devem contar como livres)
-    const cancelledTimes = cancelledAppointmentsForDate.map(a => a.time);
-    const cancelledSlotsNotInAvailability = cancelledTimes.filter(time => {
-      // Verifica se o horário não está na availability
-      return !dayAvailability.slots.some(slot => {
-        const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
-        return slotTime === time;
+  const getCalendarTileData = useCallback(
+    (dateStr) => {
+      const dayAvailability = availability.find((a) => a.date === dateStr) || { slots: [] };
+      return getCalendarTileDataForDate({
+        slots: dayAvailability.slots || [],
+        appointments,
+        date: dateStr,
       });
-    });
-
-    // ✅ Total de slots livres = slots livres na availability + slots com appointments cancelados
-    const totalFreeSlots = freeSlotsInAvailability.length + cancelledSlotsNotInAvailability.length;
-
-    return {
-      hasFreeSlots: totalFreeSlots > 0,
-      hasBookedSlots: activeAppointmentsForDate.length > 0,
-      freeCount: totalFreeSlots,
-      bookedCount: activeAppointmentsForDate.length,
-      totalCount: dayAvailability.slots.length + cancelledSlotsNotInAvailability.length,
-    };
-  }, [availability, appointments]);
+    },
+    [availability, appointments]
+  );
 
   /* ==============================
      ACTIONS - AVAILABILITY
@@ -273,7 +234,7 @@ export const useAvailability = () => {
      ACTIONS - APPOINTMENTS
   ============================== */
 
-  const bookAppointment = async ({ patientId, date, time, appointmentType, location }) => {
+  const bookAppointment = async ({ patientId, date, time, appointmentType, location, customValue }) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
     if (isLimitReached) {
@@ -321,7 +282,10 @@ export const useAvailability = () => {
         defaultValuePresencial: 0,
       };
 
-      const appointmentValue = patient.price || appointmentTypeConfig.defaultValueOnline || 0;
+      const hasCustomValue = customValue !== null && customValue !== undefined;
+      const appointmentValue = hasCustomValue
+        ? customValue
+        : (patient.price || appointmentTypeConfig.defaultValueOnline || 0);
 
       const appointmentData = {
         doctorId: user.uid,
@@ -416,7 +380,7 @@ export const useAvailability = () => {
     return await removeSlot(selectedDate, slot);
   }, [selectedDate]);
 
-  const handleBookAppointment = useCallback(async (patientId, time, appointmentType, location) => {
+  const handleBookAppointment = useCallback(async (patientId, time, appointmentType, location, customValue) => {
     if (!selectedDate) {
       return { success: false, error: "Nenhuma data selecionada" };
     }
@@ -426,6 +390,7 @@ export const useAvailability = () => {
       time,
       appointmentType,
       location,
+      customValue,
     });
   }, [selectedDate, bookAppointment]);
 

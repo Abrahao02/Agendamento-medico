@@ -14,16 +14,13 @@ import { formatDateToQuery } from "../../utils/filters/dateFilters";
 import { sortAppointments } from "../../utils/filters/appointmentFilters";
 import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
 import formatDate from "../../utils/formatter/formatDate";
-import { getBookedSlotsForDate } from "../../utils/appointments/getBookedSlots";
 import { hasAppointmentConflict } from "../../utils/appointments/hasConflict";
+import { getAgendaStats, getActiveAppointments, getOccupancyRate } from "../../utils/appointments/appointmentMetrics";
+import { canChangeAppointmentStatus, getLockedAppointmentIds } from "../../utils/appointments/lockedAppointments";
+import { getFreeSlotTimesForDate } from "../../utils/availability/availabilityMetrics";
+import { combineSlotTimes } from "../../utils/availability/slotUtils";
+import { generateWhatsappLink } from "../../utils/whatsapp/generateWhatsappLink";
 import { logError, logWarning } from "../../utils/logger/logger";
-
-// 📱 Formata WhatsApp padrão BR
-const formatWhatsappNumber = (number) => {
-  let clean = number.replace(/\D/g, "");
-  if (!clean.startsWith("55")) clean = "55" + clean;
-  return clean;
-};
 
 export default function useAgenda(currentDate) {
   const user = auth.currentUser;
@@ -121,29 +118,7 @@ export default function useAgenda(currentDate) {
   }, [user, currentDateStr]);
 
   const identifyLockedAppointments = (appointmentsList) => {
-    const locked = new Set();
-
-    // Para cada appointment cancelado, verifica se o horário foi reagendado
-    appointmentsList.forEach((appt) => {
-      if (!STATUS_GROUPS.ACTIVE.includes(appt.status)) {
-        // É cancelado ou não compareceu
-        
-        // Busca se existe outro appointment ATIVO no mesmo horário
-        const hasActiveInSameSlot = appointmentsList.some(
-          other => 
-            other.id !== appt.id &&
-            other.time === appt.time &&
-            STATUS_GROUPS.ACTIVE.includes(other.status)
-        );
-
-        if (hasActiveInSameSlot) {
-          // Horário foi reagendado → Bloqueia o cancelado
-          locked.add(appt.id);
-        }
-      }
-    });
-
-    setLockedAppointments(locked);
+    setLockedAppointments(getLockedAppointmentIds(appointmentsList));
   };
 
   // ------------------------------
@@ -189,24 +164,13 @@ export default function useAgenda(currentDate) {
       };
     }
 
-    const currentAppointment = appointments.find(a => a.id === id);
-    
-    // Se está mudando PARA cancelado/não compareceu, verifica conflito
-    if (!STATUS_GROUPS.ACTIVE.includes(value)) {
-      const hasActiveInSameSlot = appointments.some(
-        other => 
-          other.id !== id &&
-          other.time === currentAppointment.time &&
-          STATUS_GROUPS.ACTIVE.includes(other.status)
-      );
-
-      if (hasActiveInSameSlot) {
-        logWarning("Não é possível cancelar: horário já foi reagendado");
-        return {
-          success: false,
-          error: "Este horário já foi reagendado. Não é possível cancelar."
-        };
-      }
+    const statusCheck = canChangeAppointmentStatus(appointments, id, value);
+    if (!statusCheck.allowed) {
+      logWarning(statusCheck.error);
+      return {
+        success: false,
+        error: statusCheck.error,
+      };
     }
 
     setStatusUpdates((prev) => ({ ...prev, [id]: value }));
@@ -269,7 +233,7 @@ export default function useAgenda(currentDate) {
 
     const { intro, body, footer, showValue } = whatsappConfig;
 
-    let message = `${intro || "Olá"} ${appt.patientName}\n\n${body || "Sua sessão está agendada"}\n\nData: ${formatDate(appt.date)}\nHorário: ${appt.time}`;
+    let message = `${intro || "Olá"} ${appt.patientName},\n\n${body || "Sua sessão está agendada"}\n\nData: ${formatDate(appt.date)}\nHorário: ${appt.time}`;
 
     if (showValue && appt.value) {
       message += `\nValor: R$ ${appt.value}`;
@@ -282,12 +246,8 @@ export default function useAgenda(currentDate) {
       message += hasValue ? `\n\n${footer}` : `\n${footer}`;
     }
 
-    const phone = formatWhatsappNumber(appt.patientWhatsapp);
-
-    window.open(
-      `https://wa.me/${phone}?text=${encodeURIComponent(message.trim())}`,
-      "whatsappWindow"
-    );
+    const url = generateWhatsappLink(appt.patientWhatsapp, message.trim());
+    window.open(url, "whatsappWindow");
 
     // Atualiza status para "Msg enviada" automaticamente
     handleStatusChange(appt.id, APPOINTMENT_STATUS.MESSAGE_SENT);
@@ -325,89 +285,35 @@ export default function useAgenda(currentDate) {
     return availability.find(a => a.date === currentDateStr) || { slots: [] };
   }, [availability, currentDateStr]);
 
-  const activeAppointments = useMemo(() => {
-    return appointments.filter(a => STATUS_GROUPS.ACTIVE.includes(a.status));
-  }, [appointments]);
+  const activeAppointments = useMemo(
+    () => getActiveAppointments(appointments),
+    [appointments]
+  );
 
   // ✅ CORRIGIDO: Calcula totalSlots igual ao DayManagement (combina slots + appointments ativos)
-  const totalSlots = useMemo(() => {
-    // Extract times from slots (handle both string and object formats)
-    const slotTimes = (dayAvailability.slots || []).map(slot => {
-      if (typeof slot === "string") return slot;
-      if (typeof slot === "object" && slot.time) return slot.time;
-      return null;
-    }).filter(Boolean);
-    
-    const activeBookedTimes = activeAppointments.map((a) => a.time);
-    const combined = [...new Set([...slotTimes, ...activeBookedTimes])];
-    return combined.length;
-  }, [dayAvailability, activeAppointments]);
+  const totalSlots = useMemo(
+    () => combineSlotTimes(dayAvailability.slots || [], activeAppointments).length,
+    [dayAvailability, activeAppointments]
+  );
 
   const freeSlots = useMemo(() => {
     if (!totalSlots) return [];
-    
-    // ✅ Horários ocupados (apenas ACTIVE bloqueiam)
-    const bookedSlots = getBookedSlotsForDate(appointments, currentDateStr);
-    
-    // ✅ Slots livres na availability (não ocupados por ACTIVE)
-    const freeSlotsInAvailability = (dayAvailability.slots || [])
-      .filter(slot => {
-        // Extract time from slot (handles both string and object formats)
-        const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
-        return slotTime && !bookedSlots.includes(slotTime);
-      })
-      .map(slot => typeof slot === "string" ? slot : (slot?.time || ""))
-      .filter(time => time);
-
-    // ✅ Appointments cancelados (liberam slots - devem ser contados como livres)
-    const cancelledAppointmentsForDate = appointments.filter(a =>
-      a.date === currentDateStr && 
-      a.status === APPOINTMENT_STATUS.CANCELLED &&
-      a.time
-    );
-    
-    // ✅ Slots com appointments cancelados que não estão na availability
-    // (foram removidos da availability mas ainda têm appointment cancelado - devem contar como livres)
-    const cancelledTimes = cancelledAppointmentsForDate.map(a => a.time);
-    const cancelledSlotsNotInAvailability = cancelledTimes.filter(time => {
-      // Verifica se o horário não está na availability
-      return !(dayAvailability.slots || []).some(slot => {
-        const slotTime = typeof slot === "string" ? slot : (slot?.time || null);
-        return slotTime === time;
-      });
+    return getFreeSlotTimesForDate({
+      slots: dayAvailability.slots || [],
+      appointments,
+      date: currentDateStr,
     });
-
-    // ✅ Total de slots livres = slots livres na availability + slots com appointments cancelados
-    return [...freeSlotsInAvailability, ...cancelledSlotsNotInAvailability].sort();
   }, [dayAvailability, appointments, currentDateStr, totalSlots]);
 
-  const stats = useMemo(() => {
-    const confirmed = appointments.filter(a => 
-      isStatusInGroup(a.status, 'CONFIRMED')
-    ).length;
+  const stats = useMemo(
+    () => getAgendaStats({ appointments, freeSlots }),
+    [appointments, freeSlots]
+  );
 
-    const pending = appointments.filter(a => 
-      isStatusInGroup(a.status, 'PENDING')
-    ).length;
-
-    const cancelled = appointments.filter(a => 
-      a.status === APPOINTMENT_STATUS.CANCELLED
-    ).length;
-
-    const free = freeSlots.length;
-
-    return {
-      confirmed,
-      pending,
-      cancelled,
-      free,
-    };
-  }, [appointments, freeSlots]);
-
-  const occupancyRate = useMemo(() => {
-    if (totalSlots === 0) return 0;
-    return Math.round((activeAppointments.length / totalSlots) * 100);
-  }, [totalSlots, activeAppointments.length]);
+  const occupancyRate = useMemo(
+    () => getOccupancyRate(activeAppointments.length, totalSlots),
+    [activeAppointments.length, totalSlots]
+  );
 
   return {
     appointments,
