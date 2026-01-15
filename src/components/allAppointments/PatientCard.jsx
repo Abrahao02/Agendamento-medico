@@ -2,6 +2,9 @@
 import React from "react";
 import formatDate from "../../utils/formatter/formatDate";
 import { getStatusOptions } from "../../utils/appointments/getStatusOptions";
+import { ChevronDown, ChevronUp, Lock, Phone, Send } from "lucide-react";
+import Button from "../common/Button";
+import { usePatientCard } from "../../hooks/allAppointments/usePatientCard";
 import "./PatientCard.css";
 
 function PatientCard({
@@ -14,33 +17,12 @@ function PatientCard({
   onSendWhatsapp,
 }) {
   const statusOptions = getStatusOptions();
-  const handleSendReport = (e) => {
-    e.stopPropagation();
-    const messages = patient.appointments.map(
-      (app) =>
-        `${formatDate(app.date)} às ${app.time} - R$ ${(app.value || 0).toFixed(2)}`
-    );
-    const text = `Seguem as datas e valores de suas consultas:\n${messages.join("\n")}`;
-    onSendWhatsapp(patient.whatsapp, text);
-  };
-
-  const handleToggle = (e) => {
-    e.stopPropagation();
-    onToggle(patient.name);
-  };
-
-  const handleContainerClick = (e) => {
-    // Não fazer toggle se clicou no botão do WhatsApp
-    if (e.target.closest('.btn-whatsapp')) {
-      return;
-    }
-    onToggle(patient.name);
-  };
+  const { handlers } = usePatientCard({ patient, onToggle, onSendWhatsapp });
 
   return (
     <div className="patient-card">
-      <div className="patient-header-container" onClick={handleContainerClick}>
-        <button className="patient-header" onClick={handleToggle}>
+      <div className="patient-header-container" onClick={handlers.handleContainerClick}>
+        <button className="patient-header" onClick={handlers.handleToggle}>
           <div className="patient-info">
             <div className="patient-details">
               <h3>{patient.name}</h3>
@@ -52,17 +34,23 @@ function PatientCard({
           </div>
           <div className="patient-meta">
             <span className="patient-total">R$ {patient.totalValue.toFixed(2)}</span>
-            <span className="expand-icon">{isExpanded ? "▲" : "▼"}</span>
+            <span className="expand-icon" aria-hidden="true">
+              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </span>
           </div>
         </button>
 
-        <button
-          className="btn btn-ghost btn-whatsapp"
-          onClick={handleSendReport}
+        <Button
+          type="button"
+          variant="ghost"
+          className="btn-whatsapp"
+          onClick={handlers.handleSendReport}
           title="Enviar relatório por WhatsApp"
+          aria-label="Enviar relatório por WhatsApp"
+          leftIcon={<Send size={16} />}
         >
-          📤
-        </button>
+          Enviar
+        </Button>
       </div>
 
       {isExpanded && (
@@ -84,7 +72,10 @@ function PatientCard({
 
                 <div className="appointment-details">
                   <div className="appointment-contact">
-                    <span>📱 {app.patientWhatsapp}</span>
+                    <span className="appointment-contact-item">
+                      <Phone size={14} aria-hidden="true" />
+                      {app.patientWhatsapp}
+                    </span>
                   </div>
                   <div className="appointment-value">R$ {(app.value || 0).toFixed(2)}</div>
                 </div>
@@ -109,7 +100,7 @@ function PatientCard({
                   {/* ✅ NOVO: Indicador visual de bloqueio */}
                   {isLocked && (
                     <span className="locked-indicator" title="Horário reagendado">
-                      🔒
+                      <Lock size={14} aria-hidden="true" />
                     </span>
                   )}
                 </div>

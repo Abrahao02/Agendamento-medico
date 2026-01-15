@@ -4,10 +4,12 @@
 // ============================================
 import React, { useState } from "react";
 import { Clock, X } from "lucide-react";
+import { useToast } from "../../common/Toast";
 import "./AvailableSlotsList.css";
 
 export default function AvailableSlotsList({ slots = [], onRemoveSlot }) {
   const [removingSlot, setRemovingSlot] = useState(null);
+  const toast = useToast();
 
   const handleRemove = async (e, slotTime) => {
     e.stopPropagation();
@@ -17,10 +19,10 @@ export default function AvailableSlotsList({ slots = [], onRemoveSlot }) {
     try {
       const result = await onRemoveSlot(slotTime);
       if (!result.success && result.error) {
-        alert(result.error);
+        toast.error(result.error);
       }
     } catch (error) {
-      alert("Erro ao remover horário: " + error.message);
+      toast.error(`Erro ao remover horário: ${error.message}`);
     } finally {
       setRemovingSlot(null);
     }

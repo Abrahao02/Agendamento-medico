@@ -2,12 +2,11 @@
 .day-slots-card {
   flex: 1 1 380px;
   max-width: 580px;
-  background: white;
+  background: var(--bg-primary);
   border-radius: 16px;
   padding: 1.75rem;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
   animation: slideInRight 0.4s ease forwards;
 }
 
@@ -16,7 +15,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
-  color: #111827;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -24,7 +23,7 @@
 }
 
 .day-slots-card h3 svg {
-  color: #3b82f6;
+  color: var(--color-secondary);
   flex-shrink: 0;
   width: 24px;
   height: 24px;
@@ -36,7 +35,7 @@
   gap: 0.5rem;
   margin-bottom: 1.5rem;
   padding: 0.375rem;
-  background: #f3f4f6;
+  background: var(--gray-100);
   border-radius: 12px;
 }
 
@@ -48,21 +47,21 @@
   background: transparent;
   font-weight: 600;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-tertiary);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .mode-toggle button:hover {
-  background: #e5e7eb;
-  color: #111827;
+  background: var(--gray-200);
+  color: var(--text-primary);
 }
 
 .mode-toggle button.active {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+  background: linear-gradient(135deg, var(--secondary-900) 0%, var(--secondary-800) 100%);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-secondary);
 }
 
 /* ========== Add Slot Form ========== */
@@ -77,21 +76,21 @@
   flex: 1;
   padding: 0.875rem 1rem;
   border-radius: 10px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--border-light);
   font-size: 0.9375rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-family-base);
   transition: all 0.2s ease;
-  background: white;
+  background: var(--bg-primary);
 }
 
 .add-slot input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--color-secondary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .add-slot input:disabled {
-  background: #f9fafb;
+  background: var(--gray-50);
   cursor: not-allowed;
 }
 
@@ -99,20 +98,20 @@
   padding: 0.875rem 1.5rem;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--secondary-900) 0%, var(--secondary-800) 100%);
+  color: var(--text-inverse);
   font-weight: 700;
   font-size: 0.9375rem;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+  box-shadow: var(--shadow-secondary);
 }
 
 .add-slot button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, var(--secondary-800) 0%, var(--secondary-700) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.4);
+  box-shadow: var(--shadow-lg);
 }
 
 .add-slot button:disabled {
@@ -154,6 +153,55 @@
 .book-slot select:disabled {
   background-color: #f9fafb;
   cursor: not-allowed;
+}
+
+.book-slot-deal-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0.25rem 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.book-slot-deal-toggle input {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.book-slot-deal-toggle:focus-within {
+  color: #111827;
+}
+
+.book-slot-deal-toggle input:disabled {
+  cursor: not-allowed;
+}
+
+.book-slot-price-input {
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  font-size: 0.9375rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: white;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.book-slot-price-input:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.book-slot-price-input:disabled {
+  background-color: #f9fafb;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .book-slot-time-input {
@@ -352,10 +400,15 @@
   }
 
   .book-slot select,
+  .book-slot-price-input,
   .book-slot-time-input,
   .book-slot button {
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
+  }
+
+  .book-slot-deal-toggle {
+    padding: 0;
   }
 
   .slots-list {
@@ -395,14 +448,24 @@
 
   .add-slot input,
   .book-slot select,
+  .book-slot-price-input,
   .book-slot-time-input {
     background: #111827;
     border-color: #374151;
     color: #f9fafb;
   }
 
+  .book-slot-deal-toggle {
+    color: #9ca3af;
+  }
+
+  .book-slot-deal-toggle:focus-within {
+    color: #f9fafb;
+  }
+
   .add-slot input:focus,
   .book-slot select:focus,
+  .book-slot-price-input:focus,
   .book-slot-time-input:focus {
     border-color: #3b82f6;
   }

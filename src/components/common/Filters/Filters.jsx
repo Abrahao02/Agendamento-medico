@@ -1,7 +1,9 @@
 // src/components/common/Filters/Filters.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import { Calendar, RotateCcw, Search } from "lucide-react";
 import DateRangePicker from "../DateRangePicker";
+import Button from "../Button";
+import { useFilters } from "../../../hooks/common/useFilters";
 import "./Filters.css";
 
 const MONTHS = [
@@ -56,151 +58,16 @@ export default function Filters({
   showMonthYear = true,
   showQuickFilters = false,
 }) {
-  const hasDateRange = dateFrom && dateTo;
-  const isMonthYearDisabled = hasDateRange;
-
-  // Estado para rastrear qual filtro rápido está ativo
-  const [activeQuickFilter, setActiveQuickFilter] = useState(null);
-  
-  // Estado para controlar dropdown do calendário
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  
-  // Ref para detectar clique fora do dropdown
-  const pickerWrapperRef = useRef(null);
-
-  // Detecta qual filtro está ativo baseado nas datas
-  useEffect(() => {
-    if (!showQuickFilters) return;
-
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-    
-    // Verifica se é "Hoje"
-    if (dateFrom === todayStr && dateTo === todayStr) {
-      setActiveQuickFilter('today');
-      return;
-    }
-
-    // Verifica se é "Esta semana"
-    const dayOfWeek = today.getDay();
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const monday = new Date(today);
-    monday.setDate(diff);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    
-    if (dateFrom === monday.toISOString().split('T')[0] && 
-        dateTo === sunday.toISOString().split('T')[0]) {
-      setActiveQuickFilter('week');
-      return;
-    }
-
-    // Verifica se é "Este mês"
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
-    if (dateFrom === firstDay.toISOString().split('T')[0] && 
-        dateTo === lastDay.toISOString().split('T')[0]) {
-      setActiveQuickFilter('month');
-      return;
-    }
-
-    // Se tem range personalizado (e não é hoje), marca como custom
-    if (hasDateRange && (dateFrom !== todayStr || dateTo !== todayStr)) {
-      // Verifica se não é semana nem mês atual
-      const isCurrentWeek = dateFrom === monday.toISOString().split('T')[0] && 
-                            dateTo === sunday.toISOString().split('T')[0];
-      const isCurrentMonth = dateFrom === firstDay.toISOString().split('T')[0] && 
-                             dateTo === lastDay.toISOString().split('T')[0];
-      
-      if (!isCurrentWeek && !isCurrentMonth) {
-        setActiveQuickFilter('custom');
-        return;
-      }
-    }
-
-    // Se não corresponde a nenhum, limpa
-    setActiveQuickFilter(null);
-  }, [dateFrom, dateTo, showQuickFilters, hasDateRange]);
-
-  // Handlers para filtros rápidos
-  const handleToday = () => {
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-    onDateFromChange(todayStr);
-    onDateToChange(todayStr);
-    if (onMonthChange) onMonthChange(today.getMonth() + 1);
-    if (onYearChange) onYearChange(today.getFullYear());
-    setActiveQuickFilter('today');
-  };
-
-  const handleThisWeek = () => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Segunda-feira
-    const monday = new Date(today);
-    monday.setDate(diff);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    
-    onDateFromChange(monday.toISOString().split('T')[0]);
-    onDateToChange(sunday.toISOString().split('T')[0]);
-    if (onMonthChange) onMonthChange(today.getMonth() + 1);
-    if (onYearChange) onYearChange(today.getFullYear());
-    setActiveQuickFilter('week');
-  };
-
-  const handleThisMonth = () => {
-    const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
-    onDateFromChange(firstDay.toISOString().split('T')[0]);
-    onDateToChange(lastDay.toISOString().split('T')[0]);
-    if (onMonthChange) onMonthChange(today.getMonth() + 1);
-    if (onYearChange) onYearChange(today.getFullYear());
-    setActiveQuickFilter('month');
-  };
-
-  const handleCustom = () => {
-    const willOpen = !isDatePickerOpen;
-    setIsDatePickerOpen(prev => !prev);
-    
-    // Se estava fechado e agora vai abrir, limpa as datas e marca como custom
-    if (willOpen) {
-      // Limpa as datas para permitir nova seleção
-      onDateFromChange("");
-      onDateToChange("");
-      setActiveQuickFilter('custom');
-    }
-    // Se estava aberto e agora vai fechar, mantém custom (já que tem range selecionado)
-  };
-
-  // Detectar clique fora do dropdown
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (pickerWrapperRef.current && !pickerWrapperRef.current.contains(event.target)) {
-        setIsDatePickerOpen(false);
-      }
-    };
-
-    if (isDatePickerOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isDatePickerOpen]);
-
-  // Handler para reset
-  const handleReset = () => {
-    if (onReset) {
-      onReset();
-    }
-    setIsDatePickerOpen(false);
-    // O activeQuickFilter será atualizado automaticamente pelo useEffect quando as datas mudarem
-  };
+  const { state, refs, computed, handlers } = useFilters({
+    dateFrom,
+    dateTo,
+    onDateFromChange,
+    onDateToChange,
+    onMonthChange,
+    onYearChange,
+    onReset,
+    showQuickFilters,
+  });
 
   return (
     <div className="filters-container" role="region" aria-label="Filtros">
@@ -211,43 +78,43 @@ export default function Filters({
       
       {/* Botões rápidos de filtro */}
       {showQuickFilters && (
-        <div className="quick-filters-wrapper" ref={pickerWrapperRef}>
+        <div className="quick-filters-wrapper" ref={refs.pickerWrapperRef}>
           <div className="quick-filters-row">
             <div className="quick-filters">
               <button
                 type="button"
-                onClick={handleToday}
-                className={`quick-filter-btn ${activeQuickFilter === 'today' ? 'active' : ''}`}
+                onClick={handlers.handleToday}
+                className={`quick-filter-btn ${state.activeQuickFilter === 'today' ? 'active' : ''}`}
                 aria-label="Filtrar para hoje"
-                aria-pressed={activeQuickFilter === 'today'}
+                aria-pressed={state.activeQuickFilter === 'today'}
               >
                 Hoje
               </button>
               <button
                 type="button"
-                onClick={handleThisWeek}
-                className={`quick-filter-btn ${activeQuickFilter === 'week' ? 'active' : ''}`}
+                onClick={handlers.handleThisWeek}
+                className={`quick-filter-btn ${state.activeQuickFilter === 'week' ? 'active' : ''}`}
                 aria-label="Filtrar para esta semana"
-                aria-pressed={activeQuickFilter === 'week'}
+                aria-pressed={state.activeQuickFilter === 'week'}
               >
                 Esta semana
               </button>
               <button
                 type="button"
-                onClick={handleThisMonth}
-                className={`quick-filter-btn ${activeQuickFilter === 'month' ? 'active' : ''}`}
+                onClick={handlers.handleThisMonth}
+                className={`quick-filter-btn ${state.activeQuickFilter === 'month' ? 'active' : ''}`}
                 aria-label="Filtrar para este mês"
-                aria-pressed={activeQuickFilter === 'month'}
+                aria-pressed={state.activeQuickFilter === 'month'}
               >
                 Este mês
               </button>
               <div className="quick-filter-custom-wrapper">
                 <button
                   type="button"
-                  onClick={handleCustom}
-                  className={`quick-filter-btn ${activeQuickFilter === 'custom' ? 'active' : ''}`}
+                  onClick={handlers.handleCustom}
+                  className={`quick-filter-btn ${state.activeQuickFilter === 'custom' ? 'active' : ''}`}
                   aria-label="Filtro personalizado"
-                  aria-pressed={activeQuickFilter === 'custom'}
+                  aria-pressed={state.activeQuickFilter === 'custom'}
                 >
                   Personalizado
                 </button>
@@ -260,23 +127,25 @@ export default function Filters({
                     onDateFromChange(from);
                     onDateToChange(to);
                   }}
-                  isOpen={isDatePickerOpen}
-                  onClose={() => setIsDatePickerOpen(false)}
+                  isOpen={state.isDatePickerOpen}
+                  onClose={() => handlers.setIsDatePickerOpen(false)}
                 />
               </div>
             </div>
             
             {/* Botão Limpar filtros à direita */}
             {onReset && (
-              <button
+              <Button
                 type="button"
-                onClick={handleReset}
-                className="btn btn-ghost clear-filters-btn"
+                onClick={handlers.handleReset}
+                variant="outline"
+                size="sm"
+                className="clear-filters-btn"
                 title="Limpar todos os filtros"
+                leftIcon={<RotateCcw size={16} />}
               >
-                <RotateCcw size={16} />
-                <span>Limpar filtros</span>
-              </button>
+                Limpar filtros
+              </Button>
             )}
           </div>
         </div>
@@ -362,7 +231,7 @@ export default function Filters({
               id="month"
               value={month || ""}
               onChange={(e) => onMonthChange(e.target.value)}
-              disabled={isMonthYearDisabled}
+              disabled={computed.isMonthYearDisabled}
               className="filter-select"
             >
               <option value="">Todos</option>
@@ -383,7 +252,7 @@ export default function Filters({
               id="year"
               value={year || ""}
               onChange={(e) => onYearChange(e.target.value)}
-              disabled={isMonthYearDisabled}
+              disabled={computed.isMonthYearDisabled}
               className="filter-select"
             >
               {availableYears.map((y) => (
@@ -401,7 +270,7 @@ export default function Filters({
         <div className="filters-actions">
           <button
             type="button"
-            onClick={handleReset}
+            onClick={handlers.handleReset}
             className="btn btn-ghost"
             title="Limpar todos os filtros"
           >
@@ -415,10 +284,11 @@ export default function Filters({
       )}
 
       {/* Info Badge quando há filtro de data */}
-      {hasDateRange && dateFrom && dateTo && (
+      {computed.hasDateRange && dateFrom && dateTo && (
         <div className="filter-info">
           <span className="info-badge">
-            📅 Exibindo dados de {new Date(dateFrom + 'T00:00:00').toLocaleDateString("pt-BR")} até{" "}
+            <Calendar size={14} aria-hidden="true" />
+            Exibindo dados de {new Date(dateFrom + 'T00:00:00').toLocaleDateString("pt-BR")} até{" "}
             {new Date(dateTo + 'T00:00:00').toLocaleDateString("pt-BR")}
           </span>
         </div>

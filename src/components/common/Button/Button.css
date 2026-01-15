@@ -96,6 +96,25 @@
   transform: translateY(0);
 }
 
+/* Outline */
+.btn-outline {
+  background: transparent;
+  color: var(--color-secondary);
+  border: 2px solid var(--secondary-200);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--secondary-50);
+  border-color: var(--color-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-outline:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
 /* Success */
 .btn-success {
   background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);

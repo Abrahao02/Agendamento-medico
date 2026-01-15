@@ -33,36 +33,6 @@
 
 .clear-filters-btn {
   margin-left: auto;
-  padding: 0.625rem 1.25rem;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: inherit;
-  background: transparent;
-  color: var(--color-secondary);
-  border: 2px solid var(--secondary-200);
-}
-
-.clear-filters-btn:hover {
-  background: var(--secondary-50);
-  border-color: var(--color-secondary);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-secondary);
-}
-
-.clear-filters-btn:active {
-  transform: translateY(0);
-}
-
-.clear-filters-btn:focus-visible {
-  outline: 2px solid var(--color-secondary);
-  outline-offset: 2px;
 }
 
 .quick-filter-custom-wrapper {

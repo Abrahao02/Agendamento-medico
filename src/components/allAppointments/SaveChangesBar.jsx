@@ -2,6 +2,8 @@
 // SaveChangesBar.jsx
 // ========================================
 import React from "react";
+import { Save } from "lucide-react";
+import Button from "../common/Button";
 import "./SaveChangesBar.css";
 
 export default function SaveChangesBar({ changesCount, saving, onSave }) {
@@ -14,13 +16,15 @@ export default function SaveChangesBar({ changesCount, saving, onSave }) {
           <span>{changesCount}</span>
           {changesCount > 1 ? " alterações não salvas" : " alteração não salva"}
         </div>
-        <button
-          className="btn btn-primary"
+        <Button
+          variant="primary"
           onClick={onSave}
-          disabled={saving}
+          loading={saving}
+          leftIcon={!saving ? <Save size={18} /> : null}
+          className="save-bar__save-button"
         >
-          {saving ? "💾 Salvando..." : "💾 Salvar Alterações"}
-        </button>
+          {saving ? "Salvando..." : "Salvar alterações"}
+        </Button>
       </div>
     </div>
   );

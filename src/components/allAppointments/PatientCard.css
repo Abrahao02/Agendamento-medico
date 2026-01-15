@@ -76,7 +76,8 @@
 }
 
 .expand-icon {
-  font-size: var(--text-lg);
+  display: flex;
+  align-items: center;
   color: var(--text-secondary);
   transition: transform var(--transition-base);
 }
@@ -188,6 +189,12 @@
   gap: var(--spacing-xs);
   font-size: var(--text-sm);
   color: var(--text-secondary);
+}
+
+.appointment-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .appointment-value {
@@ -329,15 +336,15 @@
 /* Appointment bloqueado */
 .appointment-card.locked {
   opacity: 0.7;
-  background-color: #f8f9fa;
-  border-left: 3px solid #6c757d;
+  background-color: var(--gray-50);
+  border-left: 3px solid var(--gray-500);
 }
 
 /* Select desabilitado */
 .status-select:disabled {
   cursor: not-allowed;
   opacity: 0.6;
-  background-color: #e9ecef;
+  background-color: var(--gray-100);
 }
 
 /* Wrapper do status quando bloqueado */

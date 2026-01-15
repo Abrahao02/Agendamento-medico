@@ -5,8 +5,9 @@ import './Button.css';
  * Componente Button Reutilizável
  * 
  * @param {Object} props
+ * @param {React.ElementType} props.as - Elemento/componente a ser renderizado (default: 'button')
  * @param {React.ReactNode} props.children - Conteúdo do botão
- * @param {'primary'|'secondary'|'success'|'danger'|'warning'|'ghost'} props.variant - Estilo do botão
+ * @param {'primary'|'secondary'|'outline'|'success'|'danger'|'warning'|'ghost'} props.variant - Estilo do botão
  * @param {'sm'|'md'|'lg'} props.size - Tamanho do botão
  * @param {boolean} props.fullWidth - Se o botão deve ocupar 100% da largura
  * @param {boolean} props.disabled - Se o botão está desabilitado
@@ -18,6 +19,7 @@ import './Button.css';
  * @param {string} props.className - Classes CSS adicionais
  */
 export default function Button({
+  as: Component = 'button',
   children,
   variant = 'primary',
   size = 'md',
@@ -31,6 +33,9 @@ export default function Button({
   className = '',
   ...props
 }) {
+  const isNativeButton = Component === 'button';
+  const isDisabled = disabled || loading;
+
   const buttonClasses = [
     'btn',
     `btn-${variant}`,
@@ -41,11 +46,20 @@ export default function Button({
   ].filter(Boolean).join(' ');
 
   return (
-    <button
-      type={type}
+    <Component
+      type={isNativeButton ? type : undefined}
       className={buttonClasses}
-      disabled={disabled || loading}
-      onClick={onClick}
+      disabled={isNativeButton ? isDisabled : undefined}
+      aria-disabled={!isNativeButton && isDisabled ? 'true' : undefined}
+      tabIndex={!isNativeButton && isDisabled ? -1 : undefined}
+      onClick={(e) => {
+        if (!isNativeButton && isDisabled) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        onClick?.(e);
+      }}
       {...props}
     >
       {loading && (
@@ -78,7 +92,7 @@ export default function Button({
           {rightIcon}
         </span>
       )}
-    </button>
+    </Component>
   );
 }
 

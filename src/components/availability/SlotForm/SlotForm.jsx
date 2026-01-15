@@ -2,9 +2,10 @@
 // Slot Form Component
 // Used for creating slots with appointment type and location selection
 // ============================================
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { APPOINTMENT_TYPE, APPOINTMENT_TYPE_MODE, getAppointmentTypeOptions } from "../../../constants/appointmentType";
 import { normalizeTo24Hour } from "../../../utils/time/normalizeTime";
+import { useSlotForm } from "../../../hooks/availability/useSlotForm";
 import "./SlotForm.css";
 
 export default function SlotForm({
@@ -21,71 +22,20 @@ export default function SlotForm({
   loading = false,
   error = null,
 }) {
-  const [localError, setLocalError] = useState(null);
+  const { state, computed, handlers } = useSlotForm({
+    appointmentType,
+    locations,
+    selectedLocationIds,
+    onLocationIdsChange,
+    time,
+    onSubmit,
+    appointmentTypeConfig,
+  });
 
-  // Determine if location selection is required
-  const requiresLocation = appointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length > 1;
-  const showLocationSelector = appointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length > 0;
-
-  // Auto-select single location if only one exists
-  useEffect(() => {
-    if (appointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length === 1) {
-      if (!selectedLocationIds.includes(locations[0].name)) {
-        onLocationIdsChange([locations[0].name]);
-      }
-    } else if (appointmentType === APPOINTMENT_TYPE.ONLINE) {
-      // Clear locations for online appointments
-      if (selectedLocationIds.length > 0) {
-        onLocationIdsChange([]);
-      }
-    }
-  }, [appointmentType, locations, selectedLocationIds, onLocationIdsChange]);
-
-  const handleToggleLocation = (locationId) => {
-    if (selectedLocationIds.includes(locationId)) {
-      onLocationIdsChange(selectedLocationIds.filter(id => id !== locationId));
-    } else {
-      onLocationIdsChange([...selectedLocationIds, locationId]);
-    }
-    setLocalError(null);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setLocalError(null);
-
-    // Validation
-    if (!time) {
-      setLocalError("Selecione um horário");
-      return;
-    }
-
-    if (!appointmentType) {
-      setLocalError("Selecione o tipo de atendimento");
-      return;
-    }
-
-    if (requiresLocation && selectedLocationIds.length === 0) {
-      setLocalError("Selecione pelo menos um local para atendimento presencial");
-      return;
-    }
-
-    onSubmit({
-      time,
-      appointmentType,
-      allowedLocationIds: appointmentType === APPOINTMENT_TYPE.ONLINE ? [] : selectedLocationIds,
-    });
-  };
-
-  const displayError = error || localError;
-
-  // If appointment type mode is fixed, use the fixed type
-  const effectiveAppointmentType = appointmentTypeConfig?.mode === APPOINTMENT_TYPE_MODE.FIXED
-    ? appointmentTypeConfig.fixedType
-    : appointmentType;
+  const displayError = error || state.localError;
 
   return (
-    <form className="slot-form" onSubmit={handleSubmit}>
+    <form className="slot-form" onSubmit={handlers.handleSubmit}>
       <div className="slot-form-row">
         <div className="slot-form-field">
           <label className="slot-form-label">Horário</label>
@@ -96,7 +46,7 @@ export default function SlotForm({
               // Normaliza para formato 24h mesmo no mobile
               const normalizedTime = normalizeTo24Hour(e.target.value);
               onTimeChange(normalizedTime);
-              setLocalError(null);
+              handlers.setLocalError(null);
             }}
             className="slot-form-input"
             required
@@ -116,7 +66,7 @@ export default function SlotForm({
               value={appointmentType || ""}
               onChange={(e) => {
                 onAppointmentTypeChange(e.target.value);
-                setLocalError(null);
+                handlers.setLocalError(null);
               }}
               className="slot-form-select"
               required
@@ -136,16 +86,16 @@ export default function SlotForm({
           <div className="slot-form-field">
             <label className="slot-form-label">Tipo de atendimento</label>
             <div className="slot-form-readonly">
-              {effectiveAppointmentType === APPOINTMENT_TYPE.ONLINE ? "Online" : "Presencial"}
+              {computed.effectiveAppointmentType === APPOINTMENT_TYPE.ONLINE ? "Online" : "Presencial"}
             </div>
           </div>
         )}
       </div>
 
-      {showLocationSelector && (
+      {computed.showLocationSelector && (
         <div className="slot-form-field">
           <label className="slot-form-label">
-            Local da consulta {requiresLocation && <span className="required">*</span>}
+            Local da consulta {computed.requiresLocation && <span className="required">*</span>}
           </label>
           <div className="location-checkboxes">
             {locations.map((location) => (
@@ -153,7 +103,7 @@ export default function SlotForm({
                 <input
                   type={locations.length > 1 ? "checkbox" : "radio"}
                   checked={selectedLocationIds.includes(location.name)}
-                  onChange={() => handleToggleLocation(location.name)}
+                  onChange={() => handlers.handleToggleLocation(location.name)}
                   disabled={loading}
                   className="location-checkbox"
                 />

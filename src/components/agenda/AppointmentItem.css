@@ -130,56 +130,10 @@
   }
 }
 
-/* Buttons inside appointment */
-.appointments-list .slot-item button {
-  padding: 0.5rem 0.875rem;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-weight: var(--font-medium);
-  font-size: var(--text-sm);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  transition: var(--transition-base);
-  white-space: nowrap;
+/* Botões: usar `src/components/common/Button` */
+.appointments-list .slot-item .btn {
   min-height: 36px;
-  box-sizing: border-box;
-}
-
-.appointments-list .slot-item button:hover {
-  transform: translateY(-1px);
-}
-
-.appointments-list .slot-item button:active {
-  transform: translateY(0);
-}
-
-.appointments-list .slot-item .btn-primary {
-  background: var(--color-secondary);
-  color: var(--text-inverse);
-}
-
-.appointments-list .slot-item .btn-primary:hover {
-  background: var(--color-secondary-hover);
-  box-shadow: var(--shadow-secondary);
-}
-
-.appointments-list .slot-item .btn-secondary {
-  background: var(--color-accent);
-  color: var(--text-inverse);
-}
-
-.appointments-list .slot-item .btn-secondary:hover {
-  background: var(--color-accent-hover);
-  box-shadow: var(--shadow-accent);
-}
-
-.appointments-list .slot-item button svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* ===========================
