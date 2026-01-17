@@ -82,11 +82,14 @@ describe('Input', () => {
   });
 
   it('deve aplicar type correto', () => {
-    const { rerender } = render(<Input type="email" />);
+    const { rerender, container } = render(<Input type="email" />);
     expect(screen.getByRole('textbox')).toHaveAttribute('type', 'email');
 
     rerender(<Input type="password" />);
-    expect(screen.getByRole('textbox')).toHaveAttribute('type', 'password');
+    // Password inputs don't have role="textbox" by default, so we query by type directly
+    const passwordInput = container.querySelector('input[type="password"]');
+    expect(passwordInput).toBeInTheDocument();
+    expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
   it('deve aplicar placeholder', () => {
