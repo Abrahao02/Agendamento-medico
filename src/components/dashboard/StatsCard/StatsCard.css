@@ -210,6 +210,6 @@
   }
 
   .stats-subtitle {
-    font-size: 10px;
+    font-size: var(--text-sm);
   }
 }

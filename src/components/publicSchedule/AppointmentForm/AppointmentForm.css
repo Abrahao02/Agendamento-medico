@@ -4,12 +4,28 @@
 .appointment-form-card {
   background: var(--white);
   border-radius: var(--radius-xl);
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-md);
   box-shadow: var(--shadow-lg);
   border: 2px solid var(--secondary-200);
   margin-top: var(--spacing-xl);
   animation: slideUp 0.4s ease;
   scroll-margin-top: var(--spacing-xl);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .appointment-form-card {
+    padding: var(--spacing-xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .appointment-form-card {
+    padding: var(--spacing-2xl);
+  }
 }
 
 .form-header {
@@ -74,6 +90,9 @@
   padding: 0 var(--spacing-sm);
   background: var(--white);
   transition: var(--transition-base);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .phone-input:focus-within {
@@ -98,6 +117,9 @@
   font-family: inherit;
   color: var(--text-primary);
   background: transparent;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .phone-field::placeholder {

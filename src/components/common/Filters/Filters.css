@@ -4,11 +4,20 @@
 .filters-container {
   background: var(--white);
   border-radius: var(--radius-xl);
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-light);
   animation: fadeIn 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .filters-container {
+    padding: var(--spacing-xl);
+  }
 }
 
 /* Botões rápidos de filtro */
@@ -22,6 +31,8 @@
   justify-content: space-between;
   gap: var(--spacing-md);
   flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
 }
 
 .quick-filters {
@@ -85,9 +96,17 @@
 
 .filters-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 1fr; /* Mobile: 1 coluna */
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .filters-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 /* Ocultar grid quando usando quick filters */

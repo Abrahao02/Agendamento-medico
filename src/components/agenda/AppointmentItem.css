@@ -132,7 +132,7 @@
 
 /* Botões: usar `src/components/common/Button` */
 .appointments-list .slot-item .btn {
-  min-height: 36px;
+  min-height: 44px;
   white-space: nowrap;
 }
 
