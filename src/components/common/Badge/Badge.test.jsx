@@ -15,31 +15,31 @@ describe('Badge', () => {
 
   it('deve aplicar variante correta', () => {
     const { rerender } = render(<Badge variant="primary">Badge</Badge>);
-    expect(screen.getByText('Badge')).toHaveClass('badge-primary');
+    expect(screen.getByText('Badge').closest('.badge')).toHaveClass('badge-primary');
 
     rerender(<Badge variant="success">Badge</Badge>);
-    expect(screen.getByText('Badge')).toHaveClass('badge-success');
+    expect(screen.getByText('Badge').closest('.badge')).toHaveClass('badge-success');
 
     rerender(<Badge variant="danger">Badge</Badge>);
-    expect(screen.getByText('Badge')).toHaveClass('badge-danger');
+    expect(screen.getByText('Badge').closest('.badge')).toHaveClass('badge-danger');
   });
 
   it('deve aplicar tamanho correto', () => {
     const { rerender } = render(<Badge size="sm">Badge</Badge>);
-    expect(screen.getByText('Badge')).toHaveClass('badge-sm');
+    expect(screen.getByText('Badge').closest('.badge')).toHaveClass('badge-sm');
 
     rerender(<Badge size="lg">Badge</Badge>);
-    expect(screen.getByText('Badge')).toHaveClass('badge-lg');
+    expect(screen.getByText('Badge').closest('.badge')).toHaveClass('badge-lg');
   });
 
   it('deve aplicar classe pill quando especificado', () => {
     render(<Badge pill>Badge</Badge>);
-    expect(screen.getByText('Badge')).toHaveClass('badge-pill');
+    expect(screen.getByText('Badge').closest('.badge')).toHaveClass('badge-pill');
   });
 
   it('deve aplicar classe outline quando especificado', () => {
     render(<Badge outline>Badge</Badge>);
-    expect(screen.getByText('Badge')).toHaveClass('badge-outline');
+    expect(screen.getByText('Badge').closest('.badge')).toHaveClass('badge-outline');
   });
 
   it('deve renderizar ícone quando fornecido', () => {
@@ -54,7 +54,7 @@ describe('Badge', () => {
     
     const removeButton = screen.getByLabelText('Remover');
     expect(removeButton).toBeInTheDocument();
-    expect(screen.getByText('Badge')).toHaveClass('badge-removable');
+    expect(screen.getByText('Badge').closest('.badge')).toHaveClass('badge-removable');
   });
 
   it('deve chamar onRemove quando botão de remover é clicado', () => {
@@ -66,57 +66,59 @@ describe('Badge', () => {
   });
 
   it('deve renderizar apenas dot quando dot=true', () => {
-    render(<Badge dot>Badge</Badge>);
-    const badge = screen.getByText('Badge').closest('.badge');
+    const { container } = render(<Badge dot>Badge</Badge>);
+    const badge = container.querySelector('.badge');
     expect(badge).toHaveClass('badge-dot');
     expect(badge?.querySelector('.badge-dot-indicator')).toBeInTheDocument();
+    // Quando dot=true, o texto não é renderizado
+    expect(screen.queryByText('Badge')).not.toBeInTheDocument();
   });
 
   it('deve aplicar className customizada', () => {
     render(<Badge className="custom-badge">Badge</Badge>);
-    expect(screen.getByText('Badge')).toHaveClass('custom-badge');
+    expect(screen.getByText('Badge').closest('.badge')).toHaveClass('custom-badge');
   });
 });
 
 describe('StatusBadge', () => {
   it('deve renderizar badge de status confirmado', () => {
     render(<StatusBadge status="confirmado" />);
-    const badge = screen.getByText('Confirmado');
+    const badge = screen.getByText('Confirmado').closest('.badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass('badge-success');
   });
 
   it('deve renderizar badge de status pendente', () => {
     render(<StatusBadge status="pendente" />);
-    const badge = screen.getByText('Pendente');
+    const badge = screen.getByText('Pendente').closest('.badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass('badge-warning');
   });
 
   it('deve renderizar badge de status cancelado', () => {
     render(<StatusBadge status="cancelado" />);
-    const badge = screen.getByText('Cancelado');
+    const badge = screen.getByText('Cancelado').closest('.badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass('badge-danger');
   });
 
   it('deve renderizar badge de status concluído', () => {
     render(<StatusBadge status="concluido" />);
-    const badge = screen.getByText('Concluído');
+    const badge = screen.getByText('Concluído').closest('.badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass('badge-info');
   });
 
   it('deve renderizar badge de status ausente', () => {
     render(<StatusBadge status="ausente" />);
-    const badge = screen.getByText('Ausente');
+    const badge = screen.getByText('Ausente').closest('.badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass('badge-gray');
   });
 
   it('deve usar status como texto quando status desconhecido', () => {
     render(<StatusBadge status="desconhecido" />);
-    const badge = screen.getByText('desconhecido');
+    const badge = screen.getByText('desconhecido').closest('.badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass('badge-gray');
   });
