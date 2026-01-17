@@ -19,6 +19,8 @@
 /* Patient Header */
 .patient-header {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -28,6 +30,7 @@
   cursor: pointer;
   transition: var(--transition-base);
   text-align: left;
+  box-sizing: border-box;
 }
 
 .patient-header:hover {
@@ -43,6 +46,12 @@
   align-items: center;
   gap: var(--spacing-md);
   flex: 1;
+  min-width: 0;
+}
+
+.patient-details {
+  min-width: 0;
+  flex: 1;
 }
 
 .patient-details h3 {
@@ -50,6 +59,8 @@
   font-weight: var(--font-semibold);
   color: var(--text-primary);
   margin: 0 0 var(--spacing-xs) 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .patient-stats-text {
@@ -304,6 +315,80 @@
   }
 }
 
+/* Mobile Responsive - Patient Header */
+@media (max-width: 768px) {
+  .patient-header-container {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .patient-header {
+    width: 100%;
+    padding: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .patient-info {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .patient-details h3 {
+    font-size: var(--text-base);
+  }
+
+  .patient-stats-text {
+    font-size: var(--text-xs);
+  }
+
+  .patient-meta {
+    flex: 1 1 auto;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+  }
+
+  .patient-total {
+    font-size: var(--text-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .btn-whatsapp {
+    width: 100%;
+    justify-content: center;
+    min-width: unset;
+  }
+
+  .appointments-list {
+    padding: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .patient-header-container {
+    padding: var(--spacing-sm);
+  }
+
+  .patient-header {
+    padding: var(--spacing-sm);
+  }
+
+  .patient-details h3 {
+    font-size: var(--text-sm);
+  }
+
+  .patient-meta {
+    width: 100%;
+  }
+
+  .expand-icon {
+    margin-left: auto;
+  }
+}
+
 /* Container para header + botão */
 .patient-header-container {
   display: flex;
@@ -312,6 +397,10 @@
   padding: 0 var(--spacing-lg);
   gap: var(--spacing-md);
   cursor: pointer;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Botão WhatsApp flutuando */
@@ -324,6 +413,8 @@
   padding: var(--spacing-xs) var(--spacing-md);
   cursor: pointer;
   transition: var(--transition-base);
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
 .btn-whatsapp:hover {

@@ -71,6 +71,8 @@
   transform: translateY(-50%);
   width: 18px;
   height: 18px;
+  min-width: 18px;
+  min-height: 18px;
   padding: 0;
   border: none;
   border-radius: var(--radius-sm);
@@ -84,6 +86,9 @@
   flex-shrink: 0;
   opacity: 0.7;
   z-index: 1;
+  /* Área clicável expandida usando padding invisível */
+  padding: 13px;
+  margin: -13px;
 }
 
 .available-slot-item:hover .available-slot-remove {
@@ -94,10 +99,17 @@
   background: #ef4444;
   color: white;
   transform: translateY(-50%) scale(1.1);
+  opacity: 1;
 }
 
 .available-slot-remove:active {
   transform: translateY(-50%) scale(0.95);
+}
+
+.available-slot-remove svg {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
 }
 
 .available-slot-remove:disabled {
@@ -129,6 +141,29 @@
 }
 
 /* Responsive */
+@media (max-width: 768px) {
+  .available-slot-remove {
+    /* Em mobile, garantir área clicável mínima de 44x44px */
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+    padding: 13px;
+    margin: -13px;
+    right: -2px;
+    top: 50%;
+  }
+
+  .available-slot-remove svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .slot-time {
+    padding-right: 28px; /* Ajustar padding para acomodar botão maior */
+  }
+}
+
 @media (max-width: 640px) {
   .available-slots-grid {
     grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
@@ -137,15 +172,19 @@
 
   .available-slot-item {
     padding: var(--spacing-xs) var(--spacing-sm);
+    min-height: 48px; /* Garantir altura mínima para acomodar botão */
   }
 
   .available-slot-remove {
-    width: 16px;
-    height: 16px;
-    right: 3px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    right: -2px;
   }
 
   .slot-time {
     font-size: var(--text-xs);
+    padding-right: 30px; /* Mais espaço para o botão maior */
   }
 }
