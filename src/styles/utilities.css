@@ -1,0 +1,100 @@
+/* src/styles/utilities.css - Classes Utilitárias Responsivas */
+
+/* ========================================
+   ESPAÇAMENTOS RESPONSIVOS
+   ======================================== */
+
+/* Padding responsivo */
+.p-responsive {
+  padding: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .p-responsive {
+    padding: var(--spacing-xl);
+  }
+}
+
+/* Margin responsivo */
+.m-responsive {
+  margin: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .m-responsive {
+    margin: var(--spacing-xl);
+  }
+}
+
+/* Gap responsivo */
+.gap-responsive {
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .gap-responsive {
+    gap: var(--spacing-lg);
+  }
+}
+
+/* ========================================
+   LARGURAS RESPONSIVAS
+   ======================================== */
+
+/* Full width responsivo */
+.w-full {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Container padrão */
+.container-standard {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
+}
+
+/* ========================================
+   TIPOGRAFIA RESPONSIVA
+   ======================================== */
+
+.text-responsive {
+  font-size: var(--text-base);
+}
+
+@media (min-width: 768px) {
+  .text-responsive {
+    font-size: var(--text-lg);
+  }
+}
+
+/* ========================================
+   VISIBILIDADE RESPONSIVA
+   ======================================== */
+
+.hide-on-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hide-on-mobile {
+    display: block;
+  }
+  
+  .show-on-mobile {
+    display: none;
+  }
+}
+
+.show-on-mobile {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .show-on-mobile {
+    display: none;
+  }
+}

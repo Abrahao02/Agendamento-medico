@@ -1,65 +1,130 @@
+/* src/index.css - Versão Melhorada Mobile-First */
+
+/* 1. Variáveis globais */
 @import url('./styles/variables.css');
+
+/* 2. Base responsiva */
+@import url('./styles/responsive-base.css');
+
+/* 3. Mixins e utilitários */
+@import url('./styles/mixins.css');
+@import url('./styles/utilities.css');
+
+/* 4. Animações */
 @import url('./styles/motion.css');
 
-* {
+/* ========================================
+   RESET E BASE MOBILE-FIRST
+   ======================================== */
+
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html {
+  /* Previne zoom em iOS ao focar inputs */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  
+  /* Scroll suave */
+  scroll-behavior: smooth;
+  
+  /* Previne scroll horizontal */
+  overflow-x: hidden;
+  width: 100%;
+}
+
+body {
   font-family: var(--font-family-base);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  
+  /* Previne scroll horizontal */
+  overflow-x: hidden;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height para mobile */
+  
+  /* Melhora renderização de texto */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* ========================================
-   IMAGENS RESPONSIVAS
+   CONTAINER GLOBAL
    ======================================== */
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ========================================
+   ELEMENTOS BASE RESPONSIVOS
+   ======================================== */
+
 img,
 svg,
 video,
-iframe {
+iframe,
+picture {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
+/* Previne imagens grandes quebrando layout */
+img {
+  width: 100%;
+  object-fit: cover;
+}
+
 svg {
   max-width: 100%;
   height: auto;
+  flex-shrink: 0; /* Evita compressão em flex containers */
 }
 
 /* ========================================
-   TIPOGRAFIA RESPONSIVA
+   TIPOGRAFIA RESPONSIVA BASE
    ======================================== */
+
+/* Mobile-first: tamanhos base são para mobile */
 h1 {
-  font-size: var(--text-3xl); /* 30px desktop */
+  font-size: clamp(1.75rem, 4vw + 1rem, 2.25rem); /* 28px - 36px */
   line-height: var(--leading-tight);
+  font-weight: var(--font-bold);
 }
 
 h2 {
-  font-size: var(--text-2xl); /* 24px desktop */
+  font-size: clamp(1.5rem, 3vw + 1rem, 1.875rem); /* 24px - 30px */
   line-height: var(--leading-tight);
+  font-weight: var(--font-semibold);
 }
 
 h3 {
-  font-size: var(--text-xl); /* 20px desktop */
+  font-size: clamp(1.25rem, 2vw + 1rem, 1.5rem); /* 20px - 24px */
   line-height: var(--leading-snug);
-}
-
-@media (max-width: 768px) {
-  h1 {
-    font-size: var(--text-2xl); /* 24px mobile */
+  font-weight: var(--font-semibold);
   }
   
-  h2 {
-    font-size: var(--text-xl); /* 20px mobile */
-  }
-  
-  h3 {
-    font-size: var(--text-lg); /* 18px mobile */
-  }
+h4 {
+  font-size: clamp(1.125rem, 1.5vw + 1rem, 1.25rem); /* 18px - 20px */
+  line-height: var(--leading-normal);
+  font-weight: var(--font-medium);
 }
 
 /* ========================================
    QUEBRA DE TEXTO
    ======================================== */
+
 p,
 span,
 div,
@@ -67,6 +132,7 @@ td,
 th {
   word-wrap: break-word;
   overflow-wrap: break-word;
+  hyphens: auto; /* Quebra palavras longas */
 }
 
 /* URLs e emails quebram corretamente */
@@ -77,18 +143,56 @@ a[href^="mailto"] {
 }
 
 /* ========================================
+   PREVENÇÃO DE OVERFLOW HORIZONTAL
+   ======================================== */
+
+/* Todos os containers principais */
+.container,
+.wrapper,
+.section {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Previne tabelas quebrando layout */
+table {
+  width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
+/* Previne inputs quebrando */
+input,
+textarea,
+select {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Previne código/pre quebrando */
+pre,
+code {
+  overflow-x: auto;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+/* ========================================
    LINE-HEIGHT RESPONSIVO
    ======================================== */
+
 p,
 .text-content,
 .text-description {
-  line-height: var(--leading-relaxed); /* 1.625 desktop */
+  line-height: var(--leading-relaxed); /* 1.625 - melhor leitura */
 }
 
+/* Mobile: line-height maior para melhor legibilidade */
 @media (max-width: 768px) {
   p,
   .text-content,
   .text-description {
-    line-height: var(--leading-loose); /* 2.0 mobile - melhor leitura */
+    line-height: var(--leading-loose); /* 2.0 */
   }
 }
