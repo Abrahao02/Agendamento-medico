@@ -233,7 +233,10 @@ export default function useAgenda(currentDate) {
 
     const { intro, body, footer, showValue } = whatsappConfig;
 
-    let message = `${intro || "Olá"} ${appt.patientName},\n\n${body || "Sua sessão está agendada"}\n\nData: ${formatDate(appt.date)}\nHorário: ${appt.time}`;
+    // Usa o nome preferencial (referenceName) se disponível, senão usa o nome do appointment
+    const patientDisplayName = referenceNames[appt.id] || appt.patientName;
+
+    let message = `${intro || "Olá"} ${patientDisplayName},\n\n${body || "Sua sessão está agendada"}\n\nData: ${formatDate(appt.date)}\nHorário: ${appt.time}`;
 
     if (showValue && appt.value) {
       message += `\nValor: R$ ${appt.value}`;

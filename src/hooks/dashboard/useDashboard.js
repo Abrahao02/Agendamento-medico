@@ -538,11 +538,32 @@ export const useDashboard = () => {
       STATUS_GROUPS.ACTIVE.includes(appointment.status)
     );
 
+    // Cria mapa de WhatsApp -> dados atualizados do paciente
+    const patientsMap = {};
+    patients.forEach(patient => {
+      patientsMap[patient.whatsapp] = patient;
+    });
+
     return activeAppointments
       .filter(appointment => new Date(`${appointment.date}T${appointment.time || "00:00"}:00`) >= today)
       .sort((apt1, apt2) => new Date(`${apt1.date}T${apt1.time || "00:00"}:00`) - new Date(`${apt2.date}T${apt2.time || "00:00"}:00`))
-      .slice(0, 5);
-  }, [filteredAppointments, today]);
+      .slice(0, 5)
+      .map(appointment => {
+        // Busca dados atualizados do paciente pelo WhatsApp
+        const patient = patientsMap[appointment.patientWhatsapp];
+        
+        // Se encontrou o paciente, usa o nome preferencial atual ou o nome completo
+        if (patient) {
+          return {
+            ...appointment,
+            referenceName: patient.referenceName?.trim() || patient.name
+          };
+        }
+        
+        // Se não encontrou, mantém os dados originais do appointment
+        return appointment;
+      });
+  }, [filteredAppointments, today, patients]);
 
   const financialChartData = useMemo(() => {
     const byDay = {};
