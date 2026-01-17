@@ -34,15 +34,13 @@ function PatientCard({
           </div>
           <div className="patient-meta">
             <span className="patient-total">R$ {patient.totalValue.toFixed(2)}</span>
-            <span className="expand-icon" aria-hidden="true">
-              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </span>
           </div>
         </button>
 
         <Button
           type="button"
           variant="ghost"
+          size="sm"
           className="btn-whatsapp"
           onClick={handlers.handleSendReport}
           title="Enviar relatório por WhatsApp"
@@ -51,6 +49,10 @@ function PatientCard({
         >
           Enviar
         </Button>
+
+        <span className="expand-icon" aria-hidden="true">
+          {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </span>
       </div>
 
       {isExpanded && (

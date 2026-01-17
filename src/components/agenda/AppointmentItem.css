@@ -132,8 +132,11 @@
 
 /* Botões: usar `src/components/common/Button` */
 .appointments-list .slot-item .btn {
-  min-height: 44px;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  height: 44px !important;
   white-space: nowrap;
+  border-radius: var(--radius-lg);
 }
 
 /* ===========================

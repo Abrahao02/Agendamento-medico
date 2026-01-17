@@ -159,6 +159,7 @@
   color: var(--danger-500);
   border: 1px solid var(--danger-500);
   background: transparent;
+  min-height: 44px !important;
 }
 
 .logout-button:hover:not(:disabled) {
@@ -183,6 +184,7 @@
   transition: all var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  min-height: 44px !important;
 }
 
 .save-btn::before {

@@ -177,30 +177,32 @@
    Slot Actions - COMPACTO
 =========================== */
 .slots-list .slot-item .slot-action {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 0;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all var(--transition-base);
   flex-shrink: 0;
 }
 
 .slots-list .slot-item .slot-action svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 .slots-list .slot-item .slot-action:hover {
-  transform: scale(1.1);
+  transform: translateY(-2px);
 }
 
 .slots-list .slot-item .slot-action:active {
-  transform: scale(0.95);
+  transform: translateY(0);
 }
 
 /* Remove Button (X) */
@@ -217,14 +219,14 @@
 
 /* Delete Button (Trash) */
 .slots-list .slot-item .slot-delete {
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
+  background: var(--secondary-50);
+  color: var(--color-secondary);
 }
 
 .slots-list .slot-item .slot-delete:hover {
-  background: #f59e0b;
+  background: var(--color-secondary);
   color: white;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  box-shadow: var(--shadow-secondary);
 }
 
 /* ===========================

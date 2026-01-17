@@ -111,4 +111,5 @@
 /* Botão: usa `src/components/common/Button` (não redefinir `.btn`) */
 .save-bar__save-button {
   white-space: nowrap;
+  min-height: 44px !important;
 }

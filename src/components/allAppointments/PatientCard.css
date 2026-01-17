@@ -55,8 +55,8 @@
 }
 
 .patient-details h3 {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
   color: var(--text-primary);
   margin: 0 0 var(--spacing-xs) 0;
   word-wrap: break-word;
@@ -64,8 +64,9 @@
 }
 
 .patient-stats-text {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--text-secondary);
+  font-weight: normal;
   margin: 0;
 }
 
@@ -79,23 +80,14 @@
 
 .patient-total {
   font-size: var(--text-lg);
-  font-weight: var(--font-bold);
+  font-weight: var(--font-semibold);
   color: var(--color-secondary);
   background: var(--secondary-50);
   padding: var(--spacing-xs) var(--spacing-md);
   border-radius: var(--radius-full);
 }
 
-.expand-icon {
-  display: flex;
-  align-items: center;
-  color: var(--text-secondary);
-  transition: transform var(--transition-base);
-}
-
-.patient-header:hover .expand-icon {
-  color: var(--color-secondary);
-}
+/* Removido: expand-icon dentro de patient-header, agora está no patient-header-container */
 
 /* Appointments List (expandido) */
 .appointments-list {
@@ -200,6 +192,7 @@
   gap: var(--spacing-xs);
   font-size: var(--text-sm);
   color: var(--text-secondary);
+  font-weight: var(--font-medium);
 }
 
 .appointment-contact-item {
@@ -209,8 +202,8 @@
 }
 
 .appointment-value {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
   color: var(--text-primary);
 }
 
@@ -337,11 +330,11 @@
   }
 
   .patient-details h3 {
-    font-size: var(--text-base);
+    font-size: var(--text-sm);
   }
 
   .patient-stats-text {
-    font-size: var(--text-xs);
+    font-size: 0.7rem;
   }
 
   .patient-meta {
@@ -360,6 +353,11 @@
     width: 100%;
     justify-content: center;
     min-width: unset;
+  }
+
+  .patient-header-container .expand-icon {
+    width: 100%;
+    justify-content: center;
   }
 
   .appointments-list {
@@ -384,8 +382,8 @@
     width: 100%;
   }
 
-  .expand-icon {
-    margin-left: auto;
+  .patient-header-container .expand-icon {
+    flex-shrink: 0;
   }
 }
 
@@ -403,23 +401,41 @@
   overflow-x: hidden;
 }
 
-/* Botão WhatsApp flutuando */
+/* Botão WhatsApp - usar Button component padrão */
 .btn-whatsapp {
   flex-shrink: 0;
-  background: var(--info-50);
-  color: var(--info-700);
-  border: 1px solid var(--info-300);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-xs) var(--spacing-md);
-  cursor: pointer;
-  transition: var(--transition-base);
   white-space: nowrap;
   min-width: fit-content;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  height: 44px !important;
 }
 
-.btn-whatsapp:hover {
-  background: var(--info-100);
-  border-color: var(--info-500);
+/* Melhorar hover do botão ghost WhatsApp */
+.btn-whatsapp.btn-ghost {
+  border: 1px solid var(--border-light);
+}
+
+.btn-whatsapp.btn-ghost:hover:not(:disabled) {
+  background: var(--secondary-50);
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+  transform: translateY(-2px);
+}
+
+/* Expand icon agora fora do patient-header */
+.patient-header-container .expand-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+  padding: var(--spacing-xs);
+}
+
+.patient-header-container:hover .expand-icon {
+  color: var(--color-secondary);
+  transform: scale(1.1);
 }
 
 /* ✅ Adicione ao PatientCard.css existente */
