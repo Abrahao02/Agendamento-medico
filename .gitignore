@@ -43,3 +43,8 @@ hosting/.cache
 .vscode/
 *.sublime-project
 *.sublime-workspace
+
+# Test results and reports
+/test-results/
+/playwright-report/
+/coverage/
