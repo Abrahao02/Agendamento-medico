@@ -97,14 +97,16 @@ describe('Button', () => {
 
   it('deve renderizar como elemento customizado quando especificado', () => {
     render(<Button as="a" href="/test">Link</Button>);
-    const link = screen.getByText('Link');
-    expect(link.tagName).toBe('A');
+    const link = screen.getByText('Link').closest('a');
+    expect(link).toBeInTheDocument();
+    expect(link?.tagName).toBe('A');
     expect(link).toHaveAttribute('href', '/test');
   });
 
   it('deve aplicar aria-disabled para elementos não-button quando disabled', () => {
     render(<Button as="div" disabled>Div Button</Button>);
-    const div = screen.getByText('Div Button');
+    const div = screen.getByText('Div Button').closest('div');
+    expect(div).toBeInTheDocument();
     expect(div).toHaveAttribute('aria-disabled', 'true');
     expect(div).toHaveAttribute('tabIndex', '-1');
   });
