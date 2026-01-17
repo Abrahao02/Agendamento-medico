@@ -38,10 +38,14 @@ export const useDayManagement = ({
 
   useEffect(() => {
     if (formSectionRef.current) {
+      // Delay para garantir que o DOM foi atualizado
+      setTimeout(() => {
       formSectionRef.current.scrollIntoView({
         behavior: "smooth",
-        block: "nearest",
+          block: "center",
+          inline: "nearest",
       });
+      }, 100);
     }
   }, [mode]);
 

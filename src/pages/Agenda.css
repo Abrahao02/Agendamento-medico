@@ -96,7 +96,9 @@
 .agenda-date-navigation-card {
   display: flex;
   justify-content: center;
-  padding: var(--spacing-lg) var(--spacing-xl);
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-xl);
+  min-height: auto;
 }
 
 .agenda-date-navigation-card .date-navigation {

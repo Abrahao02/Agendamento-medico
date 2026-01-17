@@ -70,7 +70,6 @@ export default function Agenda() {
           onPrev={goToPrev}
           onNext={goToNext}
           onToday={goToToday}
-          formatDate={formatDate}
         />
       </div>
 
