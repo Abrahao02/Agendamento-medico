@@ -1,11 +1,14 @@
 import AppRoutes from "./routes/AppRoutes"
 import { ToastProvider } from "./components/common/Toast"
+import { ServicesProvider } from "./contexts/ServicesContext"
 
 function App() {
   return (
-    <ToastProvider>
-      <AppRoutes />
-    </ToastProvider>
+    <ServicesProvider>
+      <ToastProvider>
+        <AppRoutes />
+      </ToastProvider>
+    </ServicesProvider>
   )
 }
 
