@@ -287,49 +287,50 @@
 }
 
 /* ===========================
-   Dark Mode Support
+   Dark Mode Support - DESABILITADO
 =========================== */
+/* O projeto não suporta dark mode ainda, então forçamos sempre modo claro */
 @media (prefers-color-scheme: dark) {
   .day-stats {
-    background: #1f2937;
-    border-color: #374151;
+    background: white !important;
+    border-color: #e5e7eb !important;
   }
 
   .stat-card {
-    background: #111827;
-    border-color: #374151;
+    background: #f9fafb !important;
+    border-color: #e5e7eb !important;
   }
 
   .stat-card:hover {
-    background: #1f2937;
-    border-color: #4b5563;
+    background: white !important;
+    border-color: #d1d5db !important;
   }
 
   .stat-label {
-    color: #9ca3af;
+    color: #6b7280 !important;
   }
 
   .stat-value {
-    color: #f9fafb;
+    color: #111827 !important;
   }
 
   .stats-grid {
-    border-top-color: #374151;
+    border-top-color: #e5e7eb !important;
   }
 
   .occupancy-header span {
-    color: #9ca3af;
+    color: #6b7280 !important;
   }
 
   .occupancy-header strong {
-    color: #f9fafb;
+    color: #111827 !important;
   }
 
   .occupancy-track {
-    background: #374151;
+    background: #f3f4f6 !important;
   }
 
   .occupancy-legend {
-    color: #6b7280;
+    color: #9ca3af !important;
   }
 }

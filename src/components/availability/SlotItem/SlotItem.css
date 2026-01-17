@@ -308,40 +308,41 @@
 }
 
 /* ===========================
-   Dark Mode Support
+   Dark Mode Support - DESABILITADO
 =========================== */
+/* O projeto não suporta dark mode ainda, então forçamos sempre modo claro */
 @media (prefers-color-scheme: dark) {
   .slots-list .slot-item {
-    background: #1f2937;
-    border-color: #374151;
+    background: white !important;
+    border-color: #e5e7eb !important;
   }
 
   .slots-list .slot-item:hover {
-    border-color: #4b5563;
+    border-color: #e5e7eb !important;
   }
 
   .slots-list .slot-item .slot-time-text {
-    color: #f9fafb;
+    color: #111827 !important;
   }
 
   .slots-list .slot-item .slot-name {
-    color: #9ca3af;
+    color: #6b7280 !important;
   }
 
   .slots-list .slot-item.booked {
-    background: rgba(22, 163, 74, 0.05);
+    background: rgba(22, 163, 74, 0.03) !important;
   }
 
   .slots-list .slot-item.booked.cancelled {
-    background: rgba(59, 130, 246, 0.05);
+    background: rgba(59, 130, 246, 0.03) !important;
   }
 
   .slots-list .slot-item.booked.no-show {
-    background: rgba(239, 68, 68, 0.05);
+    background: rgba(239, 68, 68, 0.03) !important;
   }
 
   .slots-list .slot-item.booked.pending,
   .slots-list .slot-item.booked.message-sent {
-    background: rgba(245, 158, 11, 0.05);
+    background: rgba(245, 158, 11, 0.03) !important;
   }
 }
