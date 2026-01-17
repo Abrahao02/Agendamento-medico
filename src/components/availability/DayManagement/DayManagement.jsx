@@ -11,6 +11,11 @@ import "./DayManagement.css";
 export default function DayManagement({
   date,
   formattedDate,
+  // Props agrupadas (ISP)
+  slots = null,
+  context = null,
+  handlers: externalHandlers = null,
+  // Props individuais (compatibilidade)
   availableSlots,
   allSlots,
   appointments,
@@ -23,22 +28,36 @@ export default function DayManagement({
   onMarkAsCancelled,
   isLimitReached = false,
 }) {
+  // Extrair valores das props agrupadas ou usar valores individuais (compatibilidade)
+  const finalAvailableSlots = slots?.available || availableSlots;
+  const finalAllSlots = slots?.all || allSlots;
+  const finalAppointments = context?.appointments || appointments;
+  const finalPatients = context?.patients || patients;
+  const finalDoctor = context?.doctor || doctor;
+  const finalIsLimitReached = context?.isLimitReached ?? isLimitReached;
+
+  const finalOnAddSlot = externalHandlers?.onAddSlot || onAddSlot;
+  const finalOnRemoveSlot = externalHandlers?.onRemoveSlot || onRemoveSlot;
+  const finalOnBookAppointment = externalHandlers?.onBookAppointment || onBookAppointment;
+  const finalOnDeleteAppointment = externalHandlers?.onDeleteAppointment || onDeleteAppointment;
+  const finalOnMarkAsCancelled = externalHandlers?.onMarkAsCancelled || onMarkAsCancelled;
+
   const {
     state,
     refs,
     data,
     handlers,
   } = useDayManagement({
-    allSlots,
-    appointments,
-    patients,
-    doctor,
-    onAddSlot,
-    onRemoveSlot,
-    onBookAppointment,
-    onDeleteAppointment,
-    onMarkAsCancelled,
-    isLimitReached,
+    allSlots: finalAllSlots,
+    appointments: finalAppointments,
+    patients: finalPatients,
+    doctor: finalDoctor,
+    onAddSlot: finalOnAddSlot,
+    onRemoveSlot: finalOnRemoveSlot,
+    onBookAppointment: finalOnBookAppointment,
+    onDeleteAppointment: finalOnDeleteAppointment,
+    onMarkAsCancelled: finalOnMarkAsCancelled,
+    isLimitReached: finalIsLimitReached,
   });
 
   return (
@@ -61,7 +80,7 @@ export default function DayManagement({
         ) : (
           data.combinedSlots.map((slotTime, i) => {
             // Find the original slot object if it exists in allSlots
-            const originalSlot = allSlots.find(slot => {
+            const originalSlot = finalAllSlots.find(slot => {
               const time = typeof slot === "string" ? slot : (slot?.time || null);
               return time === slotTime;
             }) || slotTime;
@@ -70,7 +89,7 @@ export default function DayManagement({
             let displayName = null;
 
             if (appointment) {
-              const patient = patients.find((p) => p.id === appointment.patientId);
+              const patient = finalPatients.find((p) => p.id === appointment.patientId);
               displayName = patient?.referenceName || appointment.patientName;
             }
 
@@ -85,7 +104,7 @@ export default function DayManagement({
                 appointment={appointment}
                 onRemove={() => handlers.handleRemoveSlot(originalSlot)}
                 onDelete={() => handlers.handleOpenModal(slotTime)}
-                doctor={doctor}
+                doctor={finalDoctor}
               />
             );
           })
@@ -128,7 +147,7 @@ export default function DayManagement({
             locations={data.locations}
             appointmentTypeConfig={data.appointmentTypeConfig}
             onSubmit={handlers.handleAddSlotSubmit}
-            loading={state.loading || isLimitReached}
+            loading={state.loading || finalIsLimitReached}
             error={state.error}
           />
         )}
@@ -138,8 +157,8 @@ export default function DayManagement({
             <select
               value={state.selectedPatient}
               onChange={(e) => handlers.setSelectedPatient(e.target.value)}
-              disabled={state.loading || isLimitReached}
-              title={isLimitReached ? "Limite do plano atingido" : ""}
+              disabled={state.loading || finalIsLimitReached}
+              title={finalIsLimitReached ? "Limite do plano atingido" : ""}
             >
               <option value="">Selecione o paciente</option>
               {data.sortedPatients.map((p) => (
@@ -156,8 +175,8 @@ export default function DayManagement({
                   handlers.setBookAppointmentType(e.target.value);
                   handlers.setBookLocationId("");
                 }}
-                disabled={state.loading || isLimitReached}
-                title={isLimitReached ? "Limite do plano atingido" : ""}
+                disabled={state.loading || finalIsLimitReached}
+                title={finalIsLimitReached ? "Limite do plano atingido" : ""}
               >
                 {getAppointmentTypeOptions().map((option) => (
                   <option key={option.value} value={option.value}>
@@ -171,9 +190,9 @@ export default function DayManagement({
               <select
                 value={state.bookLocationId}
                 onChange={(e) => handlers.setBookLocationId(e.target.value)}
-                disabled={state.loading || isLimitReached || data.locations.length === 1}
+                disabled={state.loading || finalIsLimitReached || data.locations.length === 1}
                 required={data.requiresLocation}
-                title={isLimitReached ? "Limite do plano atingido" : ""}
+                title={finalIsLimitReached ? "Limite do plano atingido" : ""}
               >
                 <option value="">Selecione um local</option>
                 {data.locations.map((location, index) => (
@@ -197,7 +216,7 @@ export default function DayManagement({
                     handlers.setDealValue("");
                   }
                 }}
-                disabled={state.loading || isLimitReached}
+                disabled={state.loading || finalIsLimitReached}
               />
               <span>Acordo (definir valor diferente do padrão)</span>
             </label>
@@ -209,10 +228,10 @@ export default function DayManagement({
                 step="0.01"
                 value={state.dealValue}
                 onChange={(e) => handlers.setDealValue(e.target.value)}
-                disabled={state.loading || isLimitReached}
+                disabled={state.loading || finalIsLimitReached}
                 placeholder="0,00"
                 className="book-slot-price-input"
-                title={isLimitReached ? "Limite do plano atingido" : "Informe o valor do acordo"}
+                title={finalIsLimitReached ? "Limite do plano atingido" : "Informe o valor do acordo"}
               />
             )}
 
@@ -223,21 +242,21 @@ export default function DayManagement({
                 const normalizedTime = normalizeTo24Hour(e.target.value);
                 handlers.setSelectedTime(normalizedTime);
               }}
-              disabled={state.loading || isLimitReached}
+              disabled={state.loading || finalIsLimitReached}
               min="00:00"
               max="23:59"
               step="60"
               lang="pt-BR"
               className="book-slot-time-input"
               placeholder="Selecione o horário"
-              title={isLimitReached ? "Limite do plano atingido" : "Selecione o horário"}
+              title={finalIsLimitReached ? "Limite do plano atingido" : "Selecione o horário"}
               data-format="24"
             />
 
             <button 
               onClick={handlers.handleBookAppointment} 
-              disabled={state.loading || isLimitReached} 
-              title={isLimitReached ? "Limite do plano atingido" : ""}
+              disabled={state.loading || finalIsLimitReached} 
+              title={finalIsLimitReached ? "Limite do plano atingido" : ""}
             >
               {state.loading ? "Confirmando..." : "Confirmar"}
             </button>
