@@ -55,7 +55,8 @@ describe('AddPatientModal', () => {
   it('deve renderizar campo de nome', () => {
     render(<AddPatientModal {...defaultProps} />);
     
-    const nameInput = screen.getByLabelText(/nome/i);
+    // Use ID to avoid matching "Nome de Referência"
+    const nameInput = screen.getByLabelText(/^Nome\s+\*?$/i) || document.getElementById('patient-name');
     expect(nameInput).toBeInTheDocument();
     expect(nameInput).toBeRequired();
   });
@@ -86,7 +87,8 @@ describe('AddPatientModal', () => {
     const updateNewPatientField = vi.fn();
     render(<AddPatientModal {...defaultProps} updateNewPatientField={updateNewPatientField} />);
     
-    const nameInput = screen.getByLabelText(/nome/i);
+    // Use ID to avoid matching "Nome de Referência"
+    const nameInput = document.getElementById('patient-name');
     fireEvent.change(nameInput, { target: { value: 'João Silva' } });
     
     expect(updateNewPatientField).toHaveBeenCalledWith('name', 'João Silva');
@@ -164,8 +166,9 @@ describe('AddPatientModal', () => {
   it('deve desabilitar campos quando loading é true', () => {
     render(<AddPatientModal {...defaultProps} loading={true} />);
     
-    const nameInput = screen.getByLabelText(/nome/i);
-    const whatsappInput = screen.getByLabelText(/whatsapp/i);
+    // Use IDs to avoid ambiguity
+    const nameInput = document.getElementById('patient-name');
+    const whatsappInput = document.getElementById('patient-whatsapp');
     
     expect(nameInput).toBeDisabled();
     expect(whatsappInput).toBeDisabled();
