@@ -41,6 +41,9 @@ export default function WhatsAppSection({
               placeholder="Ex: Olá"
               className="settings-input"
             />
+            <p className="helper-text">
+              O nome do paciente será automaticamente adicionado após esta saudação, seguido de vírgula. Exemplo: "Olá João,"
+            </p>
           </div>
 
           <div className="form-group">
@@ -78,6 +81,9 @@ export default function WhatsAppSection({
 
           <div className="whatsapp-preview">
             <h4>Preview da mensagem:</h4>
+            <p className="helper-text">
+              Exemplo com o paciente "João". O nome real do paciente será inserido automaticamente.
+            </p>
             <div className="preview-box">
               {preview.split("\n").map((line, index) => (
                 <p key={index}>{line || <br />}</p>

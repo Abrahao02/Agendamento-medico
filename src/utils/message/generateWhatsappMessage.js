@@ -26,7 +26,7 @@
  *   value: 150,
  *   showValue: true
  * })
- * // "Olá João
+ * // "Olá João,
  * //  
  * //  Sua sessão está agendada
  * //  
@@ -50,7 +50,9 @@ export function generateWhatsappMessage({
   
   // Introdução
   if (intro) {
-    message += patientName ? `${intro} ${patientName}` : intro;
+    // Remove vírgula do final do intro se houver
+    const cleanIntro = intro.trim().replace(/,\s*$/, '');
+    message += patientName ? `${cleanIntro} ${patientName},` : cleanIntro;
     message += "\n\n";
   }
   
