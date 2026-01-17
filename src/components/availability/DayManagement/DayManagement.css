@@ -2,7 +2,7 @@
 .day-slots-card {
   flex: 1 1 380px;
   max-width: 580px;
-  background: var(--bg-primary);
+  background: var(--white);
   border-radius: 16px;
   padding: 1.75rem;
   border: 1px solid var(--border-light);
@@ -80,7 +80,7 @@
   font-size: 0.9375rem;
   font-family: var(--font-family-base);
   transition: all 0.2s ease;
-  background: var(--bg-primary);
+  background: var(--white);
 }
 
 .add-slot input:focus {
@@ -422,63 +422,64 @@
   }
 }
 
-/* ========== Dark Mode Support (Opcional) ========== */
+/* ========== Dark Mode Support - DESABILITADO ========== */
+/* O projeto não suporta dark mode ainda, então forçamos sempre modo claro */
 @media (prefers-color-scheme: dark) {
   .day-slots-card {
-    background: #1f2937;
-    border-color: #374151;
+    background: var(--white) !important;
+    border-color: var(--border-light) !important;
   }
 
   .day-slots-card h3 {
-    color: #f9fafb;
+    color: var(--text-primary) !important;
   }
 
   .mode-toggle {
-    background: #111827;
+    background: var(--gray-100) !important;
   }
 
   .mode-toggle button {
-    color: #9ca3af;
+    color: var(--text-tertiary) !important;
   }
 
   .mode-toggle button:hover {
-    background: #374151;
-    color: #f9fafb;
+    background: var(--gray-200) !important;
+    color: var(--text-primary) !important;
   }
 
   .add-slot input,
   .book-slot select,
   .book-slot-price-input,
   .book-slot-time-input {
-    background: #111827;
-    border-color: #374151;
-    color: #f9fafb;
+    background: var(--white) !important;
+    border-color: var(--border-light) !important;
+    color: var(--text-primary) !important;
   }
 
   .book-slot-deal-toggle {
-    color: #9ca3af;
+    color: var(--text-secondary) !important;
   }
 
   .book-slot-deal-toggle:focus-within {
-    color: #f9fafb;
+    color: var(--text-primary) !important;
   }
 
   .add-slot input:focus,
   .book-slot select:focus,
   .book-slot-price-input:focus,
   .book-slot-time-input:focus {
-    border-color: #3b82f6;
+    border-color: var(--color-secondary) !important;
   }
 
   .empty-message {
-    color: #6b7280;
+    color: var(--text-secondary) !important;
   }
 
   .slots-list::-webkit-scrollbar-track {
-    background: #1f2937;
+    background: var(--gray-100) !important;
   }
 
   .slots-list::-webkit-scrollbar-thumb {
-    background: #4b5563;
+    background: var(--gray-300) !important;
   }
 }
