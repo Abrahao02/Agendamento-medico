@@ -67,8 +67,9 @@ const AppointmentForm = forwardRef(
 
           {config.showAppointmentType && !config.isFixed && !computed.slotAppointmentType && (
             <div className="form-group">
-              <label className="form-label">Tipo de atendimento</label>
+              <label htmlFor="appointment-type-select" className="form-label">Tipo de atendimento</label>
               <select
+                id="appointment-type-select"
                 value={formState.appointmentType}
                 onChange={(e) => handlers.handleAppointmentTypeChange(e.target.value)}
                 required
