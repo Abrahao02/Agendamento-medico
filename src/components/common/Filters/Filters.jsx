@@ -155,10 +155,9 @@ export default function Filters({
         {/* 🔍 Busca (opcional) */}
         {showSearch && searchTerm !== undefined && (
           <div className="filter-item filter-search">
-            <label htmlFor="search">
-              <Search size={14} />
-              Buscar
-            </label>
+            <label htmlFor="search">Buscar</label>
+            <div className="filter-search-input-wrapper">
+              <Search size={20} className="filter-search-icon" />
             <input
               id="search"
               type="search"
@@ -167,6 +166,7 @@ export default function Filters({
               placeholder={searchPlaceholder}
               className="filter-input"
             />
+            </div>
           </div>
         )}
 
