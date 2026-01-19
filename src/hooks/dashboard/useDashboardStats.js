@@ -8,6 +8,7 @@ import { filterAppointments } from "../../utils/filters/appointmentFilters";
 import {
   filterAvailableSlots,
   countAvailableSlots,
+  countAvailableSlotsIncludingCancelled,
 } from "../../utils/filters/availabilityFilters";
 import {
   calculateAppointmentStats,
@@ -51,7 +52,23 @@ export const useDashboardStats = ({
     );
   }, [availability, appointments, filterOptions]);
 
-  const slotsOpen = useMemo(() => countAvailableSlots(filteredAvailability), [filteredAvailability]);
+  // ✅ Conta slots disponíveis incluindo cancelados (similar ao publicSchedule)
+  const slotsOpen = useMemo(() => {
+    const filteredDates = filterAppointments(
+      availability.map(day => ({ date: day.date })), 
+      filterOptions
+    ).map(day => day.date);
+    
+    const filteredAvailabilityForPeriod = availability.filter(d => 
+      filteredDates.includes(d.date)
+    );
+    
+    return countAvailableSlotsIncludingCancelled(
+      filteredAvailabilityForPeriod,
+      appointments,
+      new Date()
+    );
+  }, [availability, appointments, filterOptions]);
 
   const totalPatients = useMemo(() => {
     const uniquePatients = new Set(

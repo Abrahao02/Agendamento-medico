@@ -3,7 +3,8 @@
 // ============================================
 
 import { getTodayString } from "./dateFilters";
-import { STATUS_GROUPS } from "../../constants/appointmentStatus";
+import { STATUS_GROUPS, APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
+import { isSlotInPast } from "../time/isSlotInPast";
 
 /**
  * Helper to extract time from slot (handles both string and object formats)
@@ -16,6 +17,7 @@ function getSlotTime(slot) {
 
 /**
  * Remove slots já agendados da disponibilidade
+ * ✅ IMPORTANTE: Considera apenas appointments ATIVOS (exclui "Cancelado" que libera o slot)
  */
 export const filterAvailableSlots = (availability, appointments) => {
   if (!Array.isArray(availability) || !Array.isArray(appointments)) {
@@ -27,6 +29,7 @@ export const filterAvailableSlots = (availability, appointments) => {
       const bookedSlots = appointments
         .filter(a => 
           a.date === day.date && 
+          a.status !== APPOINTMENT_STATUS.CANCELLED && // ✅ Exclui explicitamente "Cancelado"
           STATUS_GROUPS.ACTIVE.includes(a.status)
         )
         .map(a => a.time);
@@ -75,8 +78,70 @@ export const countAvailableSlots = (availability) => {
 };
 
 /**
+ * Conta total de slots disponíveis incluindo slots cancelados
+ * ✅ Similar à lógica do publicSchedule: inclui slots cancelados que liberam horários
+ */
+export const countAvailableSlotsIncludingCancelled = (availability, appointments, now = new Date()) => {
+  if (!Array.isArray(availability) || !Array.isArray(appointments)) return 0;
+  
+  // Filtra appointments ativos (exclui cancelados)
+  const activeAppointments = appointments.filter(a => 
+    a.status !== APPOINTMENT_STATUS.CANCELLED && 
+    STATUS_GROUPS.ACTIVE.includes(a.status)
+  );
+  
+  // Slots base disponíveis (já exclui ocupados por ativos)
+  const baseAvailableSlots = filterAvailableSlots(availability, activeAppointments);
+  
+  // Conta slots base
+  let totalCount = countAvailableSlots(baseAvailableSlots);
+  
+  // Adiciona slots cancelados que não estão na disponibilidade base
+  appointments.forEach(appt => {
+    if (
+      appt.status === APPOINTMENT_STATUS.CANCELLED &&
+      appt.date &&
+      appt.time &&
+      !isSlotInPast(appt.date, appt.time, now) // ✅ Apenas slots futuros
+    ) {
+      // Verifica se já existe slot ativo neste horário
+      const hasActiveInSlot = activeAppointments.some(
+        active => active.date === appt.date && active.time === appt.time
+      );
+      
+      if (!hasActiveInSlot) {
+        // Verifica se o slot cancelado já está na disponibilidade base (já foi contado)
+        const dayInBase = baseAvailableSlots.find(d => d.date === appt.date);
+        const slotExistsInBase = dayInBase?.slots?.some(slot => {
+          const slotTime = getSlotTime(slot);
+          return slotTime === appt.time;
+        });
+        
+        // Se não está na disponibilidade base, verifica se estava na disponibilidade original
+        // Se estava na original, já foi contado. Se não estava, adiciona (slot cancelado que libera horário)
+        if (!slotExistsInBase) {
+          const dayInOriginal = availability.find(d => d.date === appt.date);
+          const slotExistsInOriginal = dayInOriginal?.slots?.some(slot => {
+            const slotTime = getSlotTime(slot);
+            return slotTime === appt.time;
+          });
+          
+          // Se não estava na disponibilidade original, adiciona ao contador
+          // (slot cancelado que libera um horário que não estava na disponibilidade)
+          if (!slotExistsInOriginal) {
+            totalCount++;
+          }
+        }
+      }
+    }
+  });
+  
+  return totalCount;
+};
+
+/**
  * Obtém slots disponíveis para uma data específica
- * ✅ ATUALIZADO: Considera apenas appointments ATIVOS
+ * ✅ ATUALIZADO: Considera apenas appointments ATIVOS (exclui "Cancelado" que libera o slot)
  */
 export const getAvailableSlotsForDate = (availability, appointments, date) => {
   if (!date) return [];
@@ -89,6 +154,7 @@ export const getAvailableSlotsForDate = (availability, appointments, date) => {
   const bookedSlots = appointments
     .filter(a => 
       a.date === date && 
+      a.status !== APPOINTMENT_STATUS.CANCELLED && // ✅ Exclui explicitamente "Cancelado"
       STATUS_GROUPS.ACTIVE.includes(a.status)
     )
     .map(a => a.time);
