@@ -26,13 +26,21 @@ export default function DateRangePicker({
   if (!isOpen) return null;
 
   return (
-    <div className="date-range-picker-dropdown">
-      <Calendar
-        onChange={handlers.handleDateChange}
-        value={state.dateRange}
-        selectRange={true}
-        locale="pt-BR"
+    <>
+      {/* Overlay para mobile */}
+      <div 
+        className="date-range-picker-overlay"
+        onClick={onClose}
+        aria-hidden="true"
       />
-    </div>
+      <div className="date-range-picker-dropdown">
+        <Calendar
+          onChange={handlers.handleDateChange}
+          value={state.dateRange}
+          selectRange={true}
+          locale="pt-BR"
+        />
+      </div>
+    </>
   );
 }
