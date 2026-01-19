@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { formatDateToQuery } from "../../utils/filters/dateFilters";
 
 /**
  * Hook para gerenciar lógica de filtros com suporte a quick filters
@@ -33,9 +34,13 @@ export const useFilters = ({
   // Detecta qual filtro está ativo baseado nas datas
   useEffect(() => {
     if (!showQuickFilters) return;
+    if (!dateFrom || !dateTo) {
+      setActiveQuickFilter(null);
+      return;
+    }
 
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = formatDateToQuery(today);
     
     // Verifica se é "Hoje"
     if (dateFrom === todayStr && dateTo === todayStr) {
@@ -48,34 +53,39 @@ export const useFilters = ({
     const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const monday = new Date(today);
     monday.setDate(diff);
+    monday.setHours(0, 0, 0, 0);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
     
-    if (dateFrom === monday.toISOString().split('T')[0] && 
-        dateTo === sunday.toISOString().split('T')[0]) {
+    const mondayStr = formatDateToQuery(monday);
+    const sundayStr = formatDateToQuery(sunday);
+    
+    if (dateFrom === mondayStr && dateTo === sundayStr) {
       setActiveQuickFilter('week');
       return;
     }
 
     // Verifica se é "Este mês"
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    firstDay.setHours(0, 0, 0, 0);
     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    lastDay.setHours(23, 59, 59, 999);
     
-    if (dateFrom === firstDay.toISOString().split('T')[0] && 
-        dateTo === lastDay.toISOString().split('T')[0]) {
+    const firstDayStr = formatDateToQuery(firstDay);
+    const lastDayStr = formatDateToQuery(lastDay);
+    
+    if (dateFrom === firstDayStr && dateTo === lastDayStr) {
       setActiveQuickFilter('month');
       return;
     }
 
-    // Se tem range personalizado (e não é hoje), marca como custom
-    if (hasDateRange && (dateFrom !== todayStr || dateTo !== todayStr)) {
-      // Verifica se não é semana nem mês atual
-      const isCurrentWeek = dateFrom === monday.toISOString().split('T')[0] && 
-                            dateTo === sunday.toISOString().split('T')[0];
-      const isCurrentMonth = dateFrom === firstDay.toISOString().split('T')[0] && 
-                             dateTo === lastDay.toISOString().split('T')[0];
+    // Se tem range personalizado (e não é hoje, semana ou mês), marca como custom
+    if (hasDateRange) {
+      const isCurrentWeek = dateFrom === mondayStr && dateTo === sundayStr;
+      const isCurrentMonth = dateFrom === firstDayStr && dateTo === lastDayStr;
       
-      if (!isCurrentWeek && !isCurrentMonth) {
+      if (!isCurrentWeek && !isCurrentMonth && dateFrom !== todayStr) {
         setActiveQuickFilter('custom');
         return;
       }
@@ -104,9 +114,9 @@ export const useFilters = ({
 
   const handleToday = () => {
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-    onDateFromChange(todayStr);
-    onDateToChange(todayStr);
+    const todayStr = formatDateToQuery(today);
+    if (onDateFromChange) onDateFromChange(todayStr);
+    if (onDateToChange) onDateToChange(todayStr);
     if (onMonthChange) onMonthChange(today.getMonth() + 1);
     if (onYearChange) onYearChange(today.getFullYear());
     setActiveQuickFilter('today');
@@ -118,11 +128,13 @@ export const useFilters = ({
     const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const monday = new Date(today);
     monday.setDate(diff);
+    monday.setHours(0, 0, 0, 0);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
     
-    onDateFromChange(monday.toISOString().split('T')[0]);
-    onDateToChange(sunday.toISOString().split('T')[0]);
+    if (onDateFromChange) onDateFromChange(formatDateToQuery(monday));
+    if (onDateToChange) onDateToChange(formatDateToQuery(sunday));
     if (onMonthChange) onMonthChange(today.getMonth() + 1);
     if (onYearChange) onYearChange(today.getFullYear());
     setActiveQuickFilter('week');
@@ -131,10 +143,12 @@ export const useFilters = ({
   const handleThisMonth = () => {
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    firstDay.setHours(0, 0, 0, 0);
     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    lastDay.setHours(23, 59, 59, 999);
     
-    onDateFromChange(firstDay.toISOString().split('T')[0]);
-    onDateToChange(lastDay.toISOString().split('T')[0]);
+    if (onDateFromChange) onDateFromChange(formatDateToQuery(firstDay));
+    if (onDateToChange) onDateToChange(formatDateToQuery(lastDay));
     if (onMonthChange) onMonthChange(today.getMonth() + 1);
     if (onYearChange) onYearChange(today.getFullYear());
     setActiveQuickFilter('month');
@@ -143,11 +157,12 @@ export const useFilters = ({
   const handleCustom = () => {
     const willOpen = !isDatePickerOpen;
     setIsDatePickerOpen(prev => !prev);
+    setActiveQuickFilter('custom');
     
+    // Sempre reseta as datas ao clicar em Personalizado
     if (willOpen) {
-      onDateFromChange("");
-      onDateToChange("");
-      setActiveQuickFilter('custom');
+      if (onDateFromChange) onDateFromChange("");
+      if (onDateToChange) onDateToChange("");
     }
   };
 

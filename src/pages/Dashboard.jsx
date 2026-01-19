@@ -72,6 +72,8 @@ export default function Dashboard() {
         dateTo={selectedDateTo}
         onDateFromChange={setSelectedDateFrom}
         onDateToChange={setSelectedDateTo}
+        onMonthChange={setSelectedMonth}
+        onYearChange={setSelectedYear}
         onReset={resetFilters}
         showSearch={false}
         showStatus={false}

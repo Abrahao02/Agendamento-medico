@@ -22,6 +22,23 @@ export default function Filters({
   monthYear = null,
   quickFilters = null,
   
+  // Props individuais (compatibilidade - podem ser passadas diretamente)
+  searchTerm: searchTermProp,
+  onSearchChange: onSearchChangeProp,
+  searchPlaceholder: searchPlaceholderProp,
+  statusFilter: statusFilterProp,
+  onStatusChange: onStatusChangeProp,
+  statusOptions: statusOptionsProp,
+  dateFrom: dateFromProp,
+  dateTo: dateToProp,
+  onDateFromChange: onDateFromChangeProp,
+  onDateToChange: onDateToChangeProp,
+  month: monthProp,
+  year: yearProp,
+  onMonthChange: onMonthChangeProp,
+  onYearChange: onYearChangeProp,
+  availableYears: availableYearsProp,
+  
   // Ações
   onReset,
   extraActions = null,
@@ -34,24 +51,27 @@ export default function Filters({
   showQuickFilters = false,
 }) {
   // Extrair valores das props agrupadas ou usar valores individuais (compatibilidade)
-  const searchTerm = search?.term;
-  const onSearchChange = search?.onChange;
-  const searchPlaceholder = search?.placeholder || "Buscar...";
+  // Prioriza props individuais se fornecidas, caso contrário usa props agrupadas
+  const searchTerm = searchTermProp ?? search?.term;
+  const onSearchChange = onSearchChangeProp ?? search?.onChange;
+  const searchPlaceholder = searchPlaceholderProp ?? search?.placeholder ?? "Buscar...";
   
-  const statusFilter = status?.filter;
-  const onStatusChange = status?.onChange;
-  const statusOptions = status?.options || [];
+  const statusFilter = statusFilterProp ?? status?.filter;
+  const onStatusChange = onStatusChangeProp ?? status?.onChange;
+  const statusOptions = statusOptionsProp ?? status?.options ?? [];
   
-  const dateFrom = dateRange?.from;
-  const dateTo = dateRange?.to;
-  const onDateFromChange = dateRange?.onChange?.from || dateRange?.onChange;
-  const onDateToChange = dateRange?.onChange?.to || dateRange?.onChange;
+  // Suporta tanto dateRange={from, to, onChange} quanto props individuais
+  // Prioriza props individuais primeiro
+  const dateFrom = dateFromProp ?? dateRange?.from;
+  const dateTo = dateToProp ?? dateRange?.to;
+  const onDateFromChange = onDateFromChangeProp ?? dateRange?.onChange?.from ?? dateRange?.onChange;
+  const onDateToChange = onDateToChangeProp ?? dateRange?.onChange?.to ?? dateRange?.onChange;
   
-  const month = monthYear?.month;
-  const year = monthYear?.year;
-  const onMonthChange = monthYear?.onChange?.month || monthYear?.onChange;
-  const onYearChange = monthYear?.onChange?.year || monthYear?.onChange;
-  const availableYears = monthYear?.availableYears || [];
+  const month = monthProp ?? monthYear?.month;
+  const year = yearProp ?? monthYear?.year;
+  const onMonthChange = onMonthChangeProp ?? monthYear?.onChange?.month ?? monthYear?.onChange;
+  const onYearChange = onYearChangeProp ?? monthYear?.onChange?.year ?? monthYear?.onChange;
+  const availableYears = availableYearsProp ?? monthYear?.availableYears ?? [];
 
   const { state, refs, computed, handlers } = useFilters({
     dateFrom,
