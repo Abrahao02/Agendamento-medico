@@ -53,10 +53,23 @@
   border: 1px solid transparent;
 }
 
-.upcoming-item:hover {
+.upcoming-item.clickable {
+  cursor: pointer;
+}
+
+.upcoming-item.clickable:hover {
   background: var(--secondary-50);
   border-color: var(--secondary-200);
   transform: translateX(4px);
+}
+
+.upcoming-item.clickable:active {
+  transform: translateX(2px);
+}
+
+.upcoming-item.clickable:focus {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
 }
 
 .upcoming-avatar {
@@ -96,7 +109,7 @@
   gap: var(--spacing-xs);
 }
 
-.detail-item {
+.appointment-details .detail-item {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -107,7 +120,7 @@
   white-space: nowrap;
 }
 
-.detail-item svg {
+.appointment-details .detail-item svg {
   color: var(--color-secondary);
   flex-shrink: 0;
 }

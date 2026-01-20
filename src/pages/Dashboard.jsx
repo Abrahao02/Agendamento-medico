@@ -48,6 +48,11 @@ export default function Dashboard() {
     setSelectedYear,
     resetFilters,
     isLimitReached,
+    filteredAppointments,
+    filteredAvailability,
+    patients,
+    financialForecast,
+    financialBreakdown,
   } = useDashboard();
 
   if (loading) return <ContentLoading message="Carregando dashboard..." height={400} />;
@@ -114,6 +119,11 @@ export default function Dashboard() {
         upcomingAppointments={upcomingAppointments}
         financialChartData={financialChartData}
         monthlyData={monthlyData}
+        filteredAppointments={filteredAppointments}
+        filteredAvailability={filteredAvailability}
+        patients={patients}
+        financialForecast={financialForecast}
+        financialBreakdown={financialBreakdown}
       />
     </div>
   );

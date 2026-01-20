@@ -3,12 +3,23 @@
 // ============================================
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Calendar, CalendarX, Clock } from "lucide-react";
 import formatDate from "../../../utils/formatter/formatDate";
 import { STATUS_CONFIG } from "../../../constants/appointmentStatus";
 import "./UpcomingAppointments.css";
 
 export default function UpcomingAppointments({ appointments = [] }) {
+  const navigate = useNavigate();
+  
+  const handleItemClick = (appointment) => {
+    if (appointment.date) {
+      navigate("/dashboard/appointments", {
+        state: { date: appointment.date }
+      });
+    }
+  };
+  
   const getInitials = (name) => {
     if (!name) return "??";
     return name
@@ -48,8 +59,18 @@ export default function UpcomingAppointments({ appointments = [] }) {
         {appointments.map((appointment, index) => (
           <div
             key={appointment.id || index}
-            className="upcoming-item"
+            className="upcoming-item clickable"
             style={{ animationDelay: `${index * 0.1}s` }}
+            onClick={() => handleItemClick(appointment)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleItemClick(appointment);
+              }
+            }}
+            aria-label={`Ir para agenda do dia ${formatDate(appointment.date)}`}
           >
             <div className="upcoming-avatar">
               {getInitials(appointment.referenceName || appointment.patientName)}
