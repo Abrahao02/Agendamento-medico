@@ -5,6 +5,7 @@ import DayStats from "../DayStats";
 import DeleteConfirmationModal from "../DeleteConfirmationModal";
 import { getAppointmentTypeOptions } from "../../../constants/appointmentType";
 import { normalizeTo24Hour } from "../../../utils/time/normalizeTime";
+import { formatCurrency } from "../../../utils/formatter/formatCurrency";
 import { useDayManagement } from "../../../hooks/appointments/useDayManagement";
 import "./DayManagement.css";
 
@@ -198,7 +199,7 @@ export default function DayManagement({
                 {data.locations.map((location, index) => (
                   <option key={location.name || `location-${index}`} value={location.name}>
                     {location.name}
-                    {location.defaultValue > 0 && ` - R$ ${location.defaultValue.toFixed(2)}`}
+                    {location.defaultValue > 0 && ` - ${formatCurrency(location.defaultValue)}`}
                   </option>
                 ))}
               </select>

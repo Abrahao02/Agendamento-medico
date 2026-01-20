@@ -3,6 +3,8 @@
 // Utility functions for price display in public schedule
 // ============================================
 
+import { formatCurrency } from "../formatter/formatCurrency";
+
 /**
  * Format location display text based on showPrice flag
  * @param {object} location - Location object with name and price
@@ -22,7 +24,7 @@ export function formatLocationDisplay(location, showPrice = true) {
   }
 
   if (showPrice && location.price !== undefined && location.price > 0) {
-    return `${location.name} - R$ ${location.price.toFixed(2)}`;
+    return `${location.name} - ${formatCurrency(location.price)}`;
   }
 
   return location.name;
@@ -47,7 +49,7 @@ export function getPriceDisplayText(location, showPrice = true) {
   }
 
   if (showPrice && location.price !== undefined && location.price > 0) {
-    return `R$ ${location.price.toFixed(2)}`;
+    return formatCurrency(location.price);
   }
 
   return "Valor sob consulta";

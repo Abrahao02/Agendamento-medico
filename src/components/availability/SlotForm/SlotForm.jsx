@@ -5,6 +5,7 @@
 import React from "react";
 import { APPOINTMENT_TYPE, APPOINTMENT_TYPE_MODE, getAppointmentTypeOptions } from "../../../constants/appointmentType";
 import { normalizeTo24Hour } from "../../../utils/time/normalizeTime";
+import { formatCurrency } from "../../../utils/formatter/formatCurrency";
 import { useSlotForm } from "../../../hooks/availability/useSlotForm";
 import "./SlotForm.css";
 
@@ -110,7 +111,7 @@ export default function SlotForm({
                 <span className="location-checkbox-text">
                   {location.name}
                   {location.defaultValue > 0 && (
-                    <span className="location-price"> - R$ {location.defaultValue.toFixed(2)}</span>
+                    <span className="location-price"> - {formatCurrency(location.defaultValue)}</span>
                   )}
                 </span>
               </label>

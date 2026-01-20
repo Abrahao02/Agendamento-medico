@@ -1,4 +1,5 @@
 import formatDate from "../../utils/formatter/formatDate";
+import { formatCurrency } from "../../utils/formatter/formatCurrency";
 
 /**
  * Hook para gerenciar lógica do cartão de paciente
@@ -13,7 +14,7 @@ export const usePatientCard = ({ patient, onToggle, onSendWhatsapp }) => {
     e.stopPropagation();
     const messages = patient.appointments.map(
       (app) =>
-        `${formatDate(app.date)} às ${app.time} - R$ ${(app.value || 0).toFixed(2)}`
+        `${formatDate(app.date)} às ${app.time} - ${formatCurrency(app.value || 0)}`
     );
     const text = `Seguem as datas e valores de suas consultas:\n${messages.join("\n")}`;
     onSendWhatsapp(patient.whatsapp, text);

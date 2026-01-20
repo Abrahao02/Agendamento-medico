@@ -6,6 +6,7 @@ import React from "react";
 import { MapPin, X, MessageCircle } from "lucide-react";
 import { cleanWhatsapp } from "../../../utils/whatsapp/cleanWhatsapp";
 import { formatLocationDisplay, generatePriceInquiryMessage } from "../../../utils/publicSchedule/priceDisplay";
+import { formatCurrency } from "../../../utils/formatter/formatCurrency";
 import "./LocationFilter.css";
 
 export default function LocationFilter({
@@ -78,7 +79,7 @@ export default function LocationFilter({
             <span className="location-filter-name">{location.name}</span>
             {showPrice && location.price !== undefined && location.price > 0 && (
               <span className="location-filter-price">
-                R$ {location.price.toFixed(2)}
+                {formatCurrency(location.price)}
               </span>
             )}
             {!showPrice && (

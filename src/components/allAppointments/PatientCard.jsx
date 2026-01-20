@@ -1,6 +1,7 @@
 // src/components/allAppointments/PatientCard.jsx
 import React from "react";
 import formatDate from "../../utils/formatter/formatDate";
+import { formatCurrency } from "../../utils/formatter/formatCurrency";
 import { getStatusOptions } from "../../utils/appointments/getStatusOptions";
 import { ChevronDown, ChevronUp, Lock, Phone, Send } from "lucide-react";
 import Button from "../common/Button";
@@ -33,7 +34,7 @@ function PatientCard({
             </div>
           </div>
           <div className="patient-meta">
-            <span className="patient-total">R$ {patient.totalValue.toFixed(2)}</span>
+            <span className="patient-total">{formatCurrency(patient.totalValue)}</span>
           </div>
         </button>
 
@@ -79,7 +80,7 @@ function PatientCard({
                       {app.patientWhatsapp}
                     </span>
                   </div>
-                  <div className="appointment-value">R$ {(app.value || 0).toFixed(2)}</div>
+                  <div className="appointment-value">{formatCurrency(app.value || 0)}</div>
                 </div>
 
                 <div className="status-select-wrapper">

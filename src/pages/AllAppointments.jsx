@@ -12,6 +12,7 @@ import LoadingFallback from "../components/common/LoadingFallback";
 import LimitWarningBanner from "../components/common/LimitWarningBanner";
 import { getStatusOptions } from "../utils/appointments/getStatusOptions";
 import { sendWhatsappMessage } from "../utils/whatsapp/generateWhatsappLink";
+import { formatCurrency } from "../utils/formatter/formatCurrency";
 
 import "./AllAppointments.css";
 
@@ -76,7 +77,7 @@ export default function AllAppointments() {
         <PageHeader
           label="Gestão de Agendamentos"
           title="Todos os Agendamentos"
-          description={`${stats.totalAppointments} agendamento(s) • R$ ${stats.totalValue.toFixed(2)} • Pacientes: ${stats.totalPatients}`}
+          description={`${stats.totalAppointments} agendamento(s) • ${formatCurrency(stats.totalValue)} • Pacientes: ${stats.totalPatients}`}
         />
 
         {isLimitReached && <LimitWarningBanner />}
