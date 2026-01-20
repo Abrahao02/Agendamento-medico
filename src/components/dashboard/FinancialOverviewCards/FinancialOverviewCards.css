@@ -1,0 +1,38 @@
+/* ============================================
+   📁 src/components/dashboard/FinancialOverviewCards/FinancialOverviewCards.css
+   ============================================ */
+@import url('../../../styles/variables.css');
+
+.financial-overview-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  width: 100%;
+}
+
+/* Telas médias e pequenas: empilha verticalmente para garantir que valores completos apareçam */
+@media (max-width: 1400px) {
+  .financial-overview-cards {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .financial-overview-cards .stats-card {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Telas muito grandes: mantém 3 colunas apenas se houver espaço suficiente */
+@media (min-width: 1401px) {
+  .financial-overview-cards {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  /* Garante largura mínima para cada card em telas grandes */
+  .financial-overview-cards .stats-card {
+    min-width: 300px;
+  }
+}

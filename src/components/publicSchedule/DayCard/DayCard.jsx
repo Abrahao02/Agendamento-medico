@@ -32,21 +32,21 @@ export default function DayCard({
 
       {isSelected && (
         <div className="slots-list">
-          {day.slots.map((slot, idx) => (
-            <button
-              key={idx}
-              className={`slot-btn ${
-                selectedSlotTime === slot ? "selected" : ""
-              }`}
-              onClick={() => onSlotClick(day, slot)}
-            >
-              {/* ✅ CORREÇÃO: passa day (objeto completo) e slot (horário)
-                  day = { id: "...", date: "2026-01-15", slots: [...] }
-                  slot = "12:00"
-              */}
-              <span className="slot-time">{slot}</span>
-            </button>
-          ))}
+          {day.slots.map((slot, idx) => {
+            // Extract time from slot (handles both string and object formats)
+            const slotTime = typeof slot === "string" ? slot : (slot?.time || "");
+            const isSelected = selectedSlotTime === slotTime;
+            
+            return (
+              <button
+                key={idx}
+                className={`slot-btn ${isSelected ? "selected" : ""}`}
+                onClick={() => onSlotClick(day, slot)}
+              >
+                <span className="slot-time">{slotTime}</span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

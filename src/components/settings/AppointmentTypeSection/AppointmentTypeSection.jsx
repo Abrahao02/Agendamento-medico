@@ -1,15 +1,18 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import { Stethoscope, MapPin, Plus, Trash2, ChevronDown } from "lucide-react";
 import {
-  getAppointmentTypeModeOptions,
-  getAppointmentTypeOptions,
-  APPOINTMENT_TYPE_MODE,
+  getAppointmentTypeSelectionOptions,
+  APPOINTMENT_TYPE_SELECTION,
 } from "../../../constants/appointmentType";
+import { useCollapsibleSection } from "../../../hooks/common/useCollapsibleSection";
 import "./AppointmentTypeSection.css";
 
 export default function AppointmentTypeSection({
   appointmentTypeConfig,
   onUpdateField,
+  // Props agrupadas (ISP)
+  locations = null,
+  // Props individuais (compatibilidade)
   onAddLocation,
   onUpdateLocation,
   onRemoveLocation,
@@ -18,14 +21,35 @@ export default function AppointmentTypeSection({
   onNewLocationNameChange,
   onNewLocationValueChange,
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const { state, handlers } = useCollapsibleSection(true);
+
+  // Extrair valores das props agrupadas ou usar valores individuais (compatibilidade)
+  const locationsList = locations?.list || appointmentTypeConfig?.locations || [];
+  const newLocation = locations?.new || { name: newLocationName || "", value: newLocationValue || "" };
+  const locationHandlers = locations?.handlers || {
+    add: onAddLocation,
+    update: onUpdateLocation,
+    remove: onRemoveLocation,
+    setName: onNewLocationNameChange,
+    setValue: onNewLocationValueChange,
+  };
+
+  const appointmentTypeVisibility = useMemo(() => {
+    const selection = appointmentTypeConfig.selection || APPOINTMENT_TYPE_SELECTION.ONLINE_ONLY;
+    return {
+      showOnline: selection === APPOINTMENT_TYPE_SELECTION.ONLINE_ONLY || 
+                  selection === APPOINTMENT_TYPE_SELECTION.BOTH,
+      showPresencial: selection === APPOINTMENT_TYPE_SELECTION.PRESENCIAL_ONLY || 
+                      selection === APPOINTMENT_TYPE_SELECTION.BOTH,
+    };
+  }, [appointmentTypeConfig.selection]);
 
   return (
     <section className="settings-card appointment-type-section">
       <button
         className="section-header-clickable"
-        onClick={() => setIsExpanded(!isExpanded)}
-        aria-expanded={isExpanded}
+        onClick={handlers.toggleExpanded}
+        aria-expanded={state.isExpanded}
       >
         <div className="section-header">
           <Stethoscope size={20} />
@@ -33,149 +57,114 @@ export default function AppointmentTypeSection({
         </div>
         <ChevronDown
           size={20}
-          className={`collapse-icon ${isExpanded ? "expanded" : ""}`}
+          className={`collapse-icon ${state.isExpanded ? "expanded" : ""}`}
         />
       </button>
       
-      {isExpanded && (
+      {state.isExpanded && (
         <div className="section-content">
           <p className="helper-text section-description">
-            Configure como os pacientes podem escolher entre atendimento online ou presencial.
+            Configure o tipo de atendimento que estará disponível para seus pacientes.
           </p>
 
           <div className="form-group">
-        <label>Modo de exibição</label>
-        <select
-          value={appointmentTypeConfig.mode}
-          onChange={(e) => onUpdateField("mode", e.target.value)}
-          className="settings-select"
-        >
-          {getAppointmentTypeModeOptions().map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {appointmentTypeConfig.mode === APPOINTMENT_TYPE_MODE.FIXED && (
-        <div className="form-group">
-          <label>Tipo fixo</label>
-          <select
-            value={appointmentTypeConfig.fixedType}
-            onChange={(e) => onUpdateField("fixedType", e.target.value)}
-            className="settings-select"
-          >
-            {getAppointmentTypeOptions().map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      <div className="values-section">
-        <h3 className="section-subtitle">
-          <span>Valores Padrão</span>
-        </h3>
-        <p className="helper-text" style={{ marginBottom: "1rem" }}>
-          Defina os valores que serão usados automaticamente para cada tipo de atendimento.
-        </p>
-        
-        <div className="values-grid">
-          <div className="form-group">
-            <label>Valor padrão para Online (R$)</label>
-            <input
-              type="number"
-              placeholder="Ex: 100"
-              value={appointmentTypeConfig.defaultValueOnline}
-              onChange={(e) => onUpdateField("defaultValueOnline", e.target.value)}
-              className="settings-input"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Valor padrão para Presencial (R$)</label>
-            <input
-              type="number"
-              placeholder="Ex: 150"
-              value={appointmentTypeConfig.defaultValuePresencial}
-              onChange={(e) => onUpdateField("defaultValuePresencial", e.target.value)}
-              className="settings-input"
-            />
-          </div>
-        </div>
-      </div>
-
-      {appointmentTypeConfig.mode !== APPOINTMENT_TYPE_MODE.DISABLED && (
-        <div className="locations-section">
-          <h3 className="section-subtitle">
-            <MapPin size={18} />
-            <span>Locais de Atendimento Presencial</span>
-          </h3>
-          <p className="helper-text" style={{ marginBottom: "1rem" }}>
-            Adicione diferentes locais para atendimento presencial, cada um com seu próprio valor padrão.
-          </p>
-
-          {appointmentTypeConfig.locations.length > 0 && (
-            <div className="locations-list">
-              {appointmentTypeConfig.locations.map((location, index) => (
-                <div key={index} className="location-item">
-                  <input
-                    type="text"
-                    placeholder="Nome do local"
-                    value={location.name}
-                    onChange={(e) => onUpdateLocation(index, { ...location, name: e.target.value })}
-                    className="location-name-input"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Valor (R$)"
-                    value={location.defaultValue}
-                    onChange={(e) => onUpdateLocation(index, { ...location, defaultValue: Number(e.target.value) || 0 })}
-                    className="location-value-input"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => onRemoveLocation(index)}
-                    className="remove-location-btn"
-                    title="Remover local"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+            <label>Tipo de atendimento</label>
+            <select
+              value={appointmentTypeConfig.selection || APPOINTMENT_TYPE_SELECTION.ONLINE_ONLY}
+              onChange={(e) => onUpdateField("selection", e.target.value)}
+              className="settings-select"
+            >
+              {getAppointmentTypeSelectionOptions().map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
               ))}
+            </select>
+          </div>
+
+          {/* Campo Valor Online - aparece se Online ou Ambos */}
+          {appointmentTypeVisibility.showOnline && (
+            <div className="form-group">
+              <label>Valor padrão para consulta Online (R$)</label>
+              <input
+                type="number"
+                placeholder="Ex: 100"
+                value={appointmentTypeConfig.defaultValueOnline || 0}
+                onChange={(e) => onUpdateField("defaultValueOnline", e.target.value)}
+                className="settings-input"
+              />
             </div>
           )}
 
-          <div className="add-location-form">
-            <input
-              type="text"
-              placeholder="Nome do novo local"
-              value={newLocationName}
-              onChange={(e) => onNewLocationNameChange(e.target.value)}
-              className="location-name-input"
-            />
-            <input
-              type="number"
-              placeholder="Valor (R$)"
-              value={newLocationValue}
-              onChange={(e) => onNewLocationValueChange(e.target.value)}
-              className="location-value-input"
-            />
-            <button
-              type="button"
-              onClick={onAddLocation}
-              className="add-location-btn"
-              disabled={!newLocationName.trim() || !newLocationValue}
-            >
-              <Plus size={18} />
-              Adicionar
-            </button>
-          </div>
-        </div>
-      )}
+          {/* Seção Locais - aparece se Presencial ou Ambos */}
+          {appointmentTypeVisibility.showPresencial && (
+            <div className="locations-section">
+              <h3 className="section-subtitle">
+                <MapPin size={18} />
+                <span>Locais de Atendimento Presencial</span>
+              </h3>
+              <p className="helper-text" style={{ marginBottom: "1rem" }}>
+                Adicione diferentes locais para atendimento presencial, cada um com seu próprio valor padrão.
+              </p>
+
+              {locationsList.length > 0 && (
+                <div className="locations-list">
+                  {locationsList.map((location, index) => (
+                    <div key={location.name || `location-${index}`} className="location-item">
+                      <input
+                        type="text"
+                        placeholder="Nome do local"
+                        value={location.name}
+                        onChange={(e) => locationHandlers.update(index, { ...location, name: e.target.value })}
+                        className="location-name-input"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Valor (R$)"
+                        value={location.defaultValue}
+                        onChange={(e) => locationHandlers.update(index, { ...location, defaultValue: Number(e.target.value) || 0 })}
+                        className="location-value-input"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => locationHandlers.remove(index)}
+                        className="remove-location-btn"
+                        title="Remover local"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="add-location-form">
+                <input
+                  type="text"
+                  placeholder="Nome do novo local"
+                  value={newLocation.name}
+                  onChange={(e) => locationHandlers.setName(e.target.value)}
+                  className="location-name-input"
+                />
+                <input
+                  type="number"
+                  placeholder="Valor (R$)"
+                  value={newLocation.value}
+                  onChange={(e) => locationHandlers.setValue(e.target.value)}
+                  className="location-value-input"
+                />
+                <button
+                  type="button"
+                  onClick={locationHandlers.add}
+                  className="add-location-btn"
+                  disabled={!newLocation.name.trim() || !newLocation.value}
+                >
+                  <Plus size={18} />
+                  Adicionar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>

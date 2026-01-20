@@ -1,8 +1,9 @@
 // ============================================
 // 📁 src/pages/Login.jsx - REFATORADO
 // ============================================
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useLogin } from "../hooks/auth/useLogin";
+import Button from "../components/common/Button";
 import "./Login.css";
 
 export default function Login() {
@@ -27,7 +28,7 @@ export default function Login() {
           <label>
             Email
             <div className="input-wrapper">
-              <FaEnvelope className="icon" />
+              <Mail className="icon" size={16} />
               <input
                 type="email"
                 name="email"
@@ -41,7 +42,7 @@ export default function Login() {
           <label>
             Senha
             <div className="input-wrapper">
-              <FaLock className="icon" />
+              <Lock className="icon" size={16} />
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
@@ -55,34 +56,37 @@ export default function Login() {
                 onClick={toggleShowPassword}
                 aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </label>
 
           {error && <span className="error">{error}</span>}
 
-          <button type="submit" className="submit-btn">
+          <Button type="submit" variant="primary" fullWidth>
             Entrar
-          </button>
+          </Button>
           
-          <button 
-            type="button" 
-            className="submit-btn secondary" 
-            onClick={() => window.location.href = "/register"}
+          <Button
+            type="button"
+            variant="outline"
+            fullWidth
+            onClick={() => (window.location.href = "/register")}
           >
             Registrar-se
-          </button>
+          </Button>
 
-          <span 
-            className="forgot-link" 
-            onClick={handleForgotPassword}
-            role="button"
-            tabIndex={0}
-            onKeyPress={(e) => e.key === 'Enter' && handleForgotPassword()}
-          >
-            Esqueci minha senha
-          </span>
+          <div className="forgot-link-wrapper">
+            <span 
+              className="forgot-link" 
+              onClick={handleForgotPassword}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && handleForgotPassword()}
+            >
+              Esqueci minha senha
+            </span>
+          </div>
 
           {resetError && <span className="error">{resetError}</span>}
           {resetEmailSent && (

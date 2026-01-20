@@ -1,0 +1,168 @@
+/* ============================================
+   Location Filter Styles
+   ============================================ */
+.location-filter {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.location-filter-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.location-filter-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #374151;
+  flex: 1;
+}
+
+.location-filter-clear {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.location-filter-clear:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.location-filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.location-filter-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
+  flex: 1;
+  max-width: 250px;
+}
+
+.location-filter-option:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.location-filter-option.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.location-filter-option.active .location-filter-name {
+  color: white;
+  font-weight: 600;
+}
+
+.location-filter-option.active .location-filter-price {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.location-filter-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.location-filter-price {
+  font-size: 0.8125rem;
+  color: #059669;
+  font-weight: 600;
+}
+
+.location-filter-option.active .location-filter-price {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.location-filter-price-info {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.location-filter-option.active .location-filter-price-info {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.location-filter-whatsapp {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.location-filter-whatsapp-text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.location-filter-whatsapp-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-secondary);
+  color: var(--white);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  transition: var(--transition-base);
+  align-self: flex-start;
+}
+
+.location-filter-whatsapp-button:hover {
+  background: var(--color-secondary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .location-filter {
+    padding: 1rem;
+  }
+
+  .location-filter-options {
+    flex-direction: column;
+  }
+
+  .location-filter-option {
+    max-width: 100%;
+    width: 100%;
+  }
+}

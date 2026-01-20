@@ -1,78 +1,88 @@
 /* ===========================
-   Date Navigation
+   Modern Date Navigation
 =========================== */
 
 .date-navigation {
   display: flex;
   align-items: center;
-  justify-content: center; 
+  justify-content: space-between;
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-2xl);
-  flex-wrap: wrap;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
-.date-navigation span {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  min-width: 160px;
-  text-align: center;
-}
-
-.date-navigation button {
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-md);
-  border: none;
-  cursor: pointer;
-  font-weight: var(--font-medium);
-  transition: var(--transition-base);
+/* Botões de navegação com ícone apenas */
+.date-nav-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
-  font-size: var(--text-sm);
-  white-space: nowrap;
-  box-sizing: border-box;
-}
-
-.date-navigation button svg {
-  width: 16px;
-  height: 16px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-base);
   flex-shrink: 0;
 }
 
-.date-navigation .btn-primary {
-  background: var(--color-secondary);
-  color: var(--text-inverse);
-}
-
-.date-navigation .btn-primary:hover {
-  background: var(--color-secondary-hover);
-  box-shadow: var(--shadow-secondary);
-  transform: translateY(-1px);
-}
-
-.date-navigation .btn-primary:active {
-  transform: translateY(0);
-}
-
-.date-navigation .btn-secondary {
-  background: var(--bg-secondary);
+.date-nav-icon-btn:hover {
+  background: var(--gray-100);
   color: var(--text-primary);
-  border: 1px solid var(--border-medium);
 }
 
-.date-navigation .btn-secondary:hover {
-  border-color: var(--color-secondary);
-  box-shadow: var(--shadow-xs);
-  transform: translateY(-1px);
+.date-nav-icon-btn:active {
+  background: var(--gray-200);
+  transform: scale(0.95);
 }
 
-.date-navigation .btn-secondary:active {
-  transform: translateY(0);
-  background: var(--bg-light);
+.date-nav-icon-btn:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+/* Wrapper do display de data */
+.date-display-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0 var(--spacing-md);
+  flex: 1;
+  justify-content: center;
+}
+
+.date-calendar-icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* Display de data */
+.date-display {
+  text-align: center;
+}
+
+.date-display-main {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.date-display-weekday {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-top: 2px;
+  text-transform: lowercase;
+}
+
+/* Botão Hoje */
+.date-nav-today-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* ===========================
@@ -80,18 +90,25 @@
 =========================== */
 @media (max-width: 768px) {
   .date-navigation {
-    gap: 0.625rem;
-    margin-bottom: var(--spacing-xl);
+    gap: var(--spacing-sm);
   }
 
-  .date-navigation span {
-    min-width: 140px;
+  .date-nav-icon-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+
+  .date-display-wrapper {
+    padding: 0 var(--spacing-sm);
+  }
+
+  .date-display-main {
     font-size: var(--text-base);
   }
 
-  .date-navigation button {
-    padding: 0.625rem 0.875rem;
-    font-size: 0.875rem;
+  .date-display-weekday {
+    font-size: 0.7rem;
   }
 }
 
@@ -100,51 +117,36 @@
 =========================== */
 @media (max-width: 640px) {
   .date-navigation {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    gap: 0.625rem;
-    padding: 0 var(--spacing-xs);
+    gap: var(--spacing-xs);
   }
 
-  /* Data no topo, centralizada */
-  .date-navigation span {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    font-size: 1.125rem;
-    min-width: 0;
-    margin-bottom: 0.25rem;
+  .date-nav-icon-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
   }
 
-  /* Botões Anterior e Próximo lado a lado */
-  .date-navigation .btn-secondary:first-of-type {
-    grid-column: 1;
-    grid-row: 2;
+  .date-display-wrapper {
+    gap: var(--spacing-xs);
+    padding: 0;
   }
 
-  .date-navigation .btn-secondary:last-of-type {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  /* Botão Hoje embaixo, largura total */
-  .date-navigation .btn-primary {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 1rem;
-    min-height: 44px;
-  }
-
-  .date-navigation button {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.875rem;
-  }
-
-  .date-navigation button svg {
+  .date-calendar-icon {
     width: 18px;
     height: 18px;
+  }
+
+  .date-display-main {
+    font-size: var(--text-sm);
+  }
+
+  .date-display-weekday {
+    font-size: 0.65rem;
+  }
+
+  .date-nav-today-btn {
+    font-size: var(--text-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
   }
 }
 
@@ -152,12 +154,11 @@
    Mobile Pequeno
 =========================== */
 @media (max-width: 375px) {
-  .date-navigation span {
-    font-size: 1rem;
+  .date-display-main {
+    font-size: 0.813rem;
   }
 
-  .date-navigation button {
-    padding: 0.625rem 0.5rem;
-    font-size: 0.8125rem;
+  .date-display-weekday {
+    font-size: 0.625rem;
   }
 }

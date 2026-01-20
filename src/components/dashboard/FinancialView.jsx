@@ -1,0 +1,55 @@
+// ============================================
+// 📁 src/components/dashboard/FinancialView.jsx
+// Visualização Financeiro (Strategy Pattern) - REFATORADO
+// ============================================
+
+import React from "react";
+import FinancialOverviewCards from "./FinancialOverviewCards";
+import FinancialForecast from "./FinancialForecast";
+import FinancialTimeline from "./FinancialTimeline";
+import FinancialBreakdown from "./FinancialBreakdown";
+import "./FinancialView.css";
+
+export default function FinancialView({
+  stats,
+  financialForecast = {},
+  financialBreakdown = {},
+  filteredAppointments,
+  filteredAvailability,
+  patients,
+}) {
+  return (
+    <>
+      {/* BLOCO 1 - Visão geral (3 cards principais) */}
+      <FinancialOverviewCards
+        received={stats.revenueRealized || 0}
+        toReceive={stats.revenuePredicted || 0}
+        atRisk={stats.revenueAtRisk || 0}
+      />
+
+      {/* Layout em grid para os outros blocos */}
+      <div className="financial-content-grid">
+        {/* BLOCO 2 - Previsão financeira do período */}
+        <FinancialForecast
+          confirmed={financialForecast.confirmed || 0}
+          pending={financialForecast.pending || 0}
+          noShow={financialForecast.noShow || 0}
+          total={financialForecast.total || 0}
+        />
+
+        {/* BLOCO 3 - Linha do tempo financeira */}
+        <FinancialTimeline
+          realized={stats.revenueRealized || 0}
+          toReceive={stats.revenuePredicted || 0}
+        />
+      </div>
+
+      {/* BLOCO 4 - Detalhamento por status */}
+      <FinancialBreakdown
+        confirmed={financialBreakdown.confirmed || { realized: 0, future: 0 }}
+        pending={financialBreakdown.pending || { total: 0 }}
+        noShow={financialBreakdown.noShow || { total: 0 }}
+      />
+    </>
+  );
+}

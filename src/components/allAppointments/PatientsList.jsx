@@ -1,23 +1,30 @@
 // ========================================
 // PatientsList.jsx
 // ========================================
-import React from "react";
+import React, { useCallback } from "react";
+import { Inbox } from "lucide-react";
 import PatientCard from "./PatientCard";
 import "./PatientsList.css";
 
-export default function PatientsList({
+function PatientsList({
   patientsData,
   expandedPatients,
   changedIds,
-  lockedAppointments, // ✅ NOVO
+  lockedAppointments,
   onTogglePatient,
   onStatusChange,
   onSendWhatsapp,
 }) {
+  const handleToggle = useCallback((patientName) => {
+    onTogglePatient(patientName);
+  }, [onTogglePatient]);
+
   if (patientsData.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-icon">📭</div>
+        <div className="empty-icon" aria-hidden="true">
+          <Inbox size={56} />
+        </div>
         <h3>Nenhum agendamento encontrado</h3>
         <p>Limpe os filtros para tentar novamente.</p>
       </div>
@@ -28,12 +35,12 @@ export default function PatientsList({
     <div className="patients-list">
       {patientsData.map((patient) => (
         <PatientCard
-          key={patient.name}
+          key={patient.whatsapp}
           patient={patient}
           isExpanded={expandedPatients.has(patient.name)}
           changedIds={changedIds}
-          lockedAppointments={lockedAppointments} // ✅ NOVO
-          onToggle={() => onTogglePatient(patient.name)}
+          lockedAppointments={lockedAppointments}
+          onToggle={handleToggle}
           onStatusChange={onStatusChange}
           onSendWhatsapp={onSendWhatsapp}
         />
@@ -41,3 +48,5 @@ export default function PatientsList({
     </div>
   );
 }
+
+export default React.memo(PatientsList);

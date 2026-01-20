@@ -12,9 +12,9 @@ export const groupAppointmentsByPatient = (appointments) => {
 
   const patients = {};
 
-  appointments.forEach((app) => {
-    const whatsapp = app.patientWhatsapp;
-    const patientName = app.referenceName?.trim() || app.patientName;
+  appointments.forEach((appointment) => {
+    const whatsapp = appointment.patientWhatsapp;
+    const patientName = appointment.referenceName?.trim() || appointment.patientName;
 
     if (!patients[whatsapp]) {
       patients[whatsapp] = {
@@ -26,10 +26,10 @@ export const groupAppointmentsByPatient = (appointments) => {
       };
     }
 
-    patients[whatsapp].appointments.push(app);
-    patients[whatsapp].totalValue += app.value || 0;
+    patients[whatsapp].appointments.push(appointment);
+    patients[whatsapp].totalValue += appointment.value || 0;
     
-    const status = app.status || "Pendente";
+    const status = appointment.status || "Pendente";
     patients[whatsapp].statusCounts[status] = 
       (patients[whatsapp].statusCounts[status] || 0) + 1;
   });

@@ -3,35 +3,42 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, AlertCircle } from "lucide-react";
 
 import { usePublicSchedule } from "../hooks/appointments/usePublicSchedule";
+import { logError } from "../utils/logger/logger";
 
 import Card from "../components/common/Card";
 import Badge from "../components/common/Badge";
 import DayCard from "../components/publicSchedule/DayCard";
-import AppointmentForm from "../components/publicSchedule/AppointmentForm/AppointmentForm";
-import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
-import PublicScheduleHeader from "../components/publicSchedule/PublicScheduleHeader/PublicScheduleHeader";
-import IntroCard from "../components/publicSchedule/IntroCard/IntroCard";
-import LimitReachedBanner from "../components/publicSchedule/LimitReachedBanner/LimitReachedBanner";
-import EmptyState from "../components/publicSchedule/EmptyState/EmptyState";
+import AppointmentForm from "../components/publicSchedule/AppointmentForm";
+import LocationFilter from "../components/publicSchedule/LocationFilter";
+import LoadingFallback from "../components/common/LoadingFallback";
+import PublicScheduleHeader from "../components/publicSchedule/PublicScheduleHeader";
+import IntroCard from "../components/publicSchedule/IntroCard";
+import LimitReachedBanner from "../components/publicSchedule/LimitReachedBanner";
+import EmptyState from "../components/publicSchedule/EmptyState";
+import { useToast } from "../components/common/Toast";
 
 import "./PublicSchedule.css";
 
 export default function PublicSchedule() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
   const formRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
 
   const {
     doctor,
     availability,
+    availableLocations,
     loading,
     error,
     limitReached,
     selectedDay,
     selectedSlot,
+    selectedLocation,
     handleDaySelect,
     handleSlotSelect,
+    setSelectedLocation,
     createAppointment,
   } = usePublicSchedule(slug);
 
@@ -52,17 +59,20 @@ export default function PublicSchedule() {
       if (result.success) {
         navigate(`/public/${slug}/success`, { state: result.data });
       } else {
-        alert(result.error || "Erro ao agendar");
+        toast.error(result.error || "Erro ao agendar");
       }
     } catch (err) {
-      console.error(err);
-      alert("Erro ao agendar. Tente novamente.");
+      logError("Erro ao agendar:", err);
+      toast.error("Erro ao agendar. Tente novamente.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleCancel = () => handleSlotSelect(null);
+  const handleCancel = () => {
+    handleSlotSelect(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (loading) return <LoadingFallback message="Carregando agenda..." />;
 
@@ -88,6 +98,17 @@ export default function PublicSchedule() {
       <IntroCard />
 
       {limitReached && <LimitReachedBanner doctor={doctor} />}
+
+      {!limitReached && availableLocations && availableLocations.length > 0 && (
+        <LocationFilter
+          locations={availableLocations}
+          selectedLocation={selectedLocation}
+          onLocationChange={setSelectedLocation}
+          showAllOption={availableLocations.length > 1}
+          showPrice={doctor?.publicScheduleConfig?.showPrice ?? true}
+          doctor={doctor}
+        />
+      )}
 
       {!limitReached && (
         <div className="availability-status">

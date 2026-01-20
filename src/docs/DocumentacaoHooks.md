@@ -18,6 +18,7 @@
 8. [Stripe Hooks](#-stripe-hooks) ✨ NOVO
 9. [Common Hooks](#-common-hooks)
 10. [Guia de Uso](#-guia-de-uso)
+11. [Novos Hooks](#-novos-hooks) ✨ NOVO
 
 ---
 
@@ -40,8 +41,6 @@ src/hooks/
 │   └── usePublicSchedule.js
 ├── patients/
 │   └── usePatients.js
-├── settings/
-│   └── useSettings.js
 ├── settings/
 │   └── useSettings.js
 └── stripe/
@@ -816,6 +815,130 @@ function Settings() {
 
 ---
 
+## 💳 Stripe Hooks
+
+### `useStripeCheckout()`
+
+**Arquivo:** `src/hooks/stripe/useStripeCheckout.js`
+
+Hook para iniciar processo de checkout do Stripe.
+
+#### **Uso**
+
+```javascript
+import { useStripeCheckout } from '@/hooks/stripe/useStripeCheckout';
+
+function Component() {
+  const { handleCheckout, loading, error } = useStripeCheckout();
+
+  return (
+    <button onClick={handleCheckout} disabled={loading}>
+      {loading ? 'Processando...' : 'Assinar PRO'}
+    </button>
+  );
+}
+```
+
+#### **Estados Retornados**
+
+```typescript
+{
+  handleCheckout: () => Promise<void>,
+  loading: boolean,
+  error: string | null
+}
+```
+
+**Nota:** Para documentação completa, consulte [DocumentacaoStripe.md](./DocumentacaoStripe.md).
+
+---
+
+### `useCancelSubscription()`
+
+**Arquivo:** `src/hooks/stripe/useCancelSubscription.js`
+
+Hook para cancelar assinatura.
+
+#### **Uso**
+
+```javascript
+import { useCancelSubscription } from '@/hooks/stripe/useCancelSubscription';
+
+function Component() {
+  const { handleCancel, loading, error } = useCancelSubscription();
+
+  const handleClick = async () => {
+    const result = await handleCancel();
+    if (result.success) {
+      alert('Assinatura será cancelada no final do período pago');
+    }
+  };
+
+  return (
+    <button onClick={handleClick} disabled={loading}>
+      {loading ? 'Cancelando...' : 'Cancelar Assinatura'}
+    </button>
+  );
+}
+```
+
+#### **Estados Retornados**
+
+```typescript
+{
+  handleCancel: () => Promise<{ success: boolean, message?: string, error?: string }>,
+  loading: boolean,
+  error: string | null
+}
+```
+
+**Nota:** Para documentação completa, consulte [DocumentacaoStripe.md](./DocumentacaoStripe.md).
+
+---
+
+### `useReactivateSubscription()`
+
+**Arquivo:** `src/hooks/stripe/useReactivateSubscription.js`
+
+Hook para reativar assinatura cancelada.
+
+#### **Uso**
+
+```javascript
+import { useReactivateSubscription } from '@/hooks/stripe/useReactivateSubscription';
+
+function Component() {
+  const { handleReactivate, loading, error } = useReactivateSubscription();
+
+  const handleClick = async () => {
+    const result = await handleReactivate();
+    if (result.success) {
+      alert('Assinatura reativada com sucesso!');
+    }
+  };
+
+  return (
+    <button onClick={handleClick} disabled={loading}>
+      {loading ? 'Reativando...' : 'Reativar Assinatura'}
+    </button>
+  );
+}
+```
+
+#### **Estados Retornados**
+
+```typescript
+{
+  handleReactivate: () => Promise<{ success: boolean, message?: string, error?: string }>,
+  loading: boolean,
+  error: string | null
+}
+```
+
+**Nota:** Para documentação completa, consulte [DocumentacaoStripe.md](./DocumentacaoStripe.md).
+
+---
+
 ## 🎨 Common Hooks
 
 ### `useDashboardLayout()`
@@ -980,6 +1103,82 @@ function Component() {
 #### **Comportamento**
 
 - ✅ Faz scroll suave para elemento
+
+---
+
+### `useModal(isOpen, onClose)` ✨ NOVO
+
+**Arquivo:** `src/hooks/common/useModal.js`
+
+Hook reutilizável para gerenciar estado e comportamento de modais. Controla overflow do body e fornece handlers padrão.
+
+#### **Uso**
+
+```javascript
+import { useModal } from "@/hooks/common/useModal";
+
+function MyModal({ isOpen, onClose }) {
+  const { handleBackdropClick, handleKeyDown } = useModal(isOpen, onClose);
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div 
+      className="modal-overlay" 
+      onClick={handleBackdropClick}
+      onKeyDown={handleKeyDown}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="modal-content">
+        <button onClick={onClose}>Fechar</button>
+        {/* Conteúdo do modal */}
+      </div>
+    </div>
+  );
+}
+```
+
+#### **Parâmetros**
+
+```typescript
+{
+  isOpen: boolean,        // Estado de abertura do modal
+  onClose: () => void    // Função para fechar o modal
+}
+```
+
+#### **Retorna**
+
+```typescript
+{
+  handleBackdropClick: (e: MouseEvent) => void,  // Handler para fechar ao clicar no backdrop
+  handleKeyDown: (e: KeyboardEvent) => void      // Handler para fechar com ESC
+}
+```
+
+#### **Comportamento**
+
+- ✅ Controla `overflow` do body quando modal está aberto
+- ✅ Fecha modal ao clicar no backdrop (overlay)
+- ✅ Fecha modal com tecla ESC
+- ✅ Limpa overflow ao desmontar componente
+
+#### **Uso nos Componentes**
+
+- `PendingAppointmentsModal`
+- `ConfirmedAppointmentsModal`
+- `NoShowModal`
+- `CancelledModal`
+- `AvailableSlotsModal`
+- `AppointmentsSummaryModal`
+- `NewPatientsModal`
+
+#### **Benefícios**
+
+- ✅ Elimina duplicação de código (~20 linhas por modal)
+- ✅ Garante consistência comportamental
+- ✅ Facilita manutenção
 - ✅ Aplica offset configurável
 - ✅ Fecha menu após scroll (opcional)
 
@@ -1128,4 +1327,4 @@ function Login() {
 
 **Documentação criada por:** Assistente IA  
 **Data:** Janeiro 2026  
-**Versão:** 1.0
+**Versão:** 1.2

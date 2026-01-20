@@ -1,39 +1,34 @@
+// ============================================
+// 📁 src/hooks/settings/useSettings.js
+// Hook principal que orquestra os hooks especializados
+// ============================================
+
 import { useState, useEffect, useMemo } from "react";
 import * as DoctorService from "../../services/firebase/doctors.service";
-import { generateWhatsappMessage } from "../../utils/message/generateWhatsappMessage";
 import { useCancelSubscription } from "../stripe/useCancelSubscription";
 import { useReactivateSubscription } from "../stripe/useReactivateSubscription";
+import { useWhatsappSettings } from "./useWhatsappSettings";
+import { usePublicScheduleSettings } from "./usePublicScheduleSettings";
+import { useAppointmentTypeSettings } from "./useAppointmentTypeSettings";
+import { logError } from "../../utils/logger/logger";
+import { useToast } from "../../components/common/Toast";
 
 export function useSettings(user) {
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [doctor, setDoctor] = useState(null);
-  const [newLocationName, setNewLocationName] = useState("");
-  const [newLocationValue, setNewLocationValue] = useState("");
-  
+
   // Subscription hooks
   const { handleCancel, loading: cancelLoading, error: cancelError } = useCancelSubscription();
   const { handleReactivate, loading: reactivateLoading, error: reactivateError } = useReactivateSubscription();
-  const [whatsappConfig, setWhatsappConfig] = useState({
-    intro: "Olá",
-    body: "Sua sessão está agendada",
-    footer:
-      "Caso não possa comparecer, por favor avisar com antecedência. Obrigado!",
-    showValue: true,
-  });
 
-  const [publicScheduleConfig, setPublicScheduleConfig] = useState({
-    period: "all_future",
-  });
+  // Settings hooks
+  const whatsappSettings = useWhatsappSettings();
+  const publicScheduleSettings = usePublicScheduleSettings();
+  const appointmentTypeSettings = useAppointmentTypeSettings();
 
-  const [appointmentTypeConfig, setAppointmentTypeConfig] = useState({
-    mode: "disabled",
-    fixedType: "online",
-    defaultValueOnline: 0,
-    defaultValuePresencial: 0,
-    locations: [],
-  });
-
+  // Fetch settings
   useEffect(() => {
     if (!user) {
       setLoading(false);
@@ -48,40 +43,24 @@ export function useSettings(user) {
 
         if (result.success) {
           const data = result.data;
-
           setDoctor(data);
 
-          setWhatsappConfig({
-            intro: data.whatsappConfig?.intro || "Olá",
-            body: data.whatsappConfig?.body || "Sua sessão está agendada",
-            footer: data.whatsappConfig?.footer ||
-              "Caso não possa comparecer, por favor avisar com antecedência. Obrigado!",
-            showValue: data.whatsappConfig?.showValue ?? true,
-          });
-
-          setPublicScheduleConfig({
-            period: data.publicScheduleConfig?.period || "all_future",
-          });
-
-          setAppointmentTypeConfig({
-            mode: data.appointmentTypeConfig?.mode || "disabled",
-            fixedType: data.appointmentTypeConfig?.fixedType || "online",
-            defaultValueOnline: data.appointmentTypeConfig?.defaultValueOnline || 0,
-            defaultValuePresencial: data.appointmentTypeConfig?.defaultValuePresencial || 0,
-            locations: data.appointmentTypeConfig?.locations || [],
-          });
+          // Initialize all settings
+          whatsappSettings.initializeWhatsappConfig(data.whatsappConfig);
+          publicScheduleSettings.initializePublicScheduleConfig(data.publicScheduleConfig);
+          appointmentTypeSettings.initializeAppointmentTypeConfig(data.appointmentTypeConfig);
         }
       } catch (error) {
-        console.error("Erro ao buscar configurações:", error);
+        logError("Erro ao buscar configurações:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchSettings();
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 💾 Salvar configurações
+  // Save settings
   const saveSettings = async () => {
     if (!user) {
       return { success: false, error: "Usuário não autenticado" };
@@ -90,82 +69,27 @@ export function useSettings(user) {
     try {
       setSaving(true);
 
-      return await DoctorService.updateDoctor(user.uid, {
-        whatsappConfig: {
-          intro: whatsappConfig.intro,
-          body: whatsappConfig.body,
-          footer: whatsappConfig.footer,
-          showValue: whatsappConfig.showValue,
-        },
-        publicScheduleConfig: {
-          period: publicScheduleConfig.period,
-        },
-        appointmentTypeConfig: {
-          mode: appointmentTypeConfig.mode,
-          fixedType: appointmentTypeConfig.fixedType,
-          defaultValueOnline: Number(appointmentTypeConfig.defaultValueOnline) || 0,
-          defaultValuePresencial: Number(appointmentTypeConfig.defaultValuePresencial) || 0,
-          locations: appointmentTypeConfig.locations,
-        },
-      });
+      const newConfig = {
+        whatsappConfig: whatsappSettings.getConfigForSave(),
+        publicScheduleConfig: publicScheduleSettings.getConfigForSave(),
+        appointmentTypeConfig: appointmentTypeSettings.getConfigForSave(),
+      };
+
+      const result = await DoctorService.updateDoctor(user.uid, newConfig);
+
+      // Update saved state after successful save
+      if (result.success) {
+        whatsappSettings.markAsSaved();
+        publicScheduleSettings.markAsSaved();
+        appointmentTypeSettings.markAsSaved();
+      }
+
+      return result;
     } catch (error) {
-      console.error("Erro ao salvar configurações:", error);
+      logError("Erro ao salvar configurações:", error);
       return { success: false, error: error.message };
     } finally {
       setSaving(false);
-    }
-  };
-
-  const updateWhatsappField = (field, value) => {
-    setWhatsappConfig((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const updatePublicScheduleField = (field, value) => {
-    setPublicScheduleConfig((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const updateAppointmentTypeField = (field, value) => {
-    setAppointmentTypeConfig((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const addLocation = (location) => {
-    setAppointmentTypeConfig((prev) => ({
-      ...prev,
-      locations: [...prev.locations, location],
-    }));
-  };
-
-  const updateLocation = (index, location) => {
-    setAppointmentTypeConfig((prev) => ({
-      ...prev,
-      locations: prev.locations.map((loc, i) => i === index ? location : loc),
-    }));
-  };
-
-  const removeLocation = (index) => {
-    setAppointmentTypeConfig((prev) => ({
-      ...prev,
-      locations: prev.locations.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleAddLocation = () => {
-    if (newLocationName.trim() && newLocationValue) {
-      addLocation({
-        name: newLocationName.trim(),
-        defaultValue: Number(newLocationValue) || 0,
-      });
-      setNewLocationName("");
-      setNewLocationValue("");
     }
   };
 
@@ -173,10 +97,10 @@ export function useSettings(user) {
     if (confirm('Tem certeza que deseja cancelar sua assinatura? Você continuará com acesso PRO até o final do período pago.')) {
       const result = await handleCancel();
       if (result.success) {
-        alert('Assinatura cancelada com sucesso! Você continuará com acesso PRO até o final do período pago.');
+        toast.success('Assinatura cancelada com sucesso. Você continuará com acesso PRO até o final do período pago.');
         window.location.reload();
       } else {
-        alert(`Erro ao cancelar: ${result.error || 'Tente novamente'}`);
+        toast.error(`Erro ao cancelar: ${result.error || 'Tente novamente'}`);
       }
     }
   };
@@ -185,20 +109,12 @@ export function useSettings(user) {
     if (confirm('Tem certeza que deseja reativar sua assinatura? Ela continuará sendo cobrada normalmente.')) {
       const result = await handleReactivate();
       if (result.success) {
-        alert('Assinatura reativada com sucesso!');
+        toast.success('Assinatura reativada com sucesso.');
         window.location.reload();
       } else {
-        alert(`Erro ao reativar: ${result.error || 'Tente novamente'}`);
+        toast.error(`Erro ao reativar: ${result.error || 'Tente novamente'}`);
       }
     }
-  };
-
-  const handleUpdateLocation = (index, location) => {
-    updateLocation(index, location);
-  };
-
-  const handleRemoveLocation = (index) => {
-    removeLocation(index);
   };
 
   // Calcular data de término da assinatura
@@ -215,7 +131,7 @@ export function useSettings(user) {
       endDate.setDate(endDate.getDate() + 30);
       return endDate;
     } catch (error) {
-      console.error('Erro ao calcular data:', error);
+      logError('Erro ao calcular data:', error);
       return null;
     }
   }, [doctor?.planUpdatedAt]);
@@ -224,25 +140,28 @@ export function useSettings(user) {
     return doctor?.plan === "pro";
   }, [doctor?.plan]);
 
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = useMemo(() => {
+    return (
+      whatsappSettings.hasUnsavedChanges ||
+      publicScheduleSettings.hasUnsavedChanges ||
+      appointmentTypeSettings.hasUnsavedChanges
+    );
+  }, [
+    whatsappSettings.hasUnsavedChanges,
+    publicScheduleSettings.hasUnsavedChanges,
+    appointmentTypeSettings.hasUnsavedChanges,
+  ]);
+
   const generatePreview = (
     patientName = "João",
     date = "07/01/2026",
     time = "12:00"
   ) => {
-    // Usa o valor configurado ou um valor padrão para demonstração
-    const defaultValue = appointmentTypeConfig.defaultValueOnline || 
-                        appointmentTypeConfig.defaultValuePresencial || 
-                        150; // Valor padrão para preview
-    return generateWhatsappMessage({
-      intro: whatsappConfig.intro,
-      body: whatsappConfig.body,
-      footer: whatsappConfig.footer,
-      patientName,
-      date,
-      time,
-      value: defaultValue,
-      showValue: whatsappConfig.showValue,
-    });
+    const defaultValue = appointmentTypeSettings.appointmentTypeConfig.defaultValueOnline || 
+                        appointmentTypeSettings.appointmentTypeConfig.defaultValuePresencial || 
+                        150;
+    return whatsappSettings.generatePreview(patientName, date, time, defaultValue);
   };
 
   return {
@@ -250,25 +169,25 @@ export function useSettings(user) {
     saving,
     doctor,
     isPro,
-    whatsappConfig,
-    publicScheduleConfig,
-    appointmentTypeConfig,
+    whatsappConfig: whatsappSettings.whatsappConfig,
+    publicScheduleConfig: publicScheduleSettings.publicScheduleConfig,
+    appointmentTypeConfig: appointmentTypeSettings.appointmentTypeConfig,
     subscriptionEndDate,
-    newLocationName,
-    newLocationValue,
+    newLocationName: appointmentTypeSettings.newLocationName,
+    newLocationValue: appointmentTypeSettings.newLocationValue,
     cancelLoading,
     cancelError,
     reactivateLoading,
     reactivateError,
-    updateWhatsappField,
-    updatePublicScheduleField,
-    updateAppointmentTypeField,
-    addLocation,
-    setNewLocationName,
-    setNewLocationValue,
-    handleAddLocation,
-    updateLocation: handleUpdateLocation,
-    removeLocation: handleRemoveLocation,
+    hasUnsavedChanges,
+    updateWhatsappField: whatsappSettings.updateWhatsappField,
+    updatePublicScheduleField: publicScheduleSettings.updatePublicScheduleField,
+    updateAppointmentTypeField: appointmentTypeSettings.updateAppointmentTypeField,
+    setNewLocationName: appointmentTypeSettings.setNewLocationName,
+    setNewLocationValue: appointmentTypeSettings.setNewLocationValue,
+    handleAddLocation: appointmentTypeSettings.handleAddLocation,
+    updateLocation: appointmentTypeSettings.updateLocation,
+    removeLocation: appointmentTypeSettings.removeLocation,
     handleCancelSubscription,
     handleReactivateSubscription,
     saveSettings,

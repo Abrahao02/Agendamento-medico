@@ -1,7 +1,8 @@
 // ============================================
 // 📁 src/utils/appointments/hasConflict.js
-// ✅ ATUALIZADO: Ignora appointments cancelados
 // ============================================
+
+import { STATUS_GROUPS, APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
 
 /**
  * Verifica se já existe um agendamento ATIVO no horário
@@ -30,6 +31,7 @@ export function hasAppointmentConflict(appointments, date, time) {
   return appointments.some(apt => 
     apt.date === date && 
     apt.time === time &&
-    STATUS_GROUPS.ACTIVE.includes(apt.status) // ✅ MUDANÇA PRINCIPAL
+    apt.status !== APPOINTMENT_STATUS.CANCELLED && // ✅ Exclui explicitamente "Cancelado"
+    STATUS_GROUPS.ACTIVE.includes(apt.status)
   );
 }

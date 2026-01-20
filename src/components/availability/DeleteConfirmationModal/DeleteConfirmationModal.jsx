@@ -12,17 +12,18 @@ export default function DeleteConfirmationModal({
   time,
   loading = false,
 }) {
-  // ✅ FIX: useEffect para controlar scroll corretamente
   React.useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     }
 
-    // Cleanup ao desmontar
+    // Always cleanup on unmount or when modal closes
+    // This ensures body scroll is restored even if user navigates away
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
+      // Alternative approach: document.body.style.removeProperty('overflow');
     };
   }, [isOpen]);
 
@@ -44,18 +45,18 @@ export default function DeleteConfirmationModal({
 
   const modalContent = (
     <div 
-      className="modal-overlay" 
+      className="delete-confirmation-modal__overlay" 
       onClick={handleBackdropClick}
       onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="modal-title"
+      aria-labelledby="delete-confirmation-modal-title"
     >
-      <div className="delete-modal">
+      <div className="delete-confirmation-modal__container">
         {/* Header */}
-        <div className="modal-header">
+        <div className="delete-confirmation-modal__header">
           <button 
-            className="modal-close" 
+            className="delete-confirmation-modal__close" 
             onClick={onClose}
             aria-label="Fechar modal"
             disabled={loading}
@@ -63,24 +64,24 @@ export default function DeleteConfirmationModal({
             <X />
           </button>
 
-          <div className="modal-icon">
+          <div className="delete-confirmation-modal__icon">
             <AlertTriangle />
           </div>
 
-          <h2 id="modal-title" className="modal-title">
+          <h2 id="delete-confirmation-modal-title" className="delete-confirmation-modal__title">
             O que deseja fazer?
           </h2>
 
-          <p className="modal-subtitle">
+          <p className="delete-confirmation-modal__subtitle">
             Consulta de <strong>{patientName}</strong> às <strong>{time}</strong>
           </p>
         </div>
 
         {/* Body - Options */}
-        <div className="modal-body">
+        <div className="delete-confirmation-modal__body">
           {/* Opção 1: Excluir */}
           <div 
-            className="modal-option delete"
+            className="delete-confirmation-modal__option delete-confirmation-modal__option--delete"
             onClick={() => !loading && onConfirmDelete()}
             role="button"
             tabIndex={0}
@@ -107,7 +108,7 @@ export default function DeleteConfirmationModal({
 
           {/* Opção 2: Cancelar (Recomendado) */}
           <div 
-            className="modal-option cancel"
+            className="delete-confirmation-modal__option delete-confirmation-modal__option--cancel"
             onClick={() => !loading && onConfirmCancel()}
             role="button"
             tabIndex={0}
@@ -135,9 +136,9 @@ export default function DeleteConfirmationModal({
         </div>
 
         {/* Footer - Buttons */}
-        <div className="modal-footer">
+        <div className="delete-confirmation-modal__footer">
           <button
-            className="modal-button delete"
+            className="delete-confirmation-modal__button delete-confirmation-modal__button--delete"
             onClick={onConfirmDelete}
             disabled={loading}
           >
@@ -146,7 +147,7 @@ export default function DeleteConfirmationModal({
           </button>
 
           <button
-            className="modal-button cancel"
+            className="delete-confirmation-modal__button delete-confirmation-modal__button--cancel"
             onClick={onConfirmCancel}
             disabled={loading}
           >

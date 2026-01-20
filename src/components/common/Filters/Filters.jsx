@@ -1,51 +1,46 @@
-// src/components/common/Filters/Filters.jsx
+// ============================================
+// 📁 src/components/common/Filters/Filters.jsx
+// Componente orquestrador que usa os componentes especializados
+// Props agrupadas em objetos contextuais (ISP)
+// ============================================
+
 import React from "react";
-import { Calendar, RotateCcw, Search } from "lucide-react";
+import { Calendar, RotateCcw } from "lucide-react";
+import { useFilters } from "../../../hooks/common/useFilters";
+import SearchFilter from "./SearchFilter";
+import StatusFilter from "./StatusFilter";
+import DateRangeFilter from "./DateRangeFilter";
+import MonthYearFilter from "./MonthYearFilter";
+import QuickFilters from "./QuickFilters";
 import "./Filters.css";
 
-const MONTHS = [
-  { value: 1, label: "Janeiro" },
-  { value: 2, label: "Fevereiro" },
-  { value: 3, label: "Março" },
-  { value: 4, label: "Abril" },
-  { value: 5, label: "Maio" },
-  { value: 6, label: "Junho" },
-  { value: 7, label: "Julho" },
-  { value: 8, label: "Agosto" },
-  { value: 9, label: "Setembro" },
-  { value: 10, label: "Outubro" },
-  { value: 11, label: "Novembro" },
-  { value: 12, label: "Dezembro" },
-];
-
 export default function Filters({
-  // Busca (opcional)
-  searchTerm,
-  onSearchChange,
-  searchPlaceholder = "Buscar...",
+  // Props agrupadas (ISP)
+  search = null,
+  status = null,
+  dateRange = null,
+  monthYear = null,
+  quickFilters = null,
   
-  // Status (opcional)
-  statusFilter,
-  onStatusChange,
-  statusOptions = [],
-  
-  // Datas
-  dateFrom,
-  dateTo,
-  onDateFromChange,
-  onDateToChange,
-  
-  // Mês/Ano
-  month,
-  year,
-  onMonthChange,
-  onYearChange,
-  availableYears = [],
+  // Props individuais (compatibilidade - podem ser passadas diretamente)
+  searchTerm: searchTermProp,
+  onSearchChange: onSearchChangeProp,
+  searchPlaceholder: searchPlaceholderProp,
+  statusFilter: statusFilterProp,
+  onStatusChange: onStatusChangeProp,
+  statusOptions: statusOptionsProp,
+  dateFrom: dateFromProp,
+  dateTo: dateToProp,
+  onDateFromChange: onDateFromChangeProp,
+  onDateToChange: onDateToChangeProp,
+  month: monthProp,
+  year: yearProp,
+  onMonthChange: onMonthChangeProp,
+  onYearChange: onYearChangeProp,
+  availableYears: availableYearsProp,
   
   // Ações
   onReset,
-  
-  // Extras (opcional)
   extraActions = null,
   
   // Config
@@ -53,149 +48,130 @@ export default function Filters({
   showStatus = false,
   showDateRange = true,
   showMonthYear = true,
+  showQuickFilters = false,
 }) {
-  const hasDateRange = dateFrom && dateTo;
-  const isMonthYearDisabled = hasDateRange;
+  // Extrair valores das props agrupadas ou usar valores individuais (compatibilidade)
+  // Prioriza props individuais se fornecidas, caso contrário usa props agrupadas
+  const searchTerm = searchTermProp ?? search?.term;
+  const onSearchChange = onSearchChangeProp ?? search?.onChange;
+  const searchPlaceholder = searchPlaceholderProp ?? search?.placeholder ?? "Buscar...";
+  
+  const statusFilter = statusFilterProp ?? status?.filter;
+  const onStatusChange = onStatusChangeProp ?? status?.onChange;
+  const statusOptions = statusOptionsProp ?? status?.options ?? [];
+  
+  // Suporta tanto dateRange={from, to, onChange} quanto props individuais
+  // Prioriza props individuais primeiro
+  const dateFrom = dateFromProp ?? dateRange?.from;
+  const dateTo = dateToProp ?? dateRange?.to;
+  const onDateFromChange = onDateFromChangeProp ?? dateRange?.onChange?.from ?? dateRange?.onChange;
+  const onDateToChange = onDateToChangeProp ?? dateRange?.onChange?.to ?? dateRange?.onChange;
+  
+  const month = monthProp ?? monthYear?.month;
+  const year = yearProp ?? monthYear?.year;
+  const onMonthChange = onMonthChangeProp ?? monthYear?.onChange?.month ?? monthYear?.onChange;
+  const onYearChange = onYearChangeProp ?? monthYear?.onChange?.year ?? monthYear?.onChange;
+  const availableYears = availableYearsProp ?? monthYear?.availableYears ?? [];
+
+  const { state, refs, computed, handlers } = useFilters({
+    dateFrom,
+    dateTo,
+    onDateFromChange,
+    onDateToChange,
+    onMonthChange,
+    onYearChange,
+    onReset,
+    showQuickFilters,
+  });
 
   return (
     <div className="filters-container" role="region" aria-label="Filtros">
+      {/* Título padronizado */}
+      {showQuickFilters && (
+        <h3 className="standardized-h3">Selecionar filtro</h3>
+      )}
+      
+      {/* Botões rápidos de filtro */}
+      {showQuickFilters && (
+        <QuickFilters
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onDateFromChange={onDateFromChange}
+          onDateToChange={onDateToChange}
+          onReset={onReset}
+          state={state}
+          refs={refs}
+          handlers={handlers}
+        />
+      )}
+
       <div className="filters-grid">
         {/* 🔍 Busca (opcional) */}
         {showSearch && searchTerm !== undefined && (
-          <div className="filter-item filter-search">
-            <label htmlFor="search">
-              <Search size={14} />
-              Buscar
-            </label>
-            <input
-              id="search"
-              type="search"
-              value={searchTerm || ""}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder={searchPlaceholder}
-              className="filter-input"
-            />
-          </div>
+          <SearchFilter
+            searchTerm={searchTerm}
+            onSearchChange={onSearchChange}
+            placeholder={searchPlaceholder}
+          />
         )}
 
         {/* 📊 Status (opcional) */}
-        {showStatus && statusFilter !== undefined && statusOptions.length > 0 && (
-          <div className="filter-item">
-            <label htmlFor="status">Status</label>
-            <select
-              id="status"
-              value={statusFilter || "Todos"}
-              onChange={(e) => onStatusChange(e.target.value)}
-              className="filter-select"
-            >
-              <option value="Todos">Todos</option>
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
+        {showStatus && statusFilter !== undefined && (
+          <StatusFilter
+            statusFilter={statusFilter}
+            onStatusChange={onStatusChange}
+            statusOptions={statusOptions}
+          />
         )}
 
-        {/* 📅 Data De */}
-        {showDateRange && (
-          <div className="filter-item">
-            <label htmlFor="date-from">
-              <Calendar size={14} />
-              Data de
-            </label>
-            <input
-              id="date-from"
-              type="date"
-              value={dateFrom}
-              onChange={(e) => onDateFromChange(e.target.value)}
-              className="filter-input"
-            />
-          </div>
+        {/* 📅 Data De/Até - apenas se showQuickFilters=false */}
+        {showDateRange && !showQuickFilters && (
+          <DateRangeFilter
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={onDateFromChange}
+            onDateToChange={onDateToChange}
+          />
         )}
 
-        {/* 📅 Data Até */}
-        {showDateRange && (
-          <div className="filter-item">
-            <label htmlFor="date-to">
-              <Calendar size={14} />
-              Data até
-            </label>
-            <input
-              id="date-to"
-              type="date"
-              value={dateTo}
-              onChange={(e) => onDateToChange(e.target.value)}
-              className="filter-input"
-            />
-          </div>
-        )}
-
-        {/* 📆 Mês */}
-        {showMonthYear && month !== undefined && (
-          <div className="filter-item">
-            <label htmlFor="month">Mês</label>
-            <select
-              id="month"
-              value={month || ""}
-              onChange={(e) => onMonthChange(e.target.value)}
-              disabled={isMonthYearDisabled}
-              className="filter-select"
-            >
-              <option value="">Todos</option>
-              {MONTHS.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* 📅 Ano */}
-        {showMonthYear && year !== undefined && availableYears.length > 0 && (
-          <div className="filter-item">
-            <label htmlFor="year">Ano</label>
-            <select
-              id="year"
-              value={year || ""}
-              onChange={(e) => onYearChange(e.target.value)}
-              disabled={isMonthYearDisabled}
-              className="filter-select"
-            >
-              {availableYears.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* 📆 Mês/Ano - apenas se showQuickFilters=false */}
+        {showMonthYear && !showQuickFilters && (
+          <MonthYearFilter
+            month={month}
+            year={year}
+            onMonthChange={onMonthChange}
+            onYearChange={onYearChange}
+            availableYears={availableYears}
+            isDisabled={computed.isMonthYearDisabled}
+          />
         )}
       </div>
 
-      {/* Ações */}
-      <div className="filters-actions">
-        <button
-          type="button"
-          onClick={onReset}
-          className="btn btn-ghost"
-          title="Limpar todos os filtros"
-        >
-          <RotateCcw size={16} />
-          <span>Limpar filtros</span>
-        </button>
-        
-        {/* Ações extras (expandir/contrair, etc) */}
-        {extraActions}
-      </div>
+      {/* Ações - apenas se não estiver usando quick filters */}
+      {!showQuickFilters && (
+        <div className="filters-actions">
+          <button
+            type="button"
+            onClick={handlers.handleReset}
+            className="btn btn-ghost"
+            title="Limpar todos os filtros"
+          >
+            <RotateCcw size={16} />
+            <span>Limpar filtros</span>
+          </button>
+          
+          {/* Ações extras (expandir/contrair, etc) */}
+          {extraActions}
+        </div>
+      )}
 
       {/* Info Badge quando há filtro de data */}
-      {hasDateRange && (
+      {computed.hasDateRange && dateFrom && dateTo && (
         <div className="filter-info">
           <span className="info-badge">
-            📅 Exibindo dados de {new Date(dateFrom).toLocaleDateString("pt-BR")} até{" "}
-            {new Date(dateTo).toLocaleDateString("pt-BR")}
+            <Calendar size={14} aria-hidden="true" />
+            Exibindo dados de {new Date(dateFrom + 'T00:00:00').toLocaleDateString("pt-BR")} até{" "}
+            {new Date(dateTo + 'T00:00:00').toLocaleDateString("pt-BR")}
           </span>
         </div>
       )}

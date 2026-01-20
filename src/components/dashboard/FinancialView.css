@@ -1,0 +1,24 @@
+/* ============================================
+   📁 src/components/dashboard/FinancialView.css
+   ============================================ */
+@import url('../../styles/variables.css');
+
+.financial-content-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+@media (min-width: 1024px) {
+  .financial-content-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .financial-content-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+}

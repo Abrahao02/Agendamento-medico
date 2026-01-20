@@ -1,0 +1,103 @@
+/* ============================================
+   📁 src/components/dashboard/MonthlyComparison/MonthlyComparison.css
+   ============================================ */
+@import url('../../../styles/variables.css');
+
+.monthly-comparison {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+}
+
+.comparison-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.comparison-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.comparison-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  transition: var(--transition-base);
+}
+
+.comparison-item:hover {
+  background: var(--gray-100);
+  transform: translateX(4px);
+}
+
+.month-name {
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+
+.month-value {
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  font-size: var(--text-lg);
+}
+
+.trend-icon {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin-left: var(--spacing-sm);
+}
+
+.trend-icon.up {
+  color: #16a34a; /* verde */
+}
+
+.trend-icon.down {
+  color: #ef4444; /* vermelho */
+}
+
+.comparison-empty {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .monthly-comparison {
+    padding: var(--spacing-lg);
+  }
+
+  .comparison-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .month-value {
+    font-size: var(--text-base);
+  }
+}

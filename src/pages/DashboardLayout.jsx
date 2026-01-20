@@ -5,27 +5,26 @@ import { Outlet, NavLink } from "react-router-dom";
 import { useDashboardLayout } from "../hooks/common/useDashboardLayout";
 
 import {
-  FiSettings,
-  FiHome,
-  FiCalendar,
-  FiClock,
-  FiBookOpen,
-  FiUser,
-  FiLogOut,
-  FiMenu
-} from "react-icons/fi";
+  BookOpen,
+  Calendar,
+  Clock,
+  Home,
+  Menu,
+  Settings,
+  User,
+} from "lucide-react";
 
 import Sidebar from "../components/layout/Sidebar/Sidebar";
 
 import "./DashboardLayout.css";
 
 const MENU_ITEMS = [
-  { to: "/dashboard", icon: FiHome, text: "Home", end: true },
-  { to: "/dashboard/appointments", icon: FiCalendar, text: "Agenda do dia" },
-  { to: "/dashboard/availability", icon: FiClock, text: "Agenda do mês" },
-  { to: "/dashboard/allappointments", icon: FiBookOpen, text: "Todos agendamentos" },
-  { to: "/dashboard/clients", icon: FiUser, text: "Clientes" },
-  { to: "/dashboard/settings", icon: FiSettings, text: "Configurações" }
+  { to: "/dashboard", icon: Home, text: "Home", end: true },
+  { to: "/dashboard/appointments", icon: Calendar, text: "Agenda do dia" },
+  { to: "/dashboard/availability", icon: Clock, text: "Agenda do mês" },
+  { to: "/dashboard/allappointments", icon: BookOpen, text: "Todos agendamentos" },
+  { to: "/dashboard/clients", icon: User, text: "Clientes" },
+  { to: "/dashboard/settings", icon: Settings, text: "Configurações" }
 ];
 
 export default function DashboardLayout() {
@@ -63,7 +62,6 @@ export default function DashboardLayout() {
         plan={plan}
         appointmentsThisMonth={appointmentsThisMonth}
         isLimitReached={isLimitReached}
-        handleLogout={handleLogout}
         menuItems={MENU_ITEMS}
       />
 
@@ -76,7 +74,7 @@ export default function DashboardLayout() {
             className="hamburger-fixed"
             title="Abrir menu"
           >
-            <FiMenu />
+            <Menu />
           </button>
 
           <div
@@ -88,7 +86,7 @@ export default function DashboardLayout() {
       )}
 
       <main className="dashboard-content">
-        <Outlet />
+        <Outlet context={{ isLimitReached }} />
       </main>
     </div>
   );

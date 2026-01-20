@@ -4,7 +4,7 @@
    Register Page - MedSchedule
    =============================== */
 .register-container {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,35 +62,7 @@
   color: var(--text-link-hover);
 }
 
-/* Botão principal */
-.submit-btn {
-  background: var(--color-secondary);
-  color: var(--text-inverse);
-  border: none;
-  padding: 0.75rem;
-  border-radius: var(--radius-md);
-  font-weight: var(--font-medium);
-  cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast);
-}
-
-.submit-btn:hover {
-  background: var(--color-secondary-hover);
-  transform: translateY(-2px);
-}
-
-/* Botão secundário */
-.submit-btn.secondary {
-  background: var(--bg-primary);
-  color: var(--color-secondary);
-  border: 1px solid var(--color-secondary);
-}
-
-.submit-btn.secondary:hover {
-  background: var(--color-secondary);
-  color: var(--text-inverse);
-  transform: translateY(-2px);
-}
+/* Botões: usar `src/components/common/Button` (evitar estilos locais duplicados) */
 
 /* Checklist de senha */
 .password-checklist {
@@ -98,8 +70,31 @@
 }
 
 /* Mensagens de erro */
-.error {
+.register-container .error {
   color: var(--color-danger);
   font-size: var(--text-sm);
   margin-top: -0.5rem;
+}
+
+/* Link "Voltar para Login" */
+.back-to-login-wrapper {
+  text-align: center;
+  width: 100%;
+}
+
+.back-to-login-link {
+  display: inline-block; /* inline-block permite centralização mas ocupa só o tamanho do texto */
+  font-size: var(--text-sm);
+  color: var(--text-link);
+  cursor: pointer;
+  text-decoration: underline; /* se quiser underline */
+  transition: color var(--transition-fast);
+  padding: 0; /* remove qualquer padding que aumente a área */
+  margin: 0;  /* remove margens que podem aumentar a área */
+  width: fit-content; /* garante que ocupe apenas o espaço do texto */
+}
+
+.back-to-login-link:hover {
+  color: var(--text-link-hover);
+  text-decoration: none;
 }

@@ -2,28 +2,15 @@
 @import url('../../../styles/variables.css');
 
 .public-link-card {
-  background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
+  background: var(--white);
   border-radius: var(--radius-xl);
   padding: var(--spacing-xl);
   margin-bottom: var(--spacing-xl);
-  box-shadow: var(--shadow-md);
-  border: 2px solid var(--secondary-100);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
   animation: fadeUp 0.6s ease forwards;
 }
 
-.public-link-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin-bottom: var(--spacing-md);
-  font-weight: var(--font-semibold);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.label-icon {
-  font-size: var(--text-lg);
-}
 
 .public-link-box {
   display: flex;
@@ -40,21 +27,20 @@
 
 .public-link-text {
   width: 100%;
-  background: var(--white);
+  background: var(--gray-50);
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
-  color: var(--color-secondary);
+  color: var(--text-primary);
   font-weight: var(--font-medium);
-  border: 2px solid var(--secondary-200);
+  border: 1px solid var(--border-medium);
   transition: var(--transition-base);
   font-family: var(--font-family-mono);
   cursor: text;
 }
 
 .public-link-text:hover {
-  border-color: var(--color-secondary);
-  background: var(--secondary-50);
+  border-color: var(--border-dark);
 }
 
 .public-link-text:focus {
@@ -107,7 +93,7 @@
 .open-btn {
   background: var(--white);
   color: var(--color-secondary);
-  border: 2px solid var(--color-secondary);
+  border: 1px solid var(--color-secondary);
 }
 
 .open-btn:hover {
@@ -119,15 +105,6 @@
   transform: translateY(0);
 }
 
-.public-link-hint {
-  margin-top: var(--spacing-md);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--secondary-50);
-  border-radius: var(--radius-md);
-  border-left: 3px solid var(--color-secondary);
-}
 
 @keyframes fadeUp {
   from {
@@ -157,4 +134,29 @@
   .public-link-card {
     padding: var(--spacing-lg);
   }
+}
+
+/* Limit Reached State */
+.public-link-card.limit-reached {
+  border-color: var(--warning-300);
+  background: var(--warning-50);
+}
+
+.public-link-warning {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--warning-100);
+  border: 1px solid var(--warning-300);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+  color: var(--warning-800);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.public-link-warning svg {
+  color: var(--warning-600);
+  flex-shrink: 0;
 }

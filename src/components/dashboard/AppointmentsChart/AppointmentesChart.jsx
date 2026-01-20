@@ -1,9 +1,9 @@
 // ============================================
 // 📁 src/components/dashboard/AppointmentsChart/AppointmentsChart.jsx
-// ✅ ATUALIZADO: Mostra todos os status do sistema
 // ============================================
 
 import React from "react";
+import { BarChart3 } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -24,7 +24,9 @@ export default function AppointmentsChart({ data = [] }) {
       <div className="chart-card">
         <h3 className="chart-title">Consultas por dia</h3>
         <div className="chart-empty">
-          <span className="empty-icon">📊</span>
+          <span className="empty-icon" aria-hidden="true">
+            <BarChart3 size={40} />
+          </span>
           <p>Nenhum dado disponível para este período</p>
         </div>
       </div>

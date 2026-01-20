@@ -1,18 +1,23 @@
 import React from "react";
 import { auth } from "../services/firebase";
+import { signOut } from "firebase/auth";
 import { useSettings } from "../hooks/settings/useSettings";
-import PlanSection from "../components/settings/PlanSection/PlanSection";
-import WhatsAppSection from "../components/settings/WhatsAppSection/WhatsAppSection";
-import PublicScheduleSection from "../components/settings/PublicScheduleSection/PublicScheduleSection";
-import AppointmentTypeSection from "../components/settings/AppointmentTypeSection/AppointmentTypeSection";
+import PlanSection from "../components/settings/PlanSection";
+import WhatsAppSection from "../components/settings/WhatsAppSection";
+import PublicScheduleSection from "../components/settings/PublicScheduleSection";
+import AppointmentTypeSection from "../components/settings/AppointmentTypeSection";
 import Button from "../components/common/Button";
-import ContentLoading from "../components/common/ContentLoading/ContentLoading";
-import { Save } from "lucide-react";
+import ContentLoading from "../components/common/ContentLoading";
+import PageHeader from "../components/common/PageHeader";
+import { Save, LogOut } from "lucide-react";
+import { logError } from "../utils/logger/logger";
+import { useToast } from "../components/common/Toast";
 
 import "./Settings.css";
 
 export default function Settings() {
   const user = auth.currentUser;
+  const toast = useToast();
 
   const {
     loading,
@@ -31,6 +36,7 @@ export default function Settings() {
     cancelError,
     reactivateLoading,
     reactivateError,
+    hasUnsavedChanges,
     updateWhatsappField,
     updatePublicScheduleField,
     updateAppointmentTypeField,
@@ -47,9 +53,18 @@ export default function Settings() {
     const result = await saveSettings();
 
     if (result.success) {
-      alert("Configurações salvas com sucesso!");
+      toast.success("Configurações salvas com sucesso!");
     } else {
-      alert(`Erro ao salvar: ${result.error || "Tente novamente"}`);
+      toast.error(`Erro ao salvar: ${result.error || "Tente novamente"}`);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      window.location.href = "/login";
+    } catch (error) {
+      logError("Erro ao fazer logout:", error);
     }
   };
 
@@ -63,10 +78,11 @@ export default function Settings() {
 
   return (
     <div className="settings-page">
-      <div className="settings-header">
-        <h1>Configurações</h1>
-        <p className="settings-subtitle">Gerencie suas preferências e plano</p>
-      </div>
+      <PageHeader
+        label="Configurações"
+        title="Configurações"
+        description="Gerencie suas preferências e plano"
+      />
 
       <PlanSection
         isPro={isPro}
@@ -103,20 +119,34 @@ export default function Settings() {
         preview={generatePreview()}
       />
 
-      <div className="settings-footer">
+      {hasUnsavedChanges && (
+        <div className={`settings-footer ${hasUnsavedChanges ? 'sticky' : ''}`}>
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            loading={saving}
+            variant="primary"
+            leftIcon={!saving ? <Save size={18} /> : null}
+            className="save-btn"
+          >
+            {saving ? "Salvando..." : "Salvar configurações"}
+          </Button>
+          <p className="footer-note">
+            Você tem alterações não salvas. Salve para aplicar as configurações.
+          </p>
+        </div>
+      )}
+
+      {/* Botão de Logout */}
+      <div className="settings-logout-section">
         <Button
-          onClick={handleSave}
-          disabled={saving}
-          loading={saving}
-          variant="primary"
-          leftIcon={!saving ? <Save size={18} /> : null}
-          className="save-btn"
+          onClick={handleLogout}
+          variant="ghost"
+          leftIcon={<LogOut size={18} />}
+          className="logout-button"
         >
-          {saving ? "Salvando..." : "Salvar configurações"}
+          Sair da conta
         </Button>
-        <p className="footer-note">
-          Necessario salvar para aplicar as configurações.
-        </p>
       </div>
     </div>
   );

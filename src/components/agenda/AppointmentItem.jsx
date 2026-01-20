@@ -1,36 +1,28 @@
 // ============================================
 // 📁 src/components/agenda/AppointmentItem.jsx - VERSÃO FINAL
 // ============================================
-import { useState } from "react";
-import { FiSmartphone, FiUserPlus } from "react-icons/fi";
-import { Lock } from "lucide-react";
+import React from "react";
+import { Lock, MessageCircle, UserPlus } from "lucide-react";
+import Button from "../common/Button";
 import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
+import { useAppointmentItem } from "../../hooks/agenda/useAppointmentItem";
 import "./AppointmentItem.css";
 
-export default function AppointmentItem({
+function AppointmentItem({
   appt,
   status,
   patientName,
   patientStatus,
-  isLocked, // ✅ NOVO
+  isLocked,
   onStatusChange,
   onAddPatient,
   onSendWhatsapp
 }) {
-  const [showLockedMessage, setShowLockedMessage] = useState(false);
-
-  // ✅ NOVO: Handler que valida bloqueio
-  const handleStatusChange = (e) => {
-    if (isLocked) {
-      setShowLockedMessage(true);
-      setTimeout(() => setShowLockedMessage(false), 3000);
-      // Não permite mudança
-      e.target.value = status; // Reverte select
-      return;
-    }
-    
-    onStatusChange(appt.id, e.target.value);
-  };
+  const { state, handlers } = useAppointmentItem({ 
+    isLocked, 
+    onStatusChange, 
+    appt 
+  });
 
   return (
     <li 
@@ -53,7 +45,7 @@ export default function AppointmentItem({
         <select
           className={`status-select ${isLocked ? 'locked-select' : ''}`}
           value={status}
-          onChange={handleStatusChange}
+          onChange={handlers.handleStatusChange}
           disabled={isLocked}
           title={isLocked ? "Status bloqueado - Horário reagendado" : ""}
         >
@@ -73,27 +65,38 @@ export default function AppointmentItem({
       </div>
 
       {/* ✅ MENSAGEM TEMPORÁRIA DE BLOQUEIO */}
-      {showLockedMessage && (
+      {state.showLockedMessage && (
         <div className="locked-message">
-          ⚠️ Horário reagendado - Status não pode ser alterado
+          Horário reagendado — status não pode ser alterado
         </div>
       )}
 
       <div className="slot-actions">
-        <button 
-          className="btn-primary" 
+        <Button
+          type="button"
+          size="sm"
+          variant="primary"
           onClick={() => onSendWhatsapp(appt)}
           disabled={isLocked}
+          leftIcon={<MessageCircle size={16} />}
         >
-          <FiSmartphone /> WhatsApp
-        </button>
+          WhatsApp
+        </Button>
 
         {patientStatus === "new" && (
-          <button className="btn-secondary" onClick={() => onAddPatient(appt)}>
-            <FiUserPlus /> Adicionar
-          </button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => onAddPatient(appt)}
+            leftIcon={<UserPlus size={16} />}
+          >
+            Adicionar
+          </Button>
         )}
       </div>
     </li>
   );
 }
+
+export default React.memo(AppointmentItem);

@@ -7,10 +7,11 @@ import React from "react";
 import { useAvailability } from "../hooks/appointments/useAvailability";
 
 // Components
-import PageHeader from "../components/common/PageHeader/PageHeader";
-import CalendarWrapper from "../components/availability/CalendarWrapper/CalendarWrapper";
-import DayManagement from "../components/availability/DayManagement/DayManagement";
-import ContentLoading from "../components/common/ContentLoading/ContentLoading";
+import PageHeader from "../components/common/PageHeader";
+import CalendarWrapper from "../components/availability/CalendarWrapper";
+import DayManagement from "../components/availability/DayManagement";
+import ContentLoading from "../components/common/ContentLoading";
+import LimitWarningBanner from "../components/common/LimitWarningBanner";
 
 // Utils
 import formatDate from "../utils/formatter/formatDate";
@@ -22,6 +23,7 @@ export default function Availability() {
     // Estado
     loading,
     error,
+    doctor,
     patients,
     selectedDate,
     calendarValue,
@@ -39,6 +41,9 @@ export default function Availability() {
     getAllSlotsForDate,
     getAppointmentsForDate,
     getCalendarTileData,
+    
+    // Limit state
+    isLimitReached,
   } = useAvailability();
 
   /* ==============================
@@ -101,6 +106,8 @@ export default function Availability() {
         description="Gerencie seus horários e consultas"
       />
 
+      {isLimitReached && <LimitWarningBanner />}
+
       {/* Layout */}
       <div className="calendar-layout">
         {/* CALENDÁRIO */}
@@ -119,11 +126,13 @@ export default function Availability() {
             allSlots={getAllSlotsForDate(selectedDate)}
             appointments={getAppointmentsForDate(selectedDate)}
             patients={patients}
+            doctor={doctor}
             onAddSlot={handleAddSlot}
             onRemoveSlot={handleRemoveSlot}
             onBookAppointment={handleBookAppointment}
             onDeleteAppointment={deleteAppointment}
             onMarkAsCancelled={markAsCancelled}
+            isLimitReached={isLimitReached}
           />
         )}
       </div>

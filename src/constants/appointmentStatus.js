@@ -16,12 +16,21 @@ export const APPOINTMENT_STATUS = {
 
 /**
  * Grupos de status para filtros e análises
+ * 
+ * NOVA LÓGICA:
+ * - ACTIVE: Status que ocupam/bloqueiam slots (inclui "Não Compareceu")
+ * - CANCELLED: Apenas "Cancelado" (libera o slot para novo agendamento)
  */
 export const STATUS_GROUPS = {
   CONFIRMED: [APPOINTMENT_STATUS.CONFIRMED],
   PENDING: [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.MESSAGE_SENT],
-  CANCELLED: [APPOINTMENT_STATUS.CANCELLED, APPOINTMENT_STATUS.NO_SHOW],
-  ACTIVE: [APPOINTMENT_STATUS.CONFIRMED, APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.MESSAGE_SENT],
+  CANCELLED: [APPOINTMENT_STATUS.CANCELLED], // Removido NO_SHOW - apenas Cancelado libera slot
+  ACTIVE: [
+    APPOINTMENT_STATUS.CONFIRMED, 
+    APPOINTMENT_STATUS.PENDING, 
+    APPOINTMENT_STATUS.MESSAGE_SENT,
+    APPOINTMENT_STATUS.NO_SHOW // Adicionado - Não Compareceu bloqueia slot
+  ],
 };
 
 /**

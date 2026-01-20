@@ -23,21 +23,38 @@ Esta pasta contém toda a documentação técnica do projeto, organizada por cat
 ```
 src/docs/
 ├── README.md                        # Este arquivo
-├── SugestoesMelhorias.md            # Sugestões para melhorias das documentações existentes
-├── DocumentacaoServices.md          # Documentação dos Services (referência)
+├── DocumentacaoBackend.md           # ✨ NOVO - Documentação completa do Backend (Firebase Functions)
+├── DocumentacaoServices.md         # Documentação dos Services (referência)
 ├── DocumentacaoUtils.MD             # Documentação dos Utils (referência)
-├── DocumentacaoHooks.md             # ✨ Documentação completa dos Hooks
-├── DocumentacaoPages.md             # ✨ Documentação completa das Pages
-├── DocumentacaoComponents.md        # ✨ Documentação completa dos Components
-└── DocumentacaoStripe.md            # ✨ NOVO - Documentação completa da integração Stripe
+├── DocumentacaoHooks.md            # Documentação completa dos Hooks
+├── DocumentacaoPages.md             # Documentação completa das Pages
+├── DocumentacaoComponents.md       # Documentação completa dos Components
+├── DocumentacaoStripe.md           # Documentação completa da integração Stripe
+├── DocumentacaoStatus.md           # ✨ NOVO - Documentação completa da Lógica de Status
+└── ANALISE_MELHORIAS.md            # ✨ NOVO - Análise de código e melhorias implementadas
 ```
 
 ---
 
 ## 📚 Documentações Disponíveis
 
-### 1. **DocumentacaoServices.md**
-**Localização:** `src/services/DocumentacaoServices.md`
+### 1. **DocumentacaoBackend.md** ✨ NOVO
+**Localização:** `src/docs/DocumentacaoBackend.md`
+
+Documentação completa do backend (Firebase Functions):
+- Arquitetura e estrutura
+- Functions de agendamentos
+- Functions do Stripe
+- Helpers e utilitários
+- Segurança e validações
+- Deploy e manutenção
+
+**Status:** ✅ Completa e nova
+
+---
+
+### 2. **DocumentacaoServices.md**
+**Localização:** `src/docs/DocumentacaoServices.md`
 
 Documentação completa dos serviços Firebase:
 - Auth Service
@@ -51,8 +68,8 @@ Documentação completa dos serviços Firebase:
 
 ---
 
-### 2. **DocumentacaoUtils.MD**
-**Localização:** `src/utils/DocumentacaoUtils.MD`
+### 3. **DocumentacaoUtils.MD**
+**Localização:** `src/docs/DocumentacaoUtils.MD`
 
 Documentação completa das funções utilitárias:
 - WhatsApp Utils
@@ -68,7 +85,7 @@ Documentação completa das funções utilitárias:
 
 ---
 
-### 3. **DocumentacaoHooks.md** ✨ NOVO
+### 4. **DocumentacaoHooks.md**
 **Localização:** `src/docs/DocumentacaoHooks.md`
 
 Documentação completa de todos os hooks do projeto:
@@ -103,7 +120,7 @@ Documentação completa de todos os hooks do projeto:
 
 ---
 
-### 4. **DocumentacaoPages.md** ✨ NOVO
+### 5. **DocumentacaoPages.md**
 **Localização:** `src/docs/DocumentacaoPages.md`
 
 Documentação completa de todas as páginas do projeto:
@@ -132,7 +149,39 @@ Documentação completa de todas as páginas do projeto:
 
 ---
 
-### 5. **DocumentacaoComponents.md** ✨ NOVO
+### 6. **DocumentacaoStatus.md** ✨ NOVO
+**Localização:** `src/docs/DocumentacaoStatus.md`
+
+Documentação completa da lógica de status de agendamentos:
+
+- **Definições de Status**
+  - Status principais (Confirmado, Pendente, Msg enviada, Cancelado, Não Compareceu)
+  - Grupos de status (ACTIVE, CANCELLED, CONFIRMED, PENDING)
+  - Configuração visual (cores, ícones, CSS)
+
+- **Regras de Negócio**
+  - Status que bloqueiam slots (ACTIVE)
+  - Status que liberam slots (CANCELLED)
+  - Limites mensais (apenas CONFIRMED)
+  - Faturamento (apenas CONFIRMED)
+
+- **Uso em Todo o Código**
+  - Filtros e validações
+  - Estatísticas
+  - Componentes
+  - Hooks
+  - Serviços
+
+- **Padrões e Boas Práticas**
+  - Quando usar STATUS_GROUPS
+  - Quando verificar status específico
+  - Checklist de padronização
+
+**Status:** ✅ Completa e nova
+
+---
+
+### 7. **DocumentacaoComponents.md** ✨ NOVO
 **Localização:** `src/docs/DocumentacaoComponents.md`
 
 Documentação dos principais componentes reutilizáveis:
@@ -194,7 +243,6 @@ Documentação dos principais componentes reutilizáveis:
    - Trabalhando com utils? → `DocumentacaoUtils.MD`
 
 3. **Melhore as documentações:**
-   - Verifique `SugestoesMelhorias.md` para ideias
    - Atualize as documentações quando adicionar novos recursos
    - Mantenha os exemplos atualizados
 
@@ -245,9 +293,9 @@ Documentação dos principais componentes reutilizáveis:
    - A organização faz sentido?
 
 3. **Sugira melhorias:**
-   - Adicione sugestões em `SugestoesMelhorias.md`
    - Crie issues para melhorias importantes
    - Discuta com a equipe
+   - Atualize diretamente as documentações quando necessário
 
 ---
 
@@ -255,14 +303,15 @@ Documentação dos principais componentes reutilizáveis:
 
 | Documentação | Status | Versão | Última Atualização |
 |--------------|--------|--------|-------------------|
-| DocumentacaoServices.md | ✅ Completa | 1.0 | Janeiro 2026 |
-| DocumentacaoUtils.MD | ✅ Completa | 2.1 | Janeiro 2026 |
-| DocumentacaoHooks.md | ✅ Completa | 1.1 | Janeiro 2026 |
-| DocumentacaoPages.md | ✅ Completa | 1.1 | Janeiro 2026 |
-| DocumentacaoComponents.md | ✅ Completa | 1.1 | Janeiro 2026 |
+| DocumentacaoBackend.md | ✅ Completa | 1.0 | Janeiro 2026 |
+| DocumentacaoServices.md | ✅ Completa | 1.1 | Janeiro 2026 |
+| DocumentacaoUtils.MD | ✅ Completa | 2.2 | Janeiro 2026 |
+| DocumentacaoHooks.md | ✅ Completa | 1.3 | Janeiro 2026 |
+| DocumentacaoPages.md | ✅ Completa | 1.2 | Janeiro 2026 |
+| DocumentacaoComponents.md | ✅ Completa | 1.3 | Janeiro 2026 |
 | DocumentacaoStripe.md | ✅ Completa | 1.0 | Janeiro 2026 |
-| SugestoesMelhorias.md | ✅ Completa | 1.0 | Janeiro 2026 |
-| SugestoesOrganizacao.md | ✅ Completa | 1.0 | Janeiro 2026 |
+| DocumentacaoStatus.md | ✅ Completa | 1.0 | Janeiro 2026 |
+| ANALISE_MELHORIAS.md | ✅ Completa | 1.0 | Janeiro 2026 |
 
 ---
 
@@ -270,17 +319,19 @@ Documentação dos principais componentes reutilizáveis:
 
 ### Documentações de Referência
 
-- [DocumentacaoServices.md](../services/DocumentacaoServices.md) - Services Firebase
-- [DocumentacaoUtils.MD](../utils/DocumentacaoUtils.MD) - Utils do projeto
+- [DocumentacaoServices.md](./DocumentacaoServices.md) - Services Firebase
+- [DocumentacaoUtils.MD](./DocumentacaoUtils.MD) - Utils do projeto
 
 ### Documentações Novas
 
+- [DocumentacaoBackend.md](./DocumentacaoBackend.md) - ✨ NOVO - Backend (Firebase Functions)
 - [DocumentacaoHooks.md](./DocumentacaoHooks.md) - Hooks do projeto
 - [DocumentacaoPages.md](./DocumentacaoPages.md) - Pages do projeto
 - [DocumentacaoComponents.md](./DocumentacaoComponents.md) - Components do projeto
-- [DocumentacaoStripe.md](./DocumentacaoStripe.md) - ✨ NOVO - Integração Stripe
-- [SugestoesMelhorias.md](./SugestoesMelhorias.md) - Sugestões de melhorias
-- [SugestoesOrganizacao.md](./SugestoesOrganizacao.md) - Sugestões de organização
+- [DocumentacaoStripe.md](./DocumentacaoStripe.md) - Integração Stripe
+- [DocumentacaoStatus.md](./DocumentacaoStatus.md) - ✨ NOVO - Lógica de Status de Agendamentos
+- [ANALISE_MELHORIAS.md](./ANALISE_MELHORIAS.md) - ✨ NOVO - Análise de código e melhorias
+- [RESUMO_MELHORIAS.md](./RESUMO_MELHORIAS.md) - ✨ NOVO - Resumo executivo das melhorias
 
 ---
 
@@ -301,10 +352,10 @@ Para melhorar as documentações:
 2. **Identifique** áreas de melhoria
 3. **Documente** seguindo os padrões
 4. **Revise** antes de fazer commit
-5. **Atualize** o status em `SugestoesMelhorias.md`
+5. **Atualize** as documentações relevantes
 
 ---
 
 **Documentação criada por:** Assistente IA  
 **Data:** Janeiro 2026  
-**Versão:** 1.1
+**Versão:** 1.2

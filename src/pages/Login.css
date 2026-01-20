@@ -4,24 +4,40 @@
    Login Page - MedSchedule
    =============================== */
 .login-container {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg-secondary);
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .login-container {
+    padding: var(--spacing-xl);
+  }
 }
 
 .login-card {
   width: 100%;
   max-width: 460px;
   background: var(--bg-primary);
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-lg);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .login-card {
+    padding: var(--spacing-2xl);
+  }
 }
 
 .login-title {
@@ -38,13 +54,13 @@
   gap: var(--spacing-md);
 }
 
-.input-wrapper {
+.login-form .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.input-wrapper .icon {
+.login-form .input-wrapper .icon {
   position: absolute;
   left: 0.75rem;
   top: 50%;
@@ -52,7 +68,7 @@
   color: var(--gray-400);
 }
 
-.input-wrapper input {
+.login-form .input-wrapper input {
   width: 100%;
   padding: 0.75rem 0.75rem 0.75rem 2.5rem; /* espaço para o ícone */
   border: 1px solid var(--border-light);
@@ -62,7 +78,7 @@
   transition: border var(--transition-fast);
 }
 
-.input-wrapper input:focus {
+.login-form .input-wrapper input:focus {
   border-color: var(--color-secondary);
 }
 
@@ -79,50 +95,28 @@
 }
 
 /* Erros e mensagens de sucesso */
-.error {
+.login-container .error {
   color: var(--color-danger);
   font-size: var(--text-sm);
   margin-top: -0.25rem;
 }
 
-.success {
+.login-container .success {
   color: var(--color-success);
   font-size: var(--text-sm);
   margin-top: -0.25rem;
 }
 
-/* Botões principais e secundários */
-.submit-btn {
-  background: var(--color-secondary);
-  color: var(--text-inverse);
-  border: none;
-  padding: 0.75rem;
-  border-radius: var(--radius-md);
-  font-weight: var(--font-medium);
-  cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast);
-}
-
-.submit-btn:hover {
-  background: var(--color-secondary-hover);
-  transform: translateY(-2px);
-}
-
-.submit-btn.secondary {
-  background: var(--bg-primary);
-  color: var(--color-secondary);
-  border: 1px solid var(--color-secondary);
-}
-
-.submit-btn.secondary:hover {
-  background: var(--color-secondary);
-  color: var(--text-inverse);
-  transform: translateY(-2px);
-}
+/* Botões: usar `src/components/common/Button` (evitar estilos locais duplicados) */
 
 /* Link "Esqueci minha senha" */
+.forgot-link-wrapper {
+  text-align: center;
+  width: 100%;
+}
+
 .forgot-link {
-  display: inline; /* inline ocupa só o tamanho do texto */
+  display: inline-block; /* inline-block permite centralização mas ocupa só o tamanho do texto */
   font-size: var(--text-sm);
   color: var(--text-link);
   cursor: pointer;
@@ -130,6 +124,7 @@
   transition: color var(--transition-fast);
   padding: 0; /* remove qualquer padding que aumente a área */
   margin: 0;  /* remove margens que podem aumentar a área */
+  width: fit-content; /* garante que ocupe apenas o espaço do texto */
 }
 
 .forgot-link:hover {

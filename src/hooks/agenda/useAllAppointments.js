@@ -6,14 +6,21 @@ import { filterAppointments, sortAppointments } from "../../utils/filters/appoin
 import { groupAppointmentsByPatient } from "../../utils/filters/patientGrouping";
 import { generateYearRange } from "../../utils/helpers/yearHelpers";
 import { STATUS_GROUPS } from "../../constants/appointmentStatus";
+import { PatientService } from "../../services/firebase";
+import { subscribeToPatients } from "../../services/firebase/patients.service";
+import { canChangeAppointmentStatus, getLockedAppointmentIds } from "../../utils/appointments/lockedAppointments";
+import { logError, logWarning } from "../../utils/logger/logger";
+import { useToast } from "../../components/common/Toast";
 
 export default function useAllAppointments(user) {
+  const toast = useToast();
   const today = new Date();
   const currentMonth = today.getMonth() + 1;
   const currentYear = today.getFullYear();
 
   // STATE
   const [appointments, setAppointments] = useState([]);
+  const [patientsMap, setPatientsMap] = useState({});
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -24,43 +31,35 @@ export default function useAllAppointments(user) {
   const [changedIds, setChangedIds] = useState(new Set());
   const [saving, setSaving] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
-  const [lockedAppointments, setLockedAppointments] = useState(new Set()); // ✅ NOVO
+  const [lockedAppointments, setLockedAppointments] = useState(new Set());
 
-  // ✅ NOVA FUNÇÃO: Identifica appointments bloqueados
   const identifyLockedAppointments = useCallback((appointmentsList) => {
-    const locked = new Set();
-
-    // Agrupa appointments por data+horário
-    const slotMap = new Map();
-    
-    appointmentsList.forEach((appt) => {
-      const slotKey = `${appt.date}_${appt.time}`;
-      
-      if (!slotMap.has(slotKey)) {
-        slotMap.set(slotKey, []);
-      }
-      slotMap.get(slotKey).push(appt);
-    });
-
-    // Para cada slot, verifica se há appointments bloqueados
-    slotMap.forEach((appointmentsInSlot) => {
-      // Se houver pelo menos um appointment ATIVO no slot
-      const hasActiveInSlot = appointmentsInSlot.some(
-        appt => STATUS_GROUPS.ACTIVE.includes(appt.status)
-      );
-
-      if (hasActiveInSlot) {
-        // Bloqueia todos os appointments INATIVOS deste slot
-        appointmentsInSlot.forEach((appt) => {
-          if (!STATUS_GROUPS.ACTIVE.includes(appt.status)) {
-            locked.add(appt.id);
-          }
-        });
-      }
-    });
-
-    setLockedAppointments(locked);
+    setLockedAppointments(getLockedAppointmentIds(appointmentsList));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubscribe = subscribeToPatients(user.uid, (patientsResult) => {
+      if (patientsResult.success) {
+        // Criar mapa de WhatsApp -> Nome atualizado
+        const map = {};
+        patientsResult.data.forEach((patient) => {
+          // Usar referenceName se existir, senão usar name
+          const displayName = patient.referenceName?.trim() || patient.name;
+          map[patient.whatsapp] = displayName;
+        });
+        
+        setPatientsMap(map);
+      }
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
+  }, [user]);
 
   // FETCH
   useEffect(() => {
@@ -78,17 +77,16 @@ export default function useAllAppointments(user) {
         const sorted = sortAppointments(data);
         setAppointments(sorted);
         
-        // ✅ Identifica appointments bloqueados após carregar
         identifyLockedAppointments(sorted);
       } catch (err) {
-        console.error("Erro ao buscar agendamentos:", err);
+        logError("Erro ao buscar agendamentos:", err);
       } finally {
         setLoadingData(false);
       }
     };
 
     fetchAppointments();
-  }, [user, identifyLockedAppointments]);
+  }, [user]);
 
   // FILTRO PRINCIPAL
   const filteredAppointments = useMemo(() => {
@@ -102,10 +100,20 @@ export default function useAllAppointments(user) {
     });
   }, [appointments, statusFilter, searchTerm, startDate, endDate, selectedMonth, selectedYear]);
 
-  // AGRUPA POR PACIENTE
   const patientsData = useMemo(() => {
-    return groupAppointmentsByPatient(filteredAppointments);
-  }, [filteredAppointments]);
+    const grouped = groupAppointmentsByPatient(filteredAppointments);
+    
+    return grouped.map((patient) => {
+      const updatedName = patientsMap[patient.whatsapp];
+      if (updatedName) {
+        return {
+          ...patient,
+          name: updatedName,
+        };
+      }
+      return patient;
+    });
+  }, [filteredAppointments, patientsMap]);
 
   // AÇÕES
   const togglePatient = useCallback((patient) => {
@@ -127,48 +135,32 @@ export default function useAllAppointments(user) {
     [patientsData]
   );
 
-  // ✅ ATUALIZADO: handleStatusChange com validação de locked
   const handleStatusChange = useCallback((id, newStatus) => {
-    // ❌ Bloqueia se o appointment está travado
+    // Bloqueia se o appointment está travado
     if (lockedAppointments.has(id)) {
-      console.warn("⚠️ Este agendamento não pode ter o status alterado pois o horário já foi reagendado");
-      alert("⚠️ Este horário já foi reagendado. O status não pode ser alterado.");
+      logWarning("Este agendamento não pode ter o status alterado pois o horário já foi reagendado");
+      toast.info("Este horário já foi reagendado. O status não pode ser alterado.");
       return;
     }
 
-    const currentAppointment = appointments.find(a => a.id === id);
-    
-    // ✅ Se está mudando PARA cancelado/não compareceu, verifica conflito
-    if (!STATUS_GROUPS.ACTIVE.includes(newStatus)) {
-      const hasActiveInSameSlot = appointments.some(
-        other => 
-          other.id !== id &&
-          other.date === currentAppointment.date &&
-          other.time === currentAppointment.time &&
-          STATUS_GROUPS.ACTIVE.includes(other.status)
-      );
-
-      if (hasActiveInSameSlot) {
-        console.warn("⚠️ Não é possível cancelar: horário já foi reagendado");
-        alert("⚠️ Este horário já foi reagendado. Não é possível cancelar.");
-        return;
-      }
+    const statusCheck = canChangeAppointmentStatus(appointments, id, newStatus);
+    if (!statusCheck.allowed) {
+      logWarning(statusCheck.error);
+      toast.error(statusCheck.error);
+      return;
     }
 
-    // ✅ Atualização permitida
     setAppointments((prev) => {
       const updated = prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app));
       
-      // ✅ Recalcula appointments bloqueados após atualização
       identifyLockedAppointments(updated);
       
       return updated;
     });
     
     setChangedIds((prev) => new Set([...prev, id]));
-  }, [appointments, lockedAppointments, identifyLockedAppointments]);
+  }, [appointments, lockedAppointments, identifyLockedAppointments, toast]);
 
-  // ✅ NOVA FUNÇÃO: Verifica se appointment está bloqueado
   const isAppointmentLocked = useCallback((appointmentId) => {
     return lockedAppointments.has(appointmentId);
   }, [lockedAppointments]);
@@ -182,10 +174,10 @@ export default function useAllAppointments(user) {
 
       await Promise.all(updates);
       setChangedIds(new Set());
-      alert("✅ Alterações salvas com sucesso!");
+      toast.success("Alterações salvas com sucesso!");
     } catch (err) {
-      console.error(err);
-      alert("❌ Erro ao salvar alterações.");
+      logError("Erro ao atualizar status:", err);
+      toast.error("Erro ao salvar alterações.");
     } finally {
       setSaving(false);
     }
@@ -236,7 +228,7 @@ export default function useAllAppointments(user) {
     handleStatusChange,
     handleSave,
     stats,
-    lockedAppointments, // ✅ NOVO
-    isAppointmentLocked, // ✅ NOVO
+    lockedAppointments,
+    isAppointmentLocked,
   };
 }

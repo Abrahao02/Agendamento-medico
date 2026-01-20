@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { FaEye, FaEyeSlash, FaLock } from "react-icons/fa"
+import { Eye, EyeOff, Lock } from "lucide-react"
 import Input from "../Input"
 import "./PasswordInput.css"
 
@@ -20,7 +20,7 @@ export default function PasswordInput({
       value={value}
       error={error}
       onChange={onChange}
-      leftIcon={<FaLock />}
+      leftIcon={<Lock size={18} />}
       rightIcon={
         <button
           type="button"
@@ -28,7 +28,7 @@ export default function PasswordInput({
           className="password-toggle-btn"
           aria-label={show ? "Ocultar senha" : "Mostrar senha"}
         >
-          {show ? <FaEyeSlash /> : <FaEye />}
+          {show ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
       }
     />

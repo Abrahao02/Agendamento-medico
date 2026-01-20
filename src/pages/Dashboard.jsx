@@ -1,33 +1,42 @@
 // ============================================
-// 📁 src/pages/Dashboard.jsx - MELHORADO
+// 📁 src/pages/Dashboard.jsx - REFATORADO
+// Usa Strategy Pattern para views (OCP)
 // ============================================
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { Calendar, Users, DollarSign, Clock, UserPlus, TrendingUp } from "lucide-react";
+import React, { useState } from "react";
+import { Calendar, Users, DollarSign, Clock, UserPlus, CheckCircle } from "lucide-react";
 
 import { useDashboard } from "../hooks/dashboard/useDashboard";
 
-import PageHeader from "../components/common/PageHeader/PageHeader";
+import PageHeader from "../components/common/PageHeader";
 import PublicLinkCard from "../components/dashboard/PublicLinkCard";
-import Filters from "../components/common/Filters/Filters";
-import StatsCard from "../components/dashboard/StatsCard";
-import StatusSummary from "../components/dashboard/StatusSummary";
-import AppointmentsChart from "../components/dashboard/AppointmentsChart";
-import UpcomingAppointments from "../components/dashboard/UpcomingAppointments";
-import ContentLoading from "../components/common/ContentLoading/ContentLoading";
+import Filters from "../components/common/Filters";
+import LimitWarningBanner from "../components/common/LimitWarningBanner";
+import Button from "../components/common/Button";
+import ContentLoading from "../components/common/ContentLoading";
+import PatientsView from "../components/dashboard/PatientsView";
+import FinancialView from "../components/dashboard/FinancialView";
 
 import "./Dashboard.css";
 
+// Strategy Pattern: Map de componentes de view
+const VIEW_COMPONENTS = {
+  pacientes: PatientsView,
+  financeiro: FinancialView,
+};
+
 export default function Dashboard() {
-  const navigate = useNavigate();
+  const [viewMode, setViewMode] = useState("pacientes");
 
   const {
     loading,
     doctorSlug,
     stats,
     statusSummary,
+    detailsSummary,
     chartData,
     upcomingAppointments,
+    financialChartData,
+    monthlyData,
     selectedDateFrom,
     selectedDateTo,
     selectedMonth,
@@ -38,109 +47,84 @@ export default function Dashboard() {
     setSelectedMonth,
     setSelectedYear,
     resetFilters,
+    isLimitReached,
+    filteredAppointments,
+    filteredAvailability,
+    patients,
+    financialForecast,
+    financialBreakdown,
   } = useDashboard();
 
   if (loading) return <ContentLoading message="Carregando dashboard..." height={400} />;
 
+  // Strategy Pattern: Seleciona componente baseado no viewMode
+  const ViewComponent = VIEW_COMPONENTS[viewMode] || VIEW_COMPONENTS.pacientes;
+
   return (
-    <div className="dashboard-content">
+    <div className="dashboard-page-content">
       <PageHeader
-        label="Visão Geral"
+        label="Home"
         title="Painel de Controle"
         description="Acompanhe consultas, faturamento e disponibilidade em tempo real"
       />
 
-      <PublicLinkCard slug={doctorSlug} />
+      {isLimitReached && <LimitWarningBanner />}
+
+      <PublicLinkCard slug={doctorSlug} isLimitReached={isLimitReached} />
 
       <Filters
         dateFrom={selectedDateFrom}
         dateTo={selectedDateTo}
-        month={selectedMonth}
-        year={selectedYear}
         onDateFromChange={setSelectedDateFrom}
         onDateToChange={setSelectedDateTo}
         onMonthChange={setSelectedMonth}
         onYearChange={setSelectedYear}
         onReset={resetFilters}
-        availableYears={availableYears}
         showSearch={false}
         showStatus={false}
-        showDateRange
-        showMonthYear
+        showQuickFilters
       />
 
-      {/* Stats Grid - Linha 1 */}
-      <div className="stats-grid">
-        <StatsCard
-          icon={Calendar}
-          value={stats.totalAppointments}
-          title="Total de consultas"
-          subtitle="No período selecionado"
-          color="green"
-          onClick={() => navigate("/dashboard/allappointments")}
-          comparison={stats.appointmentsComparison}
-        />
-        
-        <StatsCard
-          icon={UserPlus}
-          value={stats.newPatients}
-          title="Novos pacientes"
-          subtitle="Primeiro agendamento"
-          color="blue"
-          onClick={() => navigate("/dashboard/clients")}
-          comparison={stats.newPatientsComparison}
-        />
-        
-        <StatsCard
-          icon={Clock}
-          value={stats.slotsOpen}
-          title="Horários disponíveis"
-          subtitle="Slots livres para agendamento"
-          color="purple"
-          onClick={() => navigate("/dashboard/availability")}
-        />
-        
-        <StatsCard
-          icon={TrendingUp}
-          value={`${stats.conversionRate}%`}
-          title="Taxa de conversão"
-          subtitle="Confirmados / Total"
-          color="amber"
-        />
+      {/* View Toggle */}
+      <div className="view-toggle">
+        <Button
+          type="button"
+          size="sm"
+          variant={viewMode === "pacientes" ? "primary" : "ghost"}
+          onClick={() => setViewMode("pacientes")}
+          aria-label="Visualização Pacientes & Agenda"
+          aria-pressed={viewMode === "pacientes"}
+          className="view-toggle-btn"
+        >
+          Pacientes & Agenda
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={viewMode === "financeiro" ? "primary" : "ghost"}
+          onClick={() => setViewMode("financeiro")}
+          aria-label="Visualização Financeiro"
+          aria-pressed={viewMode === "financeiro"}
+          className="view-toggle-btn"
+        >
+          Financeiro
+        </Button>
       </div>
 
-      {/* Stats Grid - Linha 2 */}
-      <div className="stats-grid stats-grid-secondary">
-        <StatsCard
-          icon={DollarSign}
-          value={`R$ ${stats.totalRevenue.toFixed(2)}`}
-          title="Faturamento previsto"
-          subtitle="Consultas confirmadas"
-          color="green"
-        />
-        
-        <StatsCard
-          icon={Users}
-          value={`R$ ${stats.averageTicket}`}
-          title="Ticket médio"
-          subtitle="Por paciente"
-          color="blue"
-        />
-      </div>
-
-      {/* Status Summary */}
-      <StatusSummary
-        confirmed={statusSummary.confirmed}
-        pending={statusSummary.pending}
-        cancelled={statusSummary.cancelled}
-        percentages={statusSummary.percentages}
+      {/* Strategy Pattern: Renderiza componente selecionado */}
+      <ViewComponent
+        statusSummary={statusSummary}
+        stats={stats}
+        detailsSummary={detailsSummary}
+        upcomingAppointments={upcomingAppointments}
+        financialChartData={financialChartData}
+        monthlyData={monthlyData}
+        filteredAppointments={filteredAppointments}
+        filteredAvailability={filteredAvailability}
+        patients={patients}
+        financialForecast={financialForecast}
+        financialBreakdown={financialBreakdown}
       />
-
-      {/* Charts */}
-      <div className="charts-section">
-        <AppointmentsChart data={chartData} />
-        <UpcomingAppointments appointments={upcomingAppointments} />
-      </div>
     </div>
   );
 }

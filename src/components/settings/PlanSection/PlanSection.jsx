@@ -1,5 +1,6 @@
 import { Crown, Check, XCircle, RotateCcw } from "lucide-react";
 import StripeCheckoutButton from "../../stripe/StripeCheckoutButton";
+import Button from "../../common/Button";
 import "./PlanSection.css";
 
 export default function PlanSection({
@@ -90,7 +91,7 @@ export default function PlanSection({
         
         {isCanceled && doctor?.subscriptionCancelAt && (
           <p className="subscription-cancel-warning">
-            <strong>⚠️ Cancelamento agendado:</strong> Sua assinatura será cancelada em{" "}
+            <strong>Cancelamento agendado:</strong> Sua assinatura será cancelada em{" "}
             {new Date(doctor.subscriptionCancelAt.toDate()).toLocaleDateString('pt-BR', {
               day: '2-digit',
               month: 'long',
@@ -110,18 +111,15 @@ export default function PlanSection({
               {reactivateError}
             </p>
           )}
-          <button
+          <Button
             onClick={onReactivate}
-            className="btn btn-primary"
             disabled={reactivateLoading}
+            loading={reactivateLoading}
+            variant="primary"
+            leftIcon={<RotateCcw size={18} />}
           >
-            {reactivateLoading ? 'Reativando...' : (
-              <>
-                <RotateCcw size={18} style={{ marginRight: '0.5rem' }} />
-                Reativar Assinatura
-              </>
-            )}
-          </button>
+            Reativar assinatura
+          </Button>
         </div>
       ) : (
         <div className="subscription-management">
@@ -133,18 +131,15 @@ export default function PlanSection({
               {cancelError}
             </p>
           )}
-          <button
+          <Button
             onClick={onCancel}
-            className="btn btn-danger"
             disabled={cancelLoading}
+            loading={cancelLoading}
+            variant="danger"
+            leftIcon={<XCircle size={18} />}
           >
-            {cancelLoading ? 'Cancelando...' : (
-              <>
-                <XCircle size={18} style={{ marginRight: '0.5rem' }} />
-                Cancelar Assinatura
-              </>
-            )}
-          </button>
+            Cancelar assinatura
+          </Button>
         </div>
       )}
     </section>

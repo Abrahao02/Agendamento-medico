@@ -1,13 +1,11 @@
 // ============================================
 // 📁 src/utils/stats/appointmentStats.js
-// ✅ ATUALIZADO: Considera apenas appointments ATIVOS nos cálculos
 // ============================================
 
-import { STATUS_GROUPS, isStatusInGroup } from "../../constants/appointmentStatus";
+import { STATUS_GROUPS, isStatusInGroup, APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
 
 /**
  * Calcula estatísticas básicas de appointments
- * ✅ ATUALIZADO: Apenas appointments ATIVOS contam para total e faturamento
  */
 export const calculateAppointmentStats = (appointments, priceMap = {}) => {
   if (!Array.isArray(appointments)) {
@@ -18,7 +16,6 @@ export const calculateAppointmentStats = (appointments, priceMap = {}) => {
     };
   }
 
-  // ✅ MUDANÇA: Filtra apenas appointments ATIVOS
   const activeAppointments = appointments.filter(a => 
     STATUS_GROUPS.ACTIVE.includes(a.status)
   );
@@ -43,7 +40,7 @@ export const calculateAppointmentStats = (appointments, priceMap = {}) => {
     : "0.00";
 
   return {
-    totalAppointments, // ✅ Agora conta apenas ativos
+    totalAppointments,
     totalRevenue,
     averageTicket,
   };
@@ -71,7 +68,7 @@ export const calculateStatusSummary = (appointments) => {
   ).length;
 
   const cancelled = appointments.filter(a => 
-    isStatusInGroup(a.status, 'CANCELLED')
+    a.status === APPOINTMENT_STATUS.CANCELLED
   ).length;
 
   return {

@@ -5,7 +5,7 @@ export const validatePatientName = (name) => {
     throw new Error("Preencha seu nome completo.");
   }
 
-  return name.trim();
+  return name.trim().replace(/\s+/g, ' ');
 };
 
 export const validateWhatsapp = (whatsapp) => {

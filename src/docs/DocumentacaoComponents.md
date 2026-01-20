@@ -44,7 +44,10 @@ src/components/
 │   ├── StatusSummary/
 │   ├── AppointmentsChart/
 │   ├── UpcomingAppointments/
-│   └── PublicLinkCard/
+│   ├── PublicLinkCard/
+│   ├── DetailsSummary/
+│   ├── FinancialChart/
+│   └── MonthlyComparison/
 ├── layout/              # Componentes de layout
 │   ├── Header/
 │   └── Sidebar/
@@ -100,7 +103,7 @@ import Badge, { StatusBadge, BadgeGroup } from "@/components/common/Badge";
 <Badge variant="warning" icon={<AlertIcon />}>Atenção</Badge>
 
 // Badge removível
-<Badge variant="info" onRemove={() => console.log("removed")}>
+<Badge variant="info" onRemove={() => {/* handle remove */}}>
   Tag
 </Badge>
 
@@ -223,7 +226,7 @@ import Card, { CardSection } from "@/components/common/Card";
 <Card 
   clickable 
   hoverable
-  onClick={() => console.log("clicked")}
+  onClick={() => {/* handle click */}}
 >
   <p>Card clicável</p>
 </Card>
@@ -558,6 +561,208 @@ import PasswordChecklist from "@/components/common/PasswordChecklist";
 
 ## 📊 Dashboard Components
 
+### `PatientsView` ✨ NOVO
+
+**Arquivo:** `src/components/dashboard/PatientsView.jsx`
+
+Componente que renderiza a visualização "Pacientes & Agenda" do dashboard.
+
+#### **Estrutura**
+
+```javascript
+import PatientsView from "@/components/dashboard/PatientsView";
+
+<PatientsView
+  statusSummary={statusSummary}
+  stats={stats}
+  detailsSummary={detailsSummary}
+  upcomingAppointments={upcomingAppointments}
+  filteredAppointments={filteredAppointments}
+  filteredAvailability={filteredAvailability}
+  patients={patients}
+/>
+```
+
+#### **Componentes Utilizados**
+
+- `StatsCard`: Cards de estatísticas (Confirmados, Pendentes, Horários disponíveis, Agendamentos ocupados)
+- `DetailsSummary`: Indicadores do período (Novos pacientes, Taxa de faltas, Taxa de cancelamento)
+- `UpcomingAppointments`: Próximas consultas
+- Modais interativos: `PendingAppointmentsModal`, `AvailableSlotsModal`, `ConfirmedAppointmentsModal`, `AppointmentsSummaryModal`, `NewPatientsModal`, `NoShowModal`, `CancelledModal`
+
+#### **Funcionalidades**
+
+- ✅ Cards clicáveis que abrem modais com detalhes
+- ✅ Indicadores interativos com modais
+- ✅ Navegação para "Agenda do dia" a partir de itens clicáveis
+- ✅ Dados atualizados de pacientes em tempo real
+
+---
+
+### `FinancialView` ✨ NOVO
+
+**Arquivo:** `src/components/dashboard/FinancialView.jsx`
+
+Componente que renderiza a visualização "Financeiro" do dashboard com 4 blocos principais.
+
+#### **Estrutura**
+
+```javascript
+import FinancialView from "@/components/dashboard/FinancialView";
+
+<FinancialView
+  stats={stats}
+  financialForecast={financialForecast}
+  financialBreakdown={financialBreakdown}
+/>
+```
+
+#### **Blocos**
+
+1. **FinancialOverviewCards** - 3 cards principais:
+   - Recebido (verde): Consultas pagas que já passaram
+   - A receber (azul): Confirmadas futuras
+   - Em risco (amarelo): Pendentes + Não compareceu
+
+2. **FinancialForecast** - Previsão financeira:
+   - Valor total esperado
+   - Breakdown por status (Confirmados, Pendentes, Não compareceu)
+   - Barras de progresso com porcentagens
+
+3. **FinancialTimeline** - Linha do tempo:
+   - Gráfico de barras (Recharts)
+   - Já realizado vs. Próximos dias
+   - Valores formatados em R$ (padrão brasileiro)
+
+4. **FinancialBreakdown** - Detalhamento por status:
+   - Confirmados: Já realizados e Futuros
+   - Pendentes: Aguardando resposta
+   - Não compareceram: Valor potencial
+
+#### **Componentes Utilizados**
+
+- `FinancialOverviewCards`: Cards principais
+- `FinancialForecast`: Previsão com breakdown
+- `FinancialTimeline`: Gráfico de barras
+- `FinancialBreakdown`: Detalhamento por status
+
+#### **Conceitos Financeiros**
+
+- **Recebido**: Confirmados que já passaram (data < hoje)
+- **A receber**: Confirmados futuros (data >= hoje)
+- **Em risco**: Pendentes (PENDING + MESSAGE_SENT) + Não compareceu (NO_SHOW)
+- **Previsão total**: Soma de todos os status (Confirmados + Pendentes + Não compareceu)
+
+---
+
+### `FinancialOverviewCards` ✨ NOVO
+
+**Arquivo:** `src/components/dashboard/FinancialOverviewCards/FinancialOverviewCards.jsx`
+
+Componente que renderiza os 3 cards principais da visão financeira.
+
+#### **Props**
+
+```typescript
+{
+  received: number,    // Valor recebido (confirmados passados)
+  toReceive: number,   // Valor a receber (confirmados futuros)
+  atRisk: number       // Valor em risco (pendentes + não compareceu)
+}
+```
+
+#### **Características**
+
+- ✅ Layout responsivo (3 colunas → 1 coluna em telas menores)
+- ✅ Valores formatados com `formatCurrency` (R$ 1.000,00)
+- ✅ Cores semânticas (verde, azul, amarelo)
+- ✅ Ícones representativos (DollarSign, Clock, AlertTriangle)
+
+---
+
+### `FinancialForecast` ✨ NOVO
+
+**Arquivo:** `src/components/dashboard/FinancialForecast/FinancialForecast.jsx`
+
+Componente que exibe a previsão financeira do período com breakdown por status.
+
+#### **Props**
+
+```typescript
+{
+  confirmed: number,   // Total de confirmados
+  pending: number,    // Total de pendentes
+  noShow: number,     // Total de não compareceu
+  total: number       // Valor total esperado
+}
+```
+
+#### **Características**
+
+- ✅ Valor total esperado destacado
+- ✅ Barras de progresso horizontais com gradientes
+- ✅ Porcentagens calculadas automaticamente
+- ✅ Valores formatados em R$ (padrão brasileiro)
+
+---
+
+### `FinancialTimeline` ✨ NOVO
+
+**Arquivo:** `src/components/dashboard/FinancialTimeline/FinancialTimeline.jsx`
+
+Componente que exibe linha do tempo financeira com gráfico de barras.
+
+#### **Props**
+
+```typescript
+{
+  realized: number,    // Valor já realizado
+  toReceive: number    // Valor a receber (próximos dias)
+}
+```
+
+#### **Características**
+
+- ✅ Gráfico de barras usando Recharts
+- ✅ Valores exibidos acima das barras
+- ✅ Tooltip formatado com `formatCurrency`
+- ✅ Cores diferentes para cada barra (verde e azul)
+- ✅ Responsivo
+
+---
+
+### `FinancialBreakdown` ✨ NOVO
+
+**Arquivo:** `src/components/dashboard/FinancialBreakdown/FinancialBreakdown.jsx`
+
+Componente que exibe detalhamento financeiro por status.
+
+#### **Props**
+
+```typescript
+{
+  confirmed: {
+    realized: number,  // Já realizados
+    future: number    // Futuros
+  },
+  pending: {
+    total: number      // Aguardando resposta
+  },
+  noShow: {
+    total: number      // Valor potencial
+  }
+}
+```
+
+#### **Características**
+
+- ✅ Seções organizadas por status
+- ✅ Ícones representativos (CheckCircle, Clock, XCircle)
+- ✅ Cores semânticas por status
+- ✅ Valores formatados em R$ (padrão brasileiro)
+
+---
+
 ### `StatsCard`
 
 **Arquivo:** `src/components/dashboard/StatsCard/StatsCard.jsx`
@@ -715,6 +920,117 @@ import PublicLinkCard from "@/components/dashboard/PublicLinkCard/PublicLinkCard
   slug: string
 }
 ```
+
+---
+
+### `DetailsSummary`
+
+**Arquivo:** `src/components/dashboard/DetailsSummary/DetailsSummary.jsx`
+
+Componente para mostrar métricas detalhadas com barras de progresso.
+
+#### **Uso**
+
+```javascript
+import DetailsSummary from "@/components/dashboard/DetailsSummary/DetailsSummary";
+
+<DetailsSummary
+  newPatients={10}
+  newPatientsTotal={50}
+  messagesSent={25}
+  messagesSentTotal={50}
+  noShow={5}
+  noShowTotal={50}
+  cancelled={10}
+  cancelledTotal={50}
+/>
+```
+
+#### **Props**
+
+```typescript
+{
+  newPatients?: number,
+  newPatientsTotal?: number,
+  messagesSent?: number,
+  messagesSentTotal?: number,
+  noShow?: number,
+  noShowTotal?: number,
+  cancelled?: number,
+  cancelledTotal?: number
+}
+```
+
+**Comportamento:**
+- Exibe métricas com barras de progresso
+- Calcula percentuais automaticamente
+- Cores diferentes para cada métrica (blue, orange, red, gray)
+
+---
+
+### `FinancialChart`
+
+**Arquivo:** `src/components/dashboard/FinancialChart/FinancialChart.jsx`
+
+Gráfico de linha mostrando evolução financeira ao longo do tempo.
+
+#### **Uso**
+
+```javascript
+import FinancialChart from "@/components/dashboard/FinancialChart/FinancialChart";
+
+<FinancialChart data={financialChartData} />
+```
+
+#### **Props**
+
+```typescript
+{
+  data: Array<{
+    date: string,
+    revenue: number
+  }>
+}
+```
+
+**Comportamento:**
+- Gráfico de linha usando Recharts
+- Formata valores em R$
+- Exibe estado vazio quando não há dados
+
+---
+
+### `MonthlyComparison`
+
+**Arquivo:** `src/components/dashboard/MonthlyComparison/MonthlyComparison.jsx`
+
+Comparativo mensal financeiro em formato de lista.
+
+#### **Uso**
+
+```javascript
+import MonthlyComparison from "@/components/dashboard/MonthlyComparison/MonthlyComparison";
+
+<MonthlyComparison data={monthlyData} />
+```
+
+#### **Props**
+
+```typescript
+{
+  data: Array<{
+    key: string,
+    name: string,
+    revenue: number,
+    trend?: 'up' | 'down'
+  }>
+}
+```
+
+**Comportamento:**
+- Lista de meses com valores de receita
+- Indicadores de tendência (↑ ou ↓)
+- Exibe estado vazio quando não há dados
 
 ---
 
@@ -1348,4 +1664,4 @@ ComponentName/
 
 **Documentação criada por:** Assistente IA  
 **Data:** Janeiro 2026  
-**Versão:** 1.0
+**Versão:** 1.2

@@ -1,6 +1,10 @@
+// ============================================
+// 📁 src/components/layout/Sidebar/PlanBox.jsx - REFATORADO
+// Badge compacto para footer da sidebar
+// ============================================
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "../../common/Button";
-import StripeCheckoutButton from "../../stripe/StripeCheckoutButton";
+import { AlertCircle, HelpCircle } from "lucide-react";
 
 export default function PlanBox({ 
   plan, 
@@ -9,61 +13,70 @@ export default function PlanBox({
   sidebarOpen 
 }) {
   const navigate = useNavigate();
+  const [showTooltip, setShowTooltip] = useState(false);
   const remainingAppointments = 10 - appointmentsThisMonth;
 
   if (!sidebarOpen) return null;
 
-  const handleScrollToPlans = (e) => {
+  const handleConhecerPlanos = (e) => {
     e.preventDefault();
-    navigate("/#plans");
+    navigate("/dashboard/settings");
   };
 
   return (
-    <div
-      className={`plan-box ${isLimitReached ? "limit-reached" : ""}`}
-      role="region"
-      aria-label="Informações do plano"
-    >
-      <span className="plan-badge">
-        Plano {plan === "free" ? "Gratuito" : "PRO"}
-      </span>
-
-      <p className="plan-description">
-        {plan === "free" ? (
-          <>
-            Você ainda possui:{" "}
-            <strong className="remaining-appointments">
-              {remainingAppointments}
-            </strong>{" "}
-            {remainingAppointments === 1 ? "consulta" : "consultas"}
-          </>
-        ) : (
-          <>✨ Agendamentos ilimitados</>
+    <div className="plan-badge-wrapper">
+      <div
+        className={`plan-badge-compact ${isLimitReached ? "limit-reached" : ""}`}
+        role="status"
+        aria-label={`Plano ${plan === "free" ? "Gratuito" : "PRO"}${isLimitReached ? " - Limite atingido" : ""}`}
+      >
+        <span className="plan-badge-text">
+          {plan === "free" ? (
+            isLimitReached ? (
+              <>
+                <AlertCircle className="limit-icon" size={16} />
+                <span>Limite atingido</span>
+              </>
+            ) : (
+              <>
+                Gratuito <span className="plan-count">{remainingAppointments} consulta(s)</span>
+              </>
+            )
+          ) : (
+            <>PRO</>
+          )}
+        </span>
+        {plan === "free" && !isLimitReached && (
+          <div className="plan-help-wrapper">
+            <button
+              className="plan-help-icon"
+              onClick={() => setShowTooltip(!showTooltip)}
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              aria-label="Informações sobre o plano gratuito"
+              aria-expanded={showTooltip}
+            >
+              <HelpCircle size={16} />
+            </button>
+            {showTooltip && (
+              <div className="plan-tooltip" role="tooltip">
+                <p>
+                  Plano gratuito: até 10 consultas confirmadas por mês. 
+                  Após o limite, assine o PRO para continuar.
+                </p>
+              </div>
+            )}
+          </div>
         )}
-      </p>
-
+      </div>
       {plan === "free" && (
-        <div className="plan-actions">
-          <StripeCheckoutButton
-            className="pro-subscribe-btn"
-            variant="primary"
-            fullWidth
-            showPaymentInfo={false}
-            showIcon={false}
-          >
-            Assinar PRO
-          </StripeCheckoutButton>
-
-          <Button
-            onClick={handleScrollToPlans}
-            className="free-plan-btn"
-            variant="ghost"
-            fullWidth
-            aria-label="Conhecer todos os planos"
-          >
-            Conhecer planos
-          </Button>
-        </div>
+        <button
+          onClick={handleConhecerPlanos}
+          className="plan-link-btn"
+          aria-label={isLimitReached ? "Assinar PRO para liberar" : "Conhecer todos os planos"}
+        >
+          {isLimitReached ? "Assinar PRO" : "Conhecer planos"}
+        </button>
       )}
     </div>
   );

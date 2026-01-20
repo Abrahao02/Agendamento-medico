@@ -17,7 +17,9 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e5e7eb;
 }
 
 .stat-card {
@@ -149,8 +151,7 @@
    Occupancy Bar - Compacto
 =========================== */
 .occupancy-bar {
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  padding-bottom: 0;
 }
 
 .occupancy-header {
@@ -238,7 +239,8 @@
 
   .stats-grid {
     gap: 0.625rem;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
   }
 
   .stat-card {
@@ -264,7 +266,7 @@
   }
 
   .occupancy-bar {
-    padding-top: 0.875rem;
+    padding-bottom: 0;
   }
 
   .occupancy-header span {
@@ -285,49 +287,50 @@
 }
 
 /* ===========================
-   Dark Mode Support
+   Dark Mode Support - DESABILITADO
 =========================== */
+/* O projeto não suporta dark mode ainda, então forçamos sempre modo claro */
 @media (prefers-color-scheme: dark) {
   .day-stats {
-    background: #1f2937;
-    border-color: #374151;
+    background: white !important;
+    border-color: #e5e7eb !important;
   }
 
   .stat-card {
-    background: #111827;
-    border-color: #374151;
+    background: #f9fafb !important;
+    border-color: #e5e7eb !important;
   }
 
   .stat-card:hover {
-    background: #1f2937;
-    border-color: #4b5563;
+    background: white !important;
+    border-color: #d1d5db !important;
   }
 
   .stat-label {
-    color: #9ca3af;
+    color: #6b7280 !important;
   }
 
   .stat-value {
-    color: #f9fafb;
+    color: #111827 !important;
   }
 
-  .occupancy-bar {
-    border-top-color: #374151;
+  .stats-grid {
+    border-top-color: #e5e7eb !important;
   }
 
   .occupancy-header span {
-    color: #9ca3af;
+    color: #6b7280 !important;
   }
 
   .occupancy-header strong {
-    color: #f9fafb;
+    color: #111827 !important;
   }
 
   .occupancy-track {
-    background: #374151;
+    background: #f3f4f6 !important;
   }
 
   .occupancy-legend {
-    color: #6b7280;
+    color: #9ca3af !important;
   }
 }

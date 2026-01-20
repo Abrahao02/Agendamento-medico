@@ -3,6 +3,7 @@
 // ============================================
 import { ArrowRight } from "lucide-react";
 import heroImage from "../../assets/hero-illustration.png";
+import Button from "../common/Button";
 
 export default function HeroSection({ onScrollToPlans }) {
   return (
@@ -16,16 +17,17 @@ export default function HeroSection({ onScrollToPlans }) {
           </p>
 
           <div className="hero-buttons">
-            <button
-              className="btn btn-primary"
+            <Button
+              variant="primary"
               onClick={onScrollToPlans}
+              rightIcon={<ArrowRight size={18} />}
             >
-              Ver planos <ArrowRight size={18} />
-            </button>
+              Ver planos
+            </Button>
 
-            <a href="#features" className="btn btn-outline">
+            <Button as="a" href="#features" variant="outline">
               Como funciona
-            </a>
+            </Button>
           </div>
         </div>
 

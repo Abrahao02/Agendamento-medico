@@ -48,6 +48,8 @@
 .input,
 .textarea {
   width: 100%;
+  max-width: 100%;
+  min-width: 0; /* CRÍTICO: permite shrink em flex containers */
   font-family: var(--font-family-base);
   font-size: var(--text-base);
   color: var(--text-primary);
@@ -56,6 +58,7 @@
   border-radius: var(--radius-lg);
   transition: all var(--transition-base);
   outline: none;
+  box-sizing: border-box;
 }
 
 .input:hover,

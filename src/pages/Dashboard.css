@@ -3,19 +3,102 @@
    ============================================ */
 @import url('../styles/variables.css');
 
-.dashboard-content {
-  padding: var(--spacing-xl);
+.dashboard-page-content {
+  padding: var(--spacing-md);
   max-width: 1400px;
   margin: 0 auto;
   animation: fadeIn 0.4s ease;
+  background: var(--bg-secondary);
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-/* Stats Grid */
+@media (min-width: 768px) {
+  .dashboard-page-content {
+    padding: var(--spacing-xl);
+  }
+}
+
+/* PageHeader alinhado à esquerda (sem centralização) */
+.dashboard-page-content .padrao-header {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  padding-left: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+
+.dashboard-page-content .padrao-header-title-row {
+  margin-bottom: var(--spacing-xs);
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: var(--spacing-md) !important;
+  width: auto !important;
+  justify-content: flex-start !important;
+}
+
+.dashboard-page-content .padrao-header h2 {
+  margin: 0 !important;
+  flex: 0 1 auto !important;
+  order: 1 !important;
+}
+
+.dashboard-page-content .padrao-header .label {
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  order: 2 !important;
+}
+
+/* View Toggle */
+.view-toggle {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+  background: var(--bg-primary);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  width: fit-content;
+}
+
+/* Botões usam `src/components/common/Button` (classe extra só para layout) */
+.view-toggle-btn {
+  white-space: nowrap;
+}
+
+/* Stats Grid - Mobile-first */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: 1fr; /* Mobile: 1 coluna */
+  gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr); /* Tablet: 2 colunas */
+    gap: var(--spacing-lg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* Desktop: auto-fit */
+  }
+}
+
+/* Stats Grid - Pacientes & Agenda (4 cards) */
+.stats-grid.patients-view {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 /* ✨ NOVO: Segunda linha de stats (menor ênfase) */
@@ -31,8 +114,35 @@
 /* Charts Section */
 .charts-section {
   display: grid;
+  grid-template-columns: 1fr; /* Mobile: 1 coluna */
+  gap: var(--spacing-lg);
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .charts-section {
   grid-template-columns: 2fr 1fr;
   gap: var(--spacing-xl);
+  }
+}
+
+/* Charts Section - Pacientes & Agenda (Mais detalhes largo, Próximas consultas estreito) */
+.charts-section.patients-view {
+  grid-template-columns: 2fr 1fr;
+  align-items: start;
+}
+
+/* Charts Section - Financeiro (gráfico + comparativo) */
+.charts-section.financial-view {
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-xl);
+}
+
+@media (max-width: 1024px) {
+  .charts-section.financial-view {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ✨ NOVO: Efeito de fade in escalonado */
@@ -84,32 +194,18 @@
   font-weight: var(--font-medium);
 }
 
-/* ✨ NOVO: Destaque visual para métricas importantes */
-.dashboard-content .stats-grid .stats-card:first-child {
+/* Destaque visual: evitar emojis decorativos */
+.dashboard-page-content .stats-grid .stats-card:first-child {
   position: relative;
-}
-
-.dashboard-content .stats-grid .stats-card:first-child::before {
-  content: '✨';
-  position: absolute;
-  top: var(--spacing-md);
-  right: var(--spacing-md);
-  font-size: var(--text-lg);
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
   .charts-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .charts-section.patients-view {
     grid-template-columns: 1fr;
   }
   
@@ -119,22 +215,21 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-content {
+  .dashboard-page-content {
     padding: var(--spacing-md);
   }
 
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
+  .view-toggle {
+    width: 100%;
+    justify-content: stretch;
   }
-  
-  .stats-grid-secondary {
-    grid-template-columns: 1fr;
-  }
-}
 
-@media (max-width: 480px) {
-  .stats-grid {
+  .view-toggle-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .stats-grid-secondary {
     grid-template-columns: 1fr;
   }
 }

@@ -365,12 +365,26 @@ export default function Register() {
 
 ## 📊 Páginas do Dashboard
 
-### `Dashboard`
+### `Dashboard` ✨ ATUALIZADO
 
 **Arquivo:** `src/pages/Dashboard.jsx`  
 **Rota:** `/dashboard`
 
-Página principal do dashboard com estatísticas e visão geral.
+Página principal do dashboard com duas visualizações: **Pacientes & Agenda** e **Financeiro**. Usa Strategy Pattern para alternar entre as views.
+
+#### **Novas Funcionalidades**
+
+1. **Visualização Pacientes & Agenda** (padrão)
+   - Cards de estatísticas (Confirmados, Pendentes, Horários disponíveis, Agendamentos ocupados)
+   - Indicadores do período (Novos pacientes, Taxa de faltas, Taxa de cancelamento)
+   - Próximas consultas
+   - Modais interativos para detalhamento
+
+2. **Visualização Financeiro** ✨ NOVO
+   - Bloco 1: Cards principais (Recebido, A receber, Em risco)
+   - Bloco 2: Previsão financeira do período
+   - Bloco 3: Linha do tempo financeira (gráfico de barras)
+   - Bloco 4: Detalhamento por status
 
 #### **Estrutura**
 

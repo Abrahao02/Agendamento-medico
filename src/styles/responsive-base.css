@@ -1,0 +1,154 @@
+/* src/styles/responsive-base.css - Base Responsiva Global */
+
+/* ========================================
+   PREVENÇÃO DE OVERFLOW HORIZONTAL
+   ======================================== */
+
+/* Regra de ouro: SEMPRE use max-width em containers */
+.container,
+.wrapper,
+.section,
+.card,
+.modal-content {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Previne elementos fixos quebrando */
+.fixed-element,
+.sticky-element {
+  max-width: 100vw;
+  left: 0;
+  right: 0;
+}
+
+/* Previne tabelas quebrando */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  min-width: 600px; /* Largura mínima, mas permite scroll */
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
+/* Previne formulários quebrando */
+form {
+  width: 100%;
+  max-width: 100%;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .form-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .form-row > * {
+    flex: 1;
+    min-width: 0; /* CRÍTICO: permite shrink abaixo do conteúdo */
+  }
+}
+
+/* Previne textos longos quebrando */
+.long-text,
+.url-text {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* Previne imagens quebrando */
+.image-container {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.image-container img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* ========================================
+   PADRÕES POR TIPO DE ELEMENTO
+   ======================================== */
+
+/* Cards */
+.card {
+  width: 100%;
+  max-width: 100%;
+  padding: var(--spacing-lg);
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: var(--spacing-xl);
+  }
+}
+
+/* Modais */
+.modal-content {
+  width: 90vw; /* Mobile: 90% da viewport */
+  max-width: 500px; /* Desktop: máximo 500px */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 768px) {
+  .modal-content {
+    width: auto;
+    min-width: 400px;
+  }
+}
+
+/* Tabelas responsivas */
+@media (max-width: 768px) {
+  /* Opção 1: Scroll horizontal */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Opção 2: Stack em mobile (melhor UX) */
+  .table-stack-mobile {
+    display: block;
+  }
+  
+  .table-stack-mobile thead {
+    display: none;
+  }
+  
+  .table-stack-mobile tr {
+    display: block;
+    margin-bottom: var(--spacing-md);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+  }
+  
+  .table-stack-mobile td {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    border: none;
+  }
+  
+  .table-stack-mobile td::before {
+    content: attr(data-label);
+    font-weight: var(--font-semibold);
+    margin-right: var(--spacing-md);
+  }
+}

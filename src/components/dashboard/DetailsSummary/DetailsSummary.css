@@ -1,0 +1,136 @@
+/* ============================================
+   📁 src/components/dashboard/DetailsSummary/DetailsSummary.css
+   ============================================ */
+@import url('../../../styles/variables.css');
+
+.details-summary-card {
+  background: var(--white);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+  animation-delay: 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.details-summary-card .standardized-h3 {
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.details-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.details-list .detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+  align-items: flex-start;
+}
+
+.details-list .detail-item.clickable {
+  cursor: pointer;
+  transition: var(--transition-base);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  margin: calc(var(--spacing-xs) * -1);
+}
+
+.details-list .detail-item.clickable:hover {
+  background: var(--gray-50);
+}
+
+.details-list .detail-item.clickable:active {
+  background: var(--gray-100);
+}
+
+.details-list .detail-item.clickable:focus {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.details-list .detail-label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  width: 100%;
+}
+
+.details-list .detail-percentage {
+  display: block;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  width: 100%;
+}
+
+.details-list .detail-progress-bar {
+  height: 24px;
+  background: var(--gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.detail-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-md);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.detail-progress-fill.blue {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.detail-progress-fill.red {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.detail-progress-fill.gray {
+  background: linear-gradient(90deg, #6b7280, #9ca3af);
+}
+
+.details-list .detail-count {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  font-weight: var(--font-normal);
+  width: 100%;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .details-summary-card {
+    padding: var(--spacing-lg);
+  }
+
+  .details-list .detail-item {
+    gap: var(--spacing-xs);
+  }
+
+  .details-list .detail-progress-bar {
+    height: 20px;
+  }
+}

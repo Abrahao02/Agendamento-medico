@@ -15,3 +15,5 @@ export { createCheckoutSession } from "./stripe/createCheckoutSession";
 export { stripeWebhook } from "./stripe/webhook";
 export { cancelSubscription } from "./stripe/cancelSubscription";
 export { reactivateSubscription } from "./stripe/reactivateSubscription";
+export { validateAppointmentLimit } from "./appointments/validateAppointmentLimit";
+export { createPublicAppointment } from "./appointments/createPublicAppointment";

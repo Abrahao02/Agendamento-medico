@@ -1,15 +1,25 @@
 // ============================================
 // 📁 src/components/dashboard/UpcomingAppointments/UpcomingAppointments.jsx
-// ✅ ATUALIZADO: Mostra apenas appointments ATIVOS
 // ============================================
 
 import React from "react";
-import { Calendar, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Calendar, CalendarX, Clock } from "lucide-react";
 import formatDate from "../../../utils/formatter/formatDate";
 import { STATUS_CONFIG } from "../../../constants/appointmentStatus";
 import "./UpcomingAppointments.css";
 
 export default function UpcomingAppointments({ appointments = [] }) {
+  const navigate = useNavigate();
+  
+  const handleItemClick = (appointment) => {
+    if (appointment.date) {
+      navigate("/dashboard/appointments", {
+        state: { date: appointment.date }
+      });
+    }
+  };
+  
   const getInitials = (name) => {
     if (!name) return "??";
     return name
@@ -28,9 +38,11 @@ export default function UpcomingAppointments({ appointments = [] }) {
   if (appointments.length === 0) {
     return (
       <div className="upcoming-card">
-        <h3 className="upcoming-title">Próximas consultas</h3>
+        <h3 className="standardized-h3">Próximas consultas</h3>
         <div className="upcoming-empty">
-          <span className="empty-icon">📅</span>
+          <span className="empty-icon" aria-hidden="true">
+            <CalendarX size={40} />
+          </span>
           <p>Nenhuma consulta agendada</p>
         </div>
       </div>
@@ -39,7 +51,7 @@ export default function UpcomingAppointments({ appointments = [] }) {
 
   return (
     <div className="upcoming-card">
-      <h3 className="upcoming-title">
+      <h3 className="standardized-h3">
         Próximas consultas
         <span className="upcoming-count">{appointments.length}</span>
       </h3>
@@ -47,8 +59,18 @@ export default function UpcomingAppointments({ appointments = [] }) {
         {appointments.map((appointment, index) => (
           <div
             key={appointment.id || index}
-            className="upcoming-item"
+            className="upcoming-item clickable"
             style={{ animationDelay: `${index * 0.1}s` }}
+            onClick={() => handleItemClick(appointment)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleItemClick(appointment);
+              }
+            }}
+            aria-label={`Ir para agenda do dia ${formatDate(appointment.date)}`}
           >
             <div className="upcoming-avatar">
               {getInitials(appointment.referenceName || appointment.patientName)}

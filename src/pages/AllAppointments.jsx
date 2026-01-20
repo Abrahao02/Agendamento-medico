@@ -1,18 +1,24 @@
-import React from "react";
+import React, { useCallback } from "react";
+import { useOutletContext } from "react-router-dom";
 import { auth } from "../services/firebase/config";
 
 import useAllAppointments from "../hooks/agenda/useAllAppointments";
-import PageHeader from "../components/common/PageHeader/PageHeader";
-import Filters from "../components/common/Filters/Filters";
+import PageHeader from "../components/common/PageHeader";
+import Filters from "../components/common/Filters";
+import Button from "../components/common/Button";
 import PatientsList from "../components/allAppointments/PatientsList";
 import SaveChangesBar from "../components/allAppointments/SaveChangesBar";
-import LoadingFallback from "../components/common/LoadingFallback/LoadingFallback";
+import LoadingFallback from "../components/common/LoadingFallback";
+import LimitWarningBanner from "../components/common/LimitWarningBanner";
 import { getStatusOptions } from "../utils/appointments/getStatusOptions";
+import { sendWhatsappMessage } from "../utils/whatsapp/generateWhatsappLink";
+import { formatCurrency } from "../utils/formatter/formatCurrency";
 
 import "./AllAppointments.css";
 
 export default function AllAppointments() {
   const user = auth.currentUser;
+  const { isLimitReached } = useOutletContext() || {};
 
   const {
     patientsData,
@@ -42,27 +48,26 @@ export default function AllAppointments() {
     lockedAppointments,
   } = useAllAppointments(user);
 
+  // ✅ IMPORTANTE: Todos os Hooks devem ser chamados antes de qualquer return condicional
+  const statusOptions = getStatusOptions(true);
+
+  const handleSendWhatsapp = useCallback((number, text) => {
+    sendWhatsappMessage(number, text);
+  }, []);
+
+  // Return condicional APÓS todos os Hooks
   if (loadingData) {
     return <LoadingFallback message="Carregando agendamentos..." />;
   }
 
-  const statusOptions = getStatusOptions(true);
-
-  const sendWhatsapp = (number, text) => {
-    const cleanNumber = number.replace(/\D/g, "");
-    const encodedText = encodeURIComponent(text);
-    const url = `https://wa.me/${cleanNumber}?text=${encodedText}`;
-    window.open(url, "_blank");
-  };
-
   const extraActions = (
     <>
-      <button className="btn btn-ghost" onClick={() => toggleAll(true)}>
+      <Button variant="ghost" onClick={() => toggleAll(true)}>
         Expandir Todos
-      </button>
-      <button className="btn btn-ghost" onClick={() => toggleAll(false)}>
+      </Button>
+      <Button variant="ghost" onClick={() => toggleAll(false)}>
         Contrair Todos
-      </button>
+      </Button>
     </>
   );
 
@@ -72,8 +77,10 @@ export default function AllAppointments() {
         <PageHeader
           label="Gestão de Agendamentos"
           title="Todos os Agendamentos"
-          description={`${stats.totalAppointments} agendamento(s) • R$ ${stats.totalValue.toFixed(2)} • Pacientes: ${stats.totalPatients}`}
+          description={`${stats.totalAppointments} agendamento(s) • ${formatCurrency(stats.totalValue)} • Pacientes: ${stats.totalPatients}`}
         />
+
+        {isLimitReached && <LimitWarningBanner />}
 
         <Filters
           searchTerm={searchTerm}
@@ -106,7 +113,7 @@ export default function AllAppointments() {
           lockedAppointments={lockedAppointments}
           onTogglePatient={togglePatient}
           onStatusChange={handleStatusChange}
-          onSendWhatsapp={sendWhatsapp}
+          onSendWhatsapp={handleSendWhatsapp}
         />
 
         <SaveChangesBar changesCount={changedIds.size} saving={saving} onSave={handleSave} />

@@ -40,10 +40,14 @@ const Input = forwardRef(({
     `input-${size}`,
     fullWidth && 'input-full-width',
     error && 'input-error',
-    leftIcon && 'input-with-left-icon',
-    rightIcon && 'input-with-right-icon',
     disabled && 'input-disabled',
     className
+  ].filter(Boolean).join(' ');
+
+  const containerClasses = [
+    'input-container',
+    leftIcon && 'input-with-left-icon',
+    rightIcon && 'input-with-right-icon',
   ].filter(Boolean).join(' ');
 
   return (
@@ -55,7 +59,7 @@ const Input = forwardRef(({
         </label>
       )}
 
-      <div className="input-container">
+      <div className={containerClasses}>
         {leftIcon && (
           <span className="input-icon input-icon-left">
             {leftIcon}
@@ -68,6 +72,7 @@ const Input = forwardRef(({
           type={type}
           className={inputClasses}
           disabled={disabled}
+          required={required}
           aria-invalid={error ? 'true' : 'false'}
           aria-describedby={
             error ? `${inputId}-error` : 

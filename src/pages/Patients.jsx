@@ -1,15 +1,23 @@
 // ============================================
-// 📁 src/pages/Patients.jsx - REFATORADO
+// 📁 src/pages/Patients.jsx - MELHORADO
+// Botão fixo, modal e barra de pesquisa
 // ============================================
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { auth } from "../services/firebase";
 import { usePatients } from "../hooks/patients/usePatients";
-import PageHeader from "../components/common/PageHeader/PageHeader";
+import { UserPlus, Search } from "lucide-react";
+import PageHeader from "../components/common/PageHeader";
+import PatientItem from "../components/patients/PatientItem";
+import AddPatientModal from "../components/patients/AddPatientModal";
+import { useToast } from "../components/common/Toast";
 
 import "./Patients.css";
 
 export default function Patients() {
   const user = auth.currentUser;
+  const toast = useToast();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     loading,
@@ -23,24 +31,74 @@ export default function Patients() {
     isWhatsappDuplicate,
     updatePatientPrice,
     updatePatientReferenceName,
+    updatePatientName,
     savePatient,
     addPatient,
     enableEditPatient,
+    disableEditPatient,
     editingPatients,
     formatWhatsappDisplay,
     setError,
   } = usePatients(user);
 
+  // Filtrar pacientes baseado no termo de busca
+  const filteredPatients = useMemo(() => {
+    if (!searchTerm.trim()) return patientsList;
+
+    const search = searchTerm.toLowerCase().trim();
+    return patientsList.filter((patient) => {
+      const name = (patient.name || "").toLowerCase();
+      const referenceName = (patient.referenceName || "").toLowerCase();
+      const whatsapp = formatWhatsappDisplay(patient.whatsapp).toLowerCase();
+
+      return (
+        name.includes(search) ||
+        referenceName.includes(search) ||
+        whatsapp.includes(search)
+      );
+    });
+  }, [patientsList, searchTerm, formatWhatsappDisplay]);
+
   const handleAddPatient = async () => {
     const result = await addPatient();
-    if (result.success) alert("Paciente cadastrado com sucesso!");
-    else if (result.error && !error) alert(`Erro: ${result.error}`);
+    if (result.success) {
+      setIsModalOpen(false);
+      toast.success("Paciente cadastrado com sucesso!");
+    } else if (result.error && !error) {
+      // Erro já é gerenciado pelo hook
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setError("");
+  };
+
+  const handleEditPatient = (patient) => {
+    enableEditPatient(patient.whatsapp);
+  };
+
+  const handleCancelEdit = (patient) => {
+    disableEditPatient(patient.whatsapp);
+  };
+
+  const handlePatientFieldChange = (field, value, whatsapp) => {
+    if (field === "price") {
+      updatePatientPrice(whatsapp, value);
+    } else if (field === "referenceName") {
+      updatePatientReferenceName(whatsapp, value);
+    } else if (field === "name") {
+      updatePatientName(whatsapp, value);
+    }
   };
 
   const handleSavePatient = async (patient) => {
     const result = await savePatient(patient);
-    if (result.success) alert(`Dados salvos para ${patient.name}`);
-    else alert(`Erro ao salvar: ${result.error || "Tente novamente"}`);
+    if (result.success) {
+      toast.success(`Dados salvos para ${patient.name}`);
+    } else {
+      toast.error(`Erro ao salvar: ${result.error || "Tente novamente"}`);
+    }
   };
 
   if (loading) return <div className="patients-container"><p>Carregando pacientes...</p></div>;
@@ -53,120 +111,78 @@ export default function Patients() {
         description={`Total de ${patientsCount} cliente(s) cadastrado(s)`}
       />
 
-      <div className="add-patient-form">
-        <h3>Adicionar Novo Paciente</h3>
-
-        <input
-          type="text"
-          placeholder="Nome"
-          value={newPatient.name}
-          onChange={(e) => updateNewPatientField("name", e.target.value)}
-        />
-
-        <input
-          type="text"
-          placeholder="Nome de referência"
-          value={newPatient.referenceName}
-          onChange={(e) => updateNewPatientField("referenceName", e.target.value)}
-        />
-
-        <input
-          type="text"
-          placeholder="WhatsApp (DDD + número)"
-          value={newPatient.whatsapp}
-          onChange={(e) => handleWhatsappChange(e.target.value)}
-          className={isWhatsappDuplicate(newPatient.whatsapp) ? "input-error" : ""}
-        />
-
-        <input
-          type="number"
-          min="0"
-          placeholder="Valor da consulta"
-          value={newPatient.price}
-          onChange={(e) => updateNewPatientField("price", e.target.value)}
-        />
-
-        <button onClick={handleAddPatient}>Cadastrar Paciente</button>
-
-        {error && <p className="error">{error}</p>}
+      {/* Barra de Pesquisa */}
+      <div className="patients-search">
+        <div className="search-input-wrapper">
+          <Search size={20} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Buscar paciente..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
       </div>
 
-      <div className="patients-total">
-        Total de Clientes: <strong>{patientsCount}</strong>
-      </div>
-
-      {patientsList.length === 0 ? (
-        <p>Nenhum paciente encontrado.</p>
-      ) : (
-        <table className="patients-table">
-          <thead>
-            <tr>
-              <th>Nome Completo</th>
-              <th>Nome Preferido</th>
-              <th>WhatsApp</th>
-              <th>Valor Consulta (R$)</th>
-              <th>Total Consultas</th>
-              <th>Ação</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {patientsList.map((patient) => {
-              const isEditing = editingPatients[patient.whatsapp];
-
-              return (
-                <tr key={patient.whatsapp}>
-                  <td data-label="Nome Completo">
-                    <input
-                      type="text"
-                      value={patient.name}
-                      onChange={(e) => updateNewPatientField("name", e.target.value)}
-                      disabled={!isEditing}
-                    />
-                  </td>
-
-                  <td data-label="Nome Preferido">
-                    <input
-                      type="text"
-                      value={patient.referenceName}
-                      onChange={(e) => updatePatientReferenceName(patient.whatsapp, e.target.value)}
-                      disabled={!isEditing}
-                    />
-                  </td>
-
-                  <td data-label="WhatsApp" className="whatsapp">{formatWhatsappDisplay(patient.whatsapp)}</td>
-
-                  <td data-label="Valor Consulta (R$)">
-                    <input
-                      type="number"
-                      min="0"
-                      value={patient.price}
-                      onChange={(e) => updatePatientPrice(patient.whatsapp, e.target.value)}
-                      disabled={!isEditing}
-                    />
-                  </td>
-
-                  <td data-label="Total Consultas" className="center">{patient.totalConsultas}</td>
-
-                  <td data-label="Ação">
-                    {!isEditing ? (
-                      <button className="edit-btn" onClick={() => enableEditPatient(patient.whatsapp)}>Editar</button>
-                    ) : (
-                      <button
-                        className="save-btn"
-                        onClick={() => handleSavePatient(patient)}
-                        disabled={saving === patient.whatsapp}
-                      >
-                        {saving === patient.whatsapp ? "Salvando..." : "Salvar"}
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      {searchTerm && filteredPatients.length > 0 && (
+        <div className="patients-search-results">
+          {filteredPatients.length} resultado(s) encontrado(s)
+        </div>
       )}
+
+      {filteredPatients.length === 0 ? (
+        <div className="patients-empty">
+          <p>
+            {searchTerm
+              ? "Nenhum paciente encontrado com o termo de busca."
+              : "Nenhum paciente encontrado."}
+          </p>
+        </div>
+      ) : (
+        <div className="patients-list">
+          {filteredPatients.map((patient) => {
+            const isEditing = editingPatients[patient.whatsapp];
+            const isSaving = saving === patient.whatsapp;
+
+            return (
+              <PatientItem
+                key={patient.whatsapp}
+                patient={patient}
+                isEditing={isEditing}
+                isSaving={isSaving}
+                onEdit={() => handleEditPatient(patient)}
+                onSave={() => handleSavePatient(patient)}
+                onCancel={() => handleCancelEdit(patient)}
+                onFieldChange={(field, value) => handlePatientFieldChange(field, value, patient.whatsapp)}
+                formatWhatsappDisplay={formatWhatsappDisplay}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {/* Botão Fixo (FAB) */}
+      <button
+        className="fab-button"
+        onClick={() => setIsModalOpen(true)}
+        aria-label="Adicionar novo paciente"
+      >
+        <UserPlus size={24} />
+      </button>
+
+      {/* Modal de Adicionar Paciente */}
+      <AddPatientModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleAddPatient}
+        newPatient={newPatient}
+        updateNewPatientField={updateNewPatientField}
+        handleWhatsappChange={handleWhatsappChange}
+        isWhatsappDuplicate={isWhatsappDuplicate}
+        error={error}
+        loading={saving !== null}
+      />
     </div>
   );
 }

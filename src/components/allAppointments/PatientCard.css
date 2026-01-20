@@ -19,6 +19,8 @@
 /* Patient Header */
 .patient-header {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -28,6 +30,7 @@
   cursor: pointer;
   transition: var(--transition-base);
   text-align: left;
+  box-sizing: border-box;
 }
 
 .patient-header:hover {
@@ -43,18 +46,27 @@
   align-items: center;
   gap: var(--spacing-md);
   flex: 1;
+  min-width: 0;
+}
+
+.patient-details {
+  min-width: 0;
+  flex: 1;
 }
 
 .patient-details h3 {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
   color: var(--text-primary);
   margin: 0 0 var(--spacing-xs) 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .patient-stats-text {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--text-secondary);
+  font-weight: normal;
   margin: 0;
 }
 
@@ -68,22 +80,14 @@
 
 .patient-total {
   font-size: var(--text-lg);
-  font-weight: var(--font-bold);
+  font-weight: var(--font-semibold);
   color: var(--color-secondary);
   background: var(--secondary-50);
   padding: var(--spacing-xs) var(--spacing-md);
   border-radius: var(--radius-full);
 }
 
-.expand-icon {
-  font-size: var(--text-lg);
-  color: var(--text-secondary);
-  transition: transform var(--transition-base);
-}
-
-.patient-header:hover .expand-icon {
-  color: var(--color-secondary);
-}
+/* Removido: expand-icon dentro de patient-header, agora está no patient-header-container */
 
 /* Appointments List (expandido) */
 .appointments-list {
@@ -188,11 +192,18 @@
   gap: var(--spacing-xs);
   font-size: var(--text-sm);
   color: var(--text-secondary);
+  font-weight: var(--font-medium);
+}
+
+.appointment-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .appointment-value {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
   color: var(--text-primary);
 }
 
@@ -297,6 +308,85 @@
   }
 }
 
+/* Mobile Responsive - Patient Header */
+@media (max-width: 768px) {
+  .patient-header-container {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .patient-header {
+    width: 100%;
+    padding: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .patient-info {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .patient-details h3 {
+    font-size: var(--text-sm);
+  }
+
+  .patient-stats-text {
+    font-size: 0.7rem;
+  }
+
+  .patient-meta {
+    flex: 1 1 auto;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+  }
+
+  .patient-total {
+    font-size: var(--text-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .btn-whatsapp {
+    width: 100%;
+    justify-content: center;
+    min-width: unset;
+  }
+
+  .patient-header-container .expand-icon {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .appointments-list {
+    padding: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .patient-header-container {
+    padding: var(--spacing-sm);
+  }
+
+  .patient-header {
+    padding: var(--spacing-sm);
+  }
+
+  .patient-details h3 {
+    font-size: var(--text-sm);
+  }
+
+  .patient-meta {
+    width: 100%;
+  }
+
+  .patient-header-container .expand-icon {
+    flex-shrink: 0;
+  }
+}
+
 /* Container para header + botão */
 .patient-header-container {
   display: flex;
@@ -304,23 +394,48 @@
   align-items: center;
   padding: 0 var(--spacing-lg);
   gap: var(--spacing-md);
+  cursor: pointer;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
-/* Botão WhatsApp flutuando */
+/* Botão WhatsApp - usar Button component padrão */
 .btn-whatsapp {
   flex-shrink: 0;
-  background: var(--info-50);
-  color: var(--info-700);
-  border: 1px solid var(--info-300);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-xs) var(--spacing-md);
-  cursor: pointer;
-  transition: var(--transition-base);
+  white-space: nowrap;
+  min-width: fit-content;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  height: 44px !important;
 }
 
-.btn-whatsapp:hover {
-  background: var(--info-100);
-  border-color: var(--info-500);
+/* Melhorar hover do botão ghost WhatsApp */
+.btn-whatsapp.btn-ghost {
+  border: 1px solid var(--border-light);
+}
+
+.btn-whatsapp.btn-ghost:hover:not(:disabled) {
+  background: var(--secondary-50);
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+  transform: translateY(-2px);
+}
+
+/* Expand icon agora fora do patient-header */
+.patient-header-container .expand-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+  padding: var(--spacing-xs);
+}
+
+.patient-header-container:hover .expand-icon {
+  color: var(--color-secondary);
+  transform: scale(1.1);
 }
 
 /* ✅ Adicione ao PatientCard.css existente */
@@ -328,15 +443,15 @@
 /* Appointment bloqueado */
 .appointment-card.locked {
   opacity: 0.7;
-  background-color: #f8f9fa;
-  border-left: 3px solid #6c757d;
+  background-color: var(--gray-50);
+  border-left: 3px solid var(--gray-500);
 }
 
 /* Select desabilitado */
 .status-select:disabled {
   cursor: not-allowed;
   opacity: 0.6;
-  background-color: #e9ecef;
+  background-color: var(--gray-100);
 }
 
 /* Wrapper do status quando bloqueado */

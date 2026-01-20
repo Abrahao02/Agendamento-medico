@@ -1,13 +1,12 @@
 // ============================================
 // 📁 src/utils/stats/enhancedStats.js
-// ✅ ATUALIZADO: Estatísticas avançadas com filtro de status
 // ============================================
 
-import { STATUS_GROUPS, isStatusInGroup } from "../../constants/appointmentStatus";
+import { STATUS_GROUPS, isStatusInGroup, APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
+import { getPreviousMonth } from "../date/getPreviousMonth";
 
 /**
  * Calcula estatísticas agrupadas por status
- * ✅ Retorna contagens e percentuais baseados em TODOS os appointments
  */
 export const calculateGroupedStats = (appointments) => {
   if (!Array.isArray(appointments) || appointments.length === 0) {
@@ -20,16 +19,16 @@ export const calculateGroupedStats = (appointments) => {
     };
   }
 
-  const confirmed = appointments.filter(a => 
-    isStatusInGroup(a.status, 'CONFIRMED')
+  const confirmed = appointments.filter(appointment => 
+    isStatusInGroup(appointment.status, 'CONFIRMED')
   ).length;
 
-  const pending = appointments.filter(a => 
-    isStatusInGroup(a.status, 'PENDING')
+  const pending = appointments.filter(appointment => 
+    isStatusInGroup(appointment.status, 'PENDING')
   ).length;
 
-  const cancelled = appointments.filter(a => 
-    isStatusInGroup(a.status, 'CANCELLED')
+  const cancelled = appointments.filter(appointment => 
+    appointment.status === APPOINTMENT_STATUS.CANCELLED
   ).length;
 
   const total = appointments.length;
@@ -58,20 +57,19 @@ export const calculateNewPatientsStats = (allAppointments, month, year) => {
     return { current: 0, comparison: null };
   }
 
-  // ✅ Filtra apenas appointments ATIVOS
-  const activeAppointments = allAppointments.filter(a => 
-    STATUS_GROUPS.ACTIVE.includes(a.status)
+  const activeAppointments = allAppointments.filter(appointment => 
+    STATUS_GROUPS.ACTIVE.includes(appointment.status)
   );
 
   // Agrupa por paciente (whatsapp) e pega primeiro appointment
   const patientFirstAppointment = {};
   
-  activeAppointments.forEach(apt => {
-    const key = apt.patientWhatsapp;
-    const aptDate = new Date(apt.date);
+  activeAppointments.forEach(appointment => {
+    const key = appointment.patientWhatsapp;
+    const appointmentDate = new Date(appointment.date);
     
-    if (!patientFirstAppointment[key] || new Date(patientFirstAppointment[key]) > aptDate) {
-      patientFirstAppointment[key] = apt.date;
+    if (!patientFirstAppointment[key] || new Date(patientFirstAppointment[key]) > appointmentDate) {
+      patientFirstAppointment[key] = appointment.date;
     }
   });
 
@@ -82,8 +80,7 @@ export const calculateNewPatientsStats = (allAppointments, month, year) => {
   }).length;
 
   // Mês anterior
-  const prevMonth = month === 1 ? 12 : month - 1;
-  const prevYear = month === 1 ? year - 1 : year;
+  const { month: prevMonth, year: prevYear } = getPreviousMonth(month, year);
 
   const prevMonthNew = Object.values(patientFirstAppointment).filter(date => {
     const d = new Date(date);
@@ -110,15 +107,14 @@ export const calculateNewPatientsStats = (allAppointments, month, year) => {
 export const calculateConversionRate = (appointments) => {
   if (!Array.isArray(appointments)) return 0;
 
-  // ✅ Filtra apenas appointments ATIVOS
-  const activeAppointments = appointments.filter(a => 
-    STATUS_GROUPS.ACTIVE.includes(a.status)
+  const activeAppointments = appointments.filter(appointment => 
+    STATUS_GROUPS.ACTIVE.includes(appointment.status)
   );
 
   if (activeAppointments.length === 0) return 0;
 
-  const confirmed = activeAppointments.filter(a => 
-    isStatusInGroup(a.status, 'CONFIRMED')
+  const confirmed = activeAppointments.filter(appointment => 
+    isStatusInGroup(appointment.status, 'CONFIRMED')
   ).length;
 
   return Math.round((confirmed / activeAppointments.length) * 100);
@@ -133,13 +129,12 @@ export const calculateMonthComparison = (currentPeriod, previousPeriod) => {
     return null;
   }
 
-  // ✅ Filtra apenas appointments ATIVOS
-  const currentActive = currentPeriod.filter(a => 
-    STATUS_GROUPS.ACTIVE.includes(a.status)
+  const currentActive = currentPeriod.filter(appointment => 
+    STATUS_GROUPS.ACTIVE.includes(appointment.status)
   ).length;
 
-  const previousActive = previousPeriod.filter(a => 
-    STATUS_GROUPS.ACTIVE.includes(a.status)
+  const previousActive = previousPeriod.filter(appointment => 
+    STATUS_GROUPS.ACTIVE.includes(appointment.status)
   ).length;
 
   if (previousActive === 0) return null;

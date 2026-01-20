@@ -2,6 +2,8 @@
 // 📁 src/utils/message/generateWhatsappMessage.js
 // ============================================
 
+import { formatCurrency } from "../formatter/formatCurrency";
+
 /**
  * Gera mensagem formatada para WhatsApp
  * @param {Object} config - Configurações da mensagem
@@ -26,7 +28,7 @@
  *   value: 150,
  *   showValue: true
  * })
- * // "Olá João
+ * // "Olá João,
  * //  
  * //  Sua sessão está agendada
  * //  
@@ -50,7 +52,9 @@ export function generateWhatsappMessage({
   
   // Introdução
   if (intro) {
-    message += patientName ? `${intro} ${patientName}` : intro;
+    // Remove vírgula do final do intro se houver
+    const cleanIntro = intro.trim().replace(/,\s*$/, '');
+    message += patientName ? `${cleanIntro} ${patientName},` : cleanIntro;
     message += "\n\n";
   }
   
@@ -63,14 +67,15 @@ export function generateWhatsappMessage({
   if (date) message += `Data: ${date}\n`;
   if (time) message += `Horário: ${time}\n`;
   if (showValue && (value !== null && value !== undefined && value !== '')) {
-    const formattedValue = typeof value === 'number' ? value.toFixed(2).replace('.', ',') : value;
-    message += `Valor: R$ ${formattedValue}\n`;
+    message += `Valor: ${formatCurrency(value)}\n`;
   }
   
-  // Rodapé
+  // Rodapé - apenas uma quebra de linha se houver conteúdo antes
   if (footer) {
-    message += `\n${footer}`;
+    // Remove quebra de linha extra se não houver valor
+    const hasDetails = date || time || (showValue && value);
+    message += hasDetails ? `\n${footer}` : footer;
   }
   
-  return message;
+  return message.trim();
 }

@@ -1,81 +1,45 @@
-import React, { useState, forwardRef } from "react";
-import { User, Phone, Lock } from "lucide-react";
+import React, { forwardRef } from "react";
+import { Calendar, User, Phone, Lock, MessageCircle } from "lucide-react";
 import Input from "../../common/Input";
 import Button from "../../common/Button";
-import { formatWhatsapp } from "../../../utils/formatter/formatWhatsapp";
 import formatDate from "../../../utils/formatter/formatDate";
 import {
   getAppointmentTypeOptions,
   APPOINTMENT_TYPE,
-  APPOINTMENT_TYPE_MODE,
 } from "../../../constants/appointmentType";
+import { formatLocationDisplay, generatePriceInquiryMessage } from "../../../utils/publicSchedule/priceDisplay";
+import { generateWhatsappLink } from "../../../utils/whatsapp/generateWhatsappLink";
+import { useAppointmentForm } from "../../../hooks/publicSchedule/useAppointmentForm";
+import { cleanWhatsapp } from "../../../utils/whatsapp/cleanWhatsapp";
 import "./AppointmentForm.css";
 
 const AppointmentForm = forwardRef(
   ({ selectedSlot, onSubmit, onCancel, isSubmitting, doctor }, ref) => {
-    const [patientName, setPatientName] = useState("");
-    const [patientWhatsapp, setPatientWhatsapp] = useState("");
-    const [appointmentType, setAppointmentType] = useState("");
-    const [location, setLocation] = useState("");
-    const [shake, setShake] = useState(false);
-
-    const appointmentTypeConfig = doctor?.appointmentTypeConfig || {
-      mode: APPOINTMENT_TYPE_MODE.DISABLED,
-      fixedType: APPOINTMENT_TYPE.ONLINE,
-      locations: [],
-    };
-
-    const showAppointmentType = appointmentTypeConfig.mode !== APPOINTMENT_TYPE_MODE.DISABLED;
-    const isFixed = appointmentTypeConfig.mode === APPOINTMENT_TYPE_MODE.FIXED;
-    const showLocation = showAppointmentType && 
-      (isFixed ? appointmentTypeConfig.fixedType === APPOINTMENT_TYPE.PRESENCIAL : appointmentType === APPOINTMENT_TYPE.PRESENCIAL) &&
-      appointmentTypeConfig.locations.length > 0;
-
-    React.useEffect(() => {
-      if (isFixed) {
-        setAppointmentType(appointmentTypeConfig.fixedType);
-      } else if (showAppointmentType && !appointmentType) {
-        setAppointmentType(APPOINTMENT_TYPE.ONLINE);
-      }
-    }, [isFixed, appointmentTypeConfig.fixedType, showAppointmentType, appointmentType]);
-
-    const handleSubmit = (e) => {
-      e.preventDefault();
-
-      const formData = {
-        patientName,
-        patientWhatsapp,
-      };
-
-      if (showAppointmentType) {
-        formData.appointmentType = isFixed ? appointmentTypeConfig.fixedType : appointmentType;
-        
-        if (showLocation && location) {
-          formData.location = location;
-        }
-      }
-
-      onSubmit(formData);
-    };
+    const { formState, config, computed, handlers } = useAppointmentForm({
+      selectedSlot,
+      doctor,
+      onSubmit,
+    });
 
 
     return (
       <div className="appointment-form-card" ref={ref}>
         <div className="form-header">
-          <h3>Confirmar agendamento</h3>
+          <h3 className="standardized-h3">Solicitar agendamento</h3>
           <p className="selected-time">
-            📅 {formatDate(selectedSlot.date)} às {selectedSlot.time}
+            <Calendar size={16} aria-hidden="true" />
+            {formatDate(selectedSlot.date)} às {selectedSlot.time}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="appointment-form">
+        <form onSubmit={handlers.handleSubmit} className="appointment-form">
           <Input
             label="Nome completo"
             name="patientName"
             required
             placeholder="Digite seu nome completo"
-            value={patientName}
-            onChange={(e) => setPatientName(e.target.value)}
+            value={formState.patientName}
+            onChange={(e) => handlers.setPatientName(e.target.value)}
             leftIcon={<User size={18} />}
             autoComplete="name"
           />
@@ -92,36 +56,25 @@ const AppointmentForm = forwardRef(
                 type="tel"
                 required
                 placeholder="(11) 98888-8888"
-                value={patientWhatsapp}
-                onChange={(e) => {
-                  const numbers = e.target.value.replace(/\D/g, "");
-
-                  if (numbers.length > 11) {
-                    setShake(true);
-                    setTimeout(() => setShake(false), 300);
-                    return;
-                  }
-
-                  setPatientWhatsapp(numbers);
-                }}
-                onBlur={() => setPatientWhatsapp(formatWhatsapp(patientWhatsapp))}
-                className={`phone-field ${shake ? "shake" : ""}`}
+                value={formState.patientWhatsapp}
+                onChange={handlers.handleWhatsappChange}
+                onBlur={handlers.handleWhatsappBlur}
+                className={`phone-field ${formState.shake ? "shake" : ""}`}
                 autoComplete="tel"
               />
             </div>
           </div>
 
-          {showAppointmentType && !isFixed && (
+          {config.showAppointmentType && !config.isFixed && !computed.slotAppointmentType && (
             <div className="form-group">
-              <label className="form-label">Tipo de atendimento</label>
+              <label htmlFor="appointment-type-select" className="form-label">Tipo de atendimento</label>
               <select
-                value={appointmentType}
-                onChange={(e) => {
-                  setAppointmentType(e.target.value);
-                  setLocation("");
-                }}
+                id="appointment-type-select"
+                value={formState.appointmentType}
+                onChange={(e) => handlers.handleAppointmentTypeChange(e.target.value)}
                 required
                 className="appointment-type-select"
+                disabled={!!computed.slotAppointmentType}
               >
                 {getAppointmentTypeOptions().map((option) => (
                   <option key={option.value} value={option.value}>
@@ -129,25 +82,105 @@ const AppointmentForm = forwardRef(
                   </option>
                 ))}
               </select>
+              {computed.slotAppointmentType && (
+                <p className="form-help-text">
+                  Tipo de atendimento definido para este horário: {computed.slotAppointmentType === APPOINTMENT_TYPE.ONLINE ? "Online" : "Presencial"}
+                </p>
+              )}
+            </div>
+          )}
+          
+          {computed.slotAppointmentType && (
+            <div className="form-group">
+              <label className="form-label">Tipo de atendimento</label>
+              <div className="form-readonly">
+                {computed.slotAppointmentType === APPOINTMENT_TYPE.ONLINE ? "Online" : "Presencial"}
+              </div>
+              {!config.showPrice && computed.slotAppointmentType === APPOINTMENT_TYPE.ONLINE && doctor?.whatsapp && (
+                <div className="form-price-info">
+                  <p className="form-help-text">
+                    Para consultar o valor, entre em contato via WhatsApp:
+                  </p>
+                  <a
+                    href={generateWhatsappLink(doctor.whatsapp, generatePriceInquiryMessage())}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="form-whatsapp-link"
+                  >
+                    <MessageCircle size={16} />
+                    Consultar valor no WhatsApp
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {config.showAppointmentType && !config.isFixed && !computed.slotAppointmentType && formState.appointmentType === APPOINTMENT_TYPE.ONLINE && !config.showPrice && doctor?.whatsapp && (
+            <div className="form-price-info">
+              <p className="form-help-text">
+                Para consultar o valor da consulta online, entre em contato via WhatsApp:
+              </p>
+              <a
+                href={(() => {
+                  const message = generatePriceInquiryMessage();
+                  const cleanNumber = cleanWhatsapp(doctor.whatsapp);
+                  const number = cleanNumber.startsWith("55") ? cleanNumber : `55${cleanNumber}`;
+                  const encodedMessage = encodeURIComponent(message);
+                  return `https://wa.me/${number}?text=${encodedMessage}`;
+                })()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="form-whatsapp-link"
+              >
+                <MessageCircle size={16} />
+                Consultar valor no WhatsApp
+              </a>
             </div>
           )}
 
-          {showLocation && (
+          {config.showLocation && (
             <div className="form-group">
               <label className="form-label">Local de atendimento</label>
               <select
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                required
+                value={formState.location}
+                onChange={(e) => handlers.setLocation(e.target.value)}
+                required={config.availableLocations.length > 0}
                 className="location-select"
+                disabled={config.availableLocations.length === 1}
               >
                 <option value="">Selecione um local</option>
-                {appointmentTypeConfig.locations.map((loc, index) => (
-                  <option key={index} value={loc.name}>
-                    {loc.name} - R$ {loc.defaultValue.toFixed(2)}
+                {config.availableLocations.map((location, index) => (
+                  <option key={location.name || `location-${index}`} value={location.name}>
+                    {formatLocationDisplay({ name: location.name, price: location.defaultValue }, config.showPrice)}
                   </option>
                 ))}
               </select>
+              {config.slotAllowedLocationIds.length > 0 && config.availableLocations.length === 0 && (
+                <p className="form-error-text">
+                  Nenhum local disponível para este horário
+                </p>
+              )}
+              {!config.showPrice && formState.location && doctor?.whatsapp && (
+                <div className="form-price-info">
+                  <p className="form-help-text">
+                    Para consultar o valor, entre em contato via WhatsApp:
+                  </p>
+              <a
+                href={generateWhatsappLink(
+                  doctor.whatsapp,
+                  generatePriceInquiryMessage(
+                    config.availableLocations.find(locationItem => locationItem.name === formState.location)?.name
+                  )
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="form-whatsapp-link"
+              >
+                <MessageCircle size={16} />
+                Consultar valor no WhatsApp
+              </a>
+                </div>
+              )}
             </div>
           )}
 
@@ -166,7 +199,7 @@ const AppointmentForm = forwardRef(
               loading={isSubmitting}
               fullWidth
             >
-              {isSubmitting ? "Agendando..." : "Confirmar consulta"}
+              {isSubmitting ? "Agendando..." : "Solicitar consulta"}
             </Button>
 
             <Button
