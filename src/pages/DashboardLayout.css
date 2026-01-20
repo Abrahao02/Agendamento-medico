@@ -23,12 +23,12 @@
   padding: var(--spacing-lg);
   transition: width var(--transition-base), transform var(--transition-slow);
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden; /* Sem scroll no desktop por padrão */
   z-index: var(--z-fixed);
   border-right: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
   height: 100dvh;
-  position: sticky; /* Mudado de fixed para sticky no desktop */
+  position: fixed; /* Fixa no desktop para sempre aparecer */
   top: 0;
   left: 0;
 }
@@ -162,6 +162,10 @@
   background: var(--border-light);
   margin: var(--spacing-md) 0;
   width: 100%;
+  flex-shrink: 0;
+  display: block;
+  opacity: 1;
+  visibility: visible;
 }
 
 .menu-link {
@@ -477,7 +481,7 @@
   background-color: var(--bg-secondary);
   min-height: 100dvh;
   overflow-x: hidden;
-  /* Removido margin-left fixo - agora funciona com flexbox */
+  transition: margin-left var(--transition-base);
 }
 
 /* ========================================
@@ -684,6 +688,49 @@
   .hamburger-fixed,
   .sidebar-overlay {
     display: none !important;
+  }
+
+  /* Sidebar sem scroll no desktop - conteúdo sempre cabe */
+  .sidebar {
+    overflow-y: hidden;
+  }
+
+  /* Ajustar margem do conteúdo baseado no estado da sidebar */
+  .sidebar.open ~ .dashboard-content {
+    margin-left: 280px; /* Largura da sidebar aberta */
+  }
+
+  .sidebar.compact ~ .dashboard-content {
+    margin-left: 80px; /* Largura da sidebar compacta */
+  }
+
+  /* Garantir que o divisor apareça no desktop quando sidebar está aberta */
+  .sidebar.open .menu-divider {
+    display: block;
+  }
+
+  /* Tooltip centralizado acima do texto "Gratuito" no desktop */
+  /* O plan-badge-compact já tem position: relative, então o tooltip pode se posicionar em relação a ele */
+  .plan-help-wrapper {
+    position: static; /* Remove o contexto de posicionamento do wrapper */
+  }
+
+  /* Fazer o tooltip se posicionar em relação ao badge inteiro (plan-badge-compact) */
+  .plan-tooltip {
+    /* Posiciona em relação ao badge (que tem position: relative) */
+    /* Centraliza o tooltip acima do badge inteiro, não apenas acima do ícone */
+    position: absolute;
+    left: 50%; /* Centraliza em relação ao badge */
+    transform: translateX(-50%); /* Ajusta para centralizar o tooltip */
+    bottom: calc(100% + var(--spacing-xs));
+    right: auto;
+  }
+
+  .plan-tooltip::after {
+    /* Centralizar a seta do tooltip */
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
   }
 }
 

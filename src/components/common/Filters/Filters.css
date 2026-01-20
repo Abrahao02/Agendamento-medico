@@ -45,13 +45,39 @@
 .clear-filters-btn {
   margin-left: auto;
   /* Match the size of quick-filter-btn */
-  min-height: 44px !important;
-  max-height: 44px !important;
-  height: 44px !important;
-  width: 140px !important;
-  min-width: 140px !important;
-  padding: var(--spacing-sm) var(--spacing-lg) !important;
-  font-size: var(--text-sm) !important;
+  min-height: 44px;
+  max-height: 44px;
+  height: 44px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--text-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.clear-filters-btn .btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.clear-filters-btn .btn-content {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Em telas pequenas, ajustar o botão */
+@media (max-width: 768px) {
+  .clear-filters-btn {
+    min-width: auto;
+    width: auto;
+    padding: var(--spacing-sm) var(--spacing-sm);
+  }
+  
+  .clear-filters-btn .btn-content {
+    font-size: var(--text-xs);
+  }
 }
 
 .quick-filter-custom-wrapper {

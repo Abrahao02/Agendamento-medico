@@ -202,14 +202,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  width: auto;
+  min-width: auto;
 }
 
 .btn-icon-left {
-  margin-right: calc(var(--spacing-xs) * -1);
+  margin-right: var(--spacing-xs);
 }
 
 .btn-icon-right {
-  margin-left: calc(var(--spacing-xs) * -1);
+  margin-left: var(--spacing-xs);
 }
 
 /* ========================================
