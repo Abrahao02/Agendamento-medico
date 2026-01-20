@@ -5,7 +5,18 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores([
+    'dist',
+    'coverage',
+    'node_modules',
+    'functions/**',
+    'init/**',
+    'src/dataconnect-generated/**',
+    'playwright-report/**',
+    'test-results/**',
+    'playwright.config.js',
+    'vite.config.js',
+  ]),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -23,9 +34,6 @@ export default defineConfig([
       },
     },
     rules: {
-<<<<<<< Updated upstream
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-=======
       'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]' }],
       // React Hooks rules - tornar warnings para não bloquear testes
       'react-hooks/rules-of-hooks': 'warn',
@@ -48,7 +56,6 @@ export default defineConfig([
     },
     rules: {
       'no-undef': 'off', // Desabilitar para permitir require, process, etc em arquivos Node.js
->>>>>>> Stashed changes
     },
   },
 ])

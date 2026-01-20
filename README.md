@@ -484,6 +484,8 @@ firebase deploy
 2. Vá em "Hosting"
 3. Clique em "Adicionar domínio customizado"
 4. Siga as instruções de DNS
+🔗 **Aplicação em produção:**  
+> [Link da aplicação](https://etna-agendamento-medico.web.app/)
 
 ---
 
