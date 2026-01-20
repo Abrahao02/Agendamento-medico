@@ -9,6 +9,7 @@ import {
 } from "../../services/firebase/appointments.service";
 import { createPublicAppointment as createPublicAppointmentService } from "../../services/appointments/publicAppointment.service";
 import { sendAppointmentEmail } from "../../services/api/email.service";
+import formatDate from "../../utils/formatter/formatDate";
 
 import {
   validatePatientName,
@@ -271,14 +272,23 @@ export const usePublicSchedule = (slug) => {
       setSelectedDay(null);
       setSelectedSlot(null);
 
-      // Envia email (opcional - value is calculated server-side, so we send without it)
+      // Log para debug - verificar se o valor está sendo recebido
+      logError("DEBUG - Appointment value received:", {
+        value: result.value,
+        appointmentType: formData.appointmentType,
+        location: formData.location,
+      });
+
+      // Envia email (opcional - value is calculated server-side and returned in result)
       sendAppointmentEmail({
         doctor,
         patientName: patientName.trim(),
-        whatsapp: cleanWhatsappNumber,
-        date: selectedSlot.date,
+        whatsappNumbers: cleanWhatsappNumber,
+        date: formatDate(selectedSlot.date),
         time: selectedSlot.time,
-        value: 0, // Value calculated server-side, not available here
+        value: result.value || 0, // Value calculated server-side and returned
+        location: formData.location || null,
+        appointmentType: formData.appointmentType || null,
       }).catch(err => logError("Erro ao enviar email:", err));
 
       return { 

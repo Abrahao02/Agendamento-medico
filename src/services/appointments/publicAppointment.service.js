@@ -25,21 +25,33 @@ export async function createPublicAppointment(data) {
     const functions = getFunctions(app);
     const createPublicAppointmentFunction = httpsCallable(functions, 'createPublicAppointment');
 
-    const result = await createPublicAppointmentFunction({
+    // Build request payload - only include optional fields if they have values
+    const requestData = {
       doctorSlug: data.doctorSlug,
       date: data.date,
       time: data.time,
       patientName: data.patientName,
       patientWhatsapp: data.patientWhatsapp,
-      appointmentType: data.appointmentType || null,
-      location: data.location || null,
-    });
+    };
+
+    // Only add appointmentType if it has a value
+    if (data.appointmentType) {
+      requestData.appointmentType = data.appointmentType;
+    }
+
+    // Only add location if it has a value
+    if (data.location) {
+      requestData.location = data.location;
+    }
+
+    const result = await createPublicAppointmentFunction(requestData);
 
     if (result.data?.success) {
       return {
         success: true,
         appointmentId: result.data.appointmentId,
         message: result.data.message,
+        value: result.data.value || 0,
       };
     } else {
       return {
@@ -49,7 +61,19 @@ export async function createPublicAppointment(data) {
     }
   } catch (error) {
     // Handle Firebase Function errors
-    const errorMessage = error.message || 'Erro ao criar agendamento. Tente novamente.';
+    // Firebase Functions v2 returns errors in error.details or error.message
+    let errorMessage = 'Erro ao criar agendamento. Tente novamente.';
+    
+    if (error.details) {
+      // Error from Cloud Function
+      errorMessage = error.details.message || error.details.error || error.message || errorMessage;
+    } else if (error.message) {
+      errorMessage = error.message;
+    } else if (error.code) {
+      // Firebase error codes
+      errorMessage = `Erro ${error.code}: ${error.message || errorMessage}`;
+    }
+    
     return {
       success: false,
       error: errorMessage,
