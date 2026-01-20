@@ -6,8 +6,6 @@
 import { useMemo } from "react";
 import { filterAppointments } from "../../utils/filters/appointmentFilters";
 import {
-  filterAvailableSlots,
-  countAvailableSlots,
   countAvailableSlotsIncludingCancelled,
   getAvailableSlotsIncludingCancelled,
 } from "../../utils/filters/availabilityFilters";

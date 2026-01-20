@@ -8,9 +8,7 @@ import './CalendarWrapper.css';
 export default function CalendarWrapper({ 
   value, 
   onSelectDate, 
-  tileContent,
-  appointments, // <- novo
-  availability  // <- novo
+  tileContent
 }) {
   return (
     <div className="calendar-wrapper">

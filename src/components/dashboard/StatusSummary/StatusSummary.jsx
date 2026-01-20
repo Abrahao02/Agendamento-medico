@@ -44,7 +44,7 @@ export default function StatusSummary({
     <div className="status-summary-horizontal">
       <h3 className="status-title">STATUS DOS AGENDAMENTOS</h3>
       <div className="status-bars">
-        {items.map((item, index) => (
+        {items.map((item) => (
           <div className="status-bar-item" key={item.label}>
             <div className="status-bar-label">
               <span>{item.label}</span>

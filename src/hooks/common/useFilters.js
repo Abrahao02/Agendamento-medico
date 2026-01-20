@@ -24,19 +24,18 @@ export const useFilters = ({
   onReset,
   showQuickFilters = false,
 }) => {
-  const [activeQuickFilter, setActiveQuickFilter] = useState(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [manualActiveFilter, setManualActiveFilter] = useState(null);
   const pickerWrapperRef = useRef(null);
 
   const hasDateRange = useMemo(() => dateFrom && dateTo, [dateFrom, dateTo]);
   const isMonthYearDisabled = hasDateRange;
 
-  // Detecta qual filtro está ativo baseado nas datas
-  useEffect(() => {
-    if (!showQuickFilters) return;
+  // Calcular qual filtro está ativo baseado nas datas (valor derivado)
+  const computedActiveFilter = useMemo(() => {
+    if (!showQuickFilters) return null;
     if (!dateFrom || !dateTo) {
-      setActiveQuickFilter(null);
-      return;
+      return null;
     }
 
     const today = new Date();
@@ -44,8 +43,7 @@ export const useFilters = ({
     
     // Verifica se é "Hoje"
     if (dateFrom === todayStr && dateTo === todayStr) {
-      setActiveQuickFilter('today');
-      return;
+      return 'today';
     }
 
     // Verifica se é "Esta semana"
@@ -62,8 +60,7 @@ export const useFilters = ({
     const sundayStr = formatDateToQuery(sunday);
     
     if (dateFrom === mondayStr && dateTo === sundayStr) {
-      setActiveQuickFilter('week');
-      return;
+      return 'week';
     }
 
     // Verifica se é "Este mês"
@@ -76,8 +73,7 @@ export const useFilters = ({
     const lastDayStr = formatDateToQuery(lastDay);
     
     if (dateFrom === firstDayStr && dateTo === lastDayStr) {
-      setActiveQuickFilter('month');
-      return;
+      return 'month';
     }
 
     // Se tem range personalizado (e não é hoje, semana ou mês), marca como custom
@@ -86,14 +82,16 @@ export const useFilters = ({
       const isCurrentMonth = dateFrom === firstDayStr && dateTo === lastDayStr;
       
       if (!isCurrentWeek && !isCurrentMonth && dateFrom !== todayStr) {
-        setActiveQuickFilter('custom');
-        return;
+        return 'custom';
       }
     }
 
-    // Se não corresponde a nenhum, limpa
-    setActiveQuickFilter(null);
+    // Se não corresponde a nenhum, retorna null
+    return null;
   }, [dateFrom, dateTo, showQuickFilters, hasDateRange]);
+
+  // Usar filtro manual se definido, senão usar o calculado
+  const activeQuickFilter = manualActiveFilter !== null ? manualActiveFilter : computedActiveFilter;
 
   // Detectar clique fora do dropdown
   useEffect(() => {
@@ -119,7 +117,7 @@ export const useFilters = ({
     if (onDateToChange) onDateToChange(todayStr);
     if (onMonthChange) onMonthChange(today.getMonth() + 1);
     if (onYearChange) onYearChange(today.getFullYear());
-    setActiveQuickFilter('today');
+    setManualActiveFilter('today');
   };
 
   const handleThisWeek = () => {
@@ -137,7 +135,7 @@ export const useFilters = ({
     if (onDateToChange) onDateToChange(formatDateToQuery(sunday));
     if (onMonthChange) onMonthChange(today.getMonth() + 1);
     if (onYearChange) onYearChange(today.getFullYear());
-    setActiveQuickFilter('week');
+    setManualActiveFilter('week');
   };
 
   const handleThisMonth = () => {
@@ -151,13 +149,13 @@ export const useFilters = ({
     if (onDateToChange) onDateToChange(formatDateToQuery(lastDay));
     if (onMonthChange) onMonthChange(today.getMonth() + 1);
     if (onYearChange) onYearChange(today.getFullYear());
-    setActiveQuickFilter('month');
+    setManualActiveFilter('month');
   };
 
   const handleCustom = () => {
     const willOpen = !isDatePickerOpen;
     setIsDatePickerOpen(prev => !prev);
-    setActiveQuickFilter('custom');
+    setManualActiveFilter('custom');
     
     // Sempre reseta as datas ao clicar em Personalizado
     if (willOpen) {

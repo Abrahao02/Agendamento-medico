@@ -21,11 +21,24 @@ export const useDayManagement = ({
 }) => {
   const [mode, setMode] = useState("add");
   const [slotTime, setSlotTime] = useState("12:00");
-  const [slotAppointmentType, setSlotAppointmentType] = useState(APPOINTMENT_TYPE.ONLINE);
+  // Calcular valor inicial baseado em appointmentTypeConfig (será atualizado após primeiro render)
+  const [slotAppointmentType, setSlotAppointmentType] = useState(() => {
+    const config = doctor?.appointmentTypeConfig;
+    if (config?.mode === APPOINTMENT_TYPE_MODE.FIXED) {
+      return config.fixedType;
+    }
+    return APPOINTMENT_TYPE.ONLINE;
+  });
   const [slotLocationIds, setSlotLocationIds] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState("");
   const [selectedTime, setSelectedTime] = useState("12:00");
-  const [bookAppointmentType, setBookAppointmentType] = useState(APPOINTMENT_TYPE.ONLINE);
+  const [bookAppointmentType, setBookAppointmentType] = useState(() => {
+    const config = doctor?.appointmentTypeConfig;
+    if (config?.mode === APPOINTMENT_TYPE_MODE.FIXED) {
+      return config.fixedType;
+    }
+    return APPOINTMENT_TYPE.ONLINE;
+  });
   const [bookLocationId, setBookLocationId] = useState("");
   const [priceMode, setPriceMode] = useState("patient");
   const [dealValue, setDealValue] = useState("");
@@ -59,30 +72,67 @@ export const useDayManagement = ({
     [allSlots, appointments]
   );
 
-  const appointmentTypeConfig = doctor?.appointmentTypeConfig || {
-    mode: APPOINTMENT_TYPE_MODE.DISABLED,
-    fixedType: APPOINTMENT_TYPE.ONLINE,
-    locations: [],
-  };
+  // Memoizar appointmentTypeConfig e locations para evitar recriação
+  const appointmentTypeConfig = useMemo(() => 
+    doctor?.appointmentTypeConfig || {
+      mode: APPOINTMENT_TYPE_MODE.DISABLED,
+      fixedType: APPOINTMENT_TYPE.ONLINE,
+      locations: [],
+    },
+    [doctor?.appointmentTypeConfig]
+  );
 
-  const locations = appointmentTypeConfig.locations || [];
+  const locations = useMemo(() => 
+    appointmentTypeConfig.locations || [],
+    [appointmentTypeConfig.locations]
+  );
 
-  useEffect(() => {
+  // Calcular valores derivados baseados em appointmentTypeConfig
+  const derivedAppointmentType = useMemo(() => {
     if (appointmentTypeConfig.mode === APPOINTMENT_TYPE_MODE.FIXED) {
-      setSlotAppointmentType(appointmentTypeConfig.fixedType);
-      setBookAppointmentType(appointmentTypeConfig.fixedType);
+      return appointmentTypeConfig.fixedType;
     }
-  }, [appointmentTypeConfig]);
+    return null; // Não forçar mudança se não for FIXED
+  }, [appointmentTypeConfig.mode, appointmentTypeConfig.fixedType]);
 
+  // Sincronizar appointmentType quando appointmentTypeConfig mudar (usando ref para evitar loop)
+  const prevAppointmentTypeConfigRef = useRef(appointmentTypeConfig);
   useEffect(() => {
-    if (bookAppointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length === 1) {
-      if (!bookLocationId) {
-        setBookLocationId(locations[0].name);
+    if (derivedAppointmentType !== null) {
+      const prevConfig = prevAppointmentTypeConfigRef.current;
+      const configChanged = 
+        prevConfig.mode !== appointmentTypeConfig.mode ||
+        prevConfig.fixedType !== appointmentTypeConfig.fixedType;
+      
+      if (configChanged) {
+        setSlotAppointmentType(derivedAppointmentType);
+        setBookAppointmentType(derivedAppointmentType);
+        prevAppointmentTypeConfigRef.current = appointmentTypeConfig;
       }
-    } else if (bookAppointmentType === APPOINTMENT_TYPE.ONLINE) {
-      setBookLocationId("");
     }
-  }, [bookAppointmentType, locations, bookLocationId]);
+  }, [derivedAppointmentType, appointmentTypeConfig]);
+
+  // Calcular bookLocationId sugerido baseado em bookAppointmentType e locations
+  const suggestedLocationId = useMemo(() => {
+    if (bookAppointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length === 1) {
+      return locations[0].name;
+    }
+    if (bookAppointmentType === APPOINTMENT_TYPE.ONLINE) {
+      return "";
+    }
+    return null; // Não sugerir mudança
+  }, [bookAppointmentType, locations]);
+
+  // Aplicar sugestão apenas quando necessário (usando ref para evitar loop)
+  const prevSuggestedLocationRef = useRef(suggestedLocationId);
+  useEffect(() => {
+    if (suggestedLocationId !== null && 
+        suggestedLocationId !== prevSuggestedLocationRef.current &&
+        bookLocationId !== suggestedLocationId) {
+      setBookLocationId(suggestedLocationId);
+      prevSuggestedLocationRef.current = suggestedLocationId;
+    }
+  }, [suggestedLocationId, bookLocationId]);
 
   const showAppointmentType = appointmentTypeConfig.mode !== APPOINTMENT_TYPE_MODE.DISABLED;
   const isFixed = appointmentTypeConfig.mode === APPOINTMENT_TYPE_MODE.FIXED;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /**
  * Hook para gerenciar lógica de item de paciente
@@ -11,12 +11,14 @@ import { useState, useEffect } from "react";
  */
 export const usePatientItem = ({ isEditing, onEdit, onSave, onCancel }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const prevIsEditingRef = useRef(isEditing);
 
-  // Quando entrar em modo de edição, expandir automaticamente
+  // Quando entrar em modo de edição, expandir automaticamente (usando ref para evitar loop)
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && !prevIsEditingRef.current) {
       setIsExpanded(true);
     }
+    prevIsEditingRef.current = isEditing;
   }, [isEditing]);
 
   const toggleExpand = () => {

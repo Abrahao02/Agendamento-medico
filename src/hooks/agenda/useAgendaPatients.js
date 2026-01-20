@@ -9,7 +9,7 @@ import * as PatientService from "../../services/firebase/patients.service";
 import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
 import { logError } from "../../utils/logger/logger";
 
-export const useAgendaPatients = (appointments) => {
+export const useAgendaPatients = () => {
   const user = auth.currentUser;
   const [referenceNames, setReferenceNames] = useState({});
   const [patientStatus, setPatientStatus] = useState({});

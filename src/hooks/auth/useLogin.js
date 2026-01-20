@@ -16,14 +16,12 @@ export function useLogin() {
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [resetError, setResetError] = useState("");
 
-  useEffect(() => {
-    setError("");
-    setResetError("");
-  }, [form.email, form.password]);
-
   function handleChange(e) {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+    // Limpar erros quando o usuário começar a digitar
+    if (error) setError("");
+    if (resetError) setResetError("");
   }
 
   function toggleShowPassword() {

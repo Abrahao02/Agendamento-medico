@@ -3,7 +3,7 @@
 // Testes para cálculo de limites mensais
 // ============================================
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   calculateMonthlyAppointmentsCount,
   checkLimitReached,

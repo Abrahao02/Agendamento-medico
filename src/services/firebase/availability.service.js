@@ -13,7 +13,6 @@ import {
 } from "firebase/firestore";
 import { db } from "./config";
 import { COLLECTIONS, getAvailabilityId, validators } from "./collections";
-import { normalizeSlot } from "../../utils/availability/normalizeSlot";
 import { validateSlotLocations } from "../appointments/locationValidation.service";
 import { logError } from "../../utils/logger/logger";
 
@@ -76,7 +75,6 @@ export async function saveAvailability(doctorId, date, slot) {
       const existingSlots = docSnap.data().slots || [];
       
       // Check if slot with same time already exists
-      const slotTime = getSlotTime(slotData);
       const exists = existingSlots.some(s => isSameSlot(s, slotData));
       
       if (exists) {

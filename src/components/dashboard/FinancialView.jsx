@@ -14,9 +14,6 @@ export default function FinancialView({
   stats,
   financialForecast = {},
   financialBreakdown = {},
-  filteredAppointments,
-  filteredAvailability,
-  patients,
 }) {
   return (
     <>

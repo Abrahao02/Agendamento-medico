@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { formatDateToQuery } from "../../utils/filters/dateFilters";
 
 /**
@@ -27,15 +27,24 @@ export const useDateRangePicker = ({
   onDateRangeChange,
   onClose,
 }) => {
-  const [dateRange, setDateRange] = useState([
-    parseLocalDate(dateFrom),
-    parseLocalDate(dateTo)
-  ]);
+  // Calcular valor inicial baseado em dateFrom e dateTo
+  const initialDateRange = useMemo(() => {
+    if (!dateFrom && !dateTo) {
+      return [null, null];
+    }
+    return [
+      parseLocalDate(dateFrom),
+      parseLocalDate(dateTo)
+    ];
+  }, [dateFrom, dateTo]);
 
-  // Atualiza o estado quando props mudam ou quando abre
+  const [dateRange, setDateRange] = useState(initialDateRange);
+  const prevIsOpenRef = useRef(isOpen);
+
+  // Atualizar apenas quando o picker abrir (não quando dateFrom/dateTo mudarem)
   useEffect(() => {
-    if (isOpen) {
-      // Quando o calendário abre, limpa a seleção se as datas estiverem vazias
+    if (isOpen && !prevIsOpenRef.current) {
+      // Quando o calendário abre, sincroniza com as props atuais
       if (!dateFrom && !dateTo) {
         setDateRange([null, null]);
       } else {
@@ -45,7 +54,8 @@ export const useDateRangePicker = ({
         ]);
       }
     }
-  }, [dateFrom, dateTo, isOpen]);
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, dateFrom, dateTo]);
 
   const handleDateChange = (value) => {
     setDateRange(value);

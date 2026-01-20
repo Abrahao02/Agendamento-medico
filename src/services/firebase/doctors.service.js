@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 
 import { db } from "./config";
-import { COLLECTIONS, validators } from "./collections";
+import { COLLECTIONS } from "./collections";
 import { logError, logWarning } from "../../utils/logger/logger";
 
 

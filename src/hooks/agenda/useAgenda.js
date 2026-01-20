@@ -26,7 +26,6 @@ export default function useAgenda(currentDate) {
     appointments,
     setAppointments,
     availability,
-    setAvailability,
     whatsappConfig,
     refreshAvailability,
   } = useAgendaData(currentDate);

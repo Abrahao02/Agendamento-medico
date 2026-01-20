@@ -12,7 +12,6 @@ import AppointmentList from "../components/agenda/AppointmentList";
 import DayStats from "../components/availability/DayStats";
 import AvailableSlotsList from "../components/agenda/AvailableSlotsList";
 import LimitWarningBanner from "../components/common/LimitWarningBanner";
-import formatDate from "../utils/formatter/formatDate";
 
 import "./Agenda.css";
 
@@ -78,8 +77,6 @@ export default function Agenda() {
     statusUpdates,
     referenceNames,
     patientStatus,
-    whatsappConfig,
-    hasUnsavedChanges,
     lockedAppointments,
     handleStatusChange,
     handleAddPatient,

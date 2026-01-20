@@ -1,5 +1,5 @@
 // src/hooks/usePublicSchedule.js - REFATORADO
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 // Services
 import { getDoctorBySlug } from "../../services/firebase/doctors.service";
@@ -18,8 +18,7 @@ import {
 } from "../../utils/validators/appointmentValidations";
 
 import {
-  validateAvailability,
-  filterAvailableSlots
+  validateAvailability
 } from "../../utils/filters/availabilityFilters";
 import { filterByPeriodConfig } from "../../utils/filters/publicScheduleFilters";
 

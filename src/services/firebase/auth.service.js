@@ -7,7 +7,6 @@ import {
   signOut as firebaseSignOut,
   sendEmailVerification,
   sendPasswordResetEmail,
-  updateProfile,
 } from "firebase/auth";
 import { auth } from "./config";
 

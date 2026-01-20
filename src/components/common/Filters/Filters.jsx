@@ -20,7 +20,6 @@ export default function Filters({
   status = null,
   dateRange = null,
   monthYear = null,
-  quickFilters = null,
   
   // Props individuais (compatibilidade - podem ser passadas diretamente)
   searchTerm: searchTermProp,

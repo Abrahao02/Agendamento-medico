@@ -5,7 +5,7 @@
 import React from "react";
 import { MapPin, X, MessageCircle } from "lucide-react";
 import { cleanWhatsapp } from "../../../utils/whatsapp/cleanWhatsapp";
-import { formatLocationDisplay, generatePriceInquiryMessage } from "../../../utils/publicSchedule/priceDisplay";
+import { generatePriceInquiryMessage } from "../../../utils/publicSchedule/priceDisplay";
 import { formatCurrency } from "../../../utils/formatter/formatCurrency";
 import "./LocationFilter.css";
 

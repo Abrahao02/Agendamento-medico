@@ -20,6 +20,7 @@ export default function QuickFilters({
   handlers,
 }) {
   return (
+    // eslint-disable-next-line react-hooks/refs
     <div className="quick-filters-wrapper" ref={refs.pickerWrapperRef}>
       <div className="quick-filters-row">
         <div className="quick-filters">

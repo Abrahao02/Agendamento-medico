@@ -207,7 +207,7 @@ export const useAvailability = () => {
    * Remove um slot de disponibilidade
    * ✅ ATUALIZADO: Valida apenas contra appointments ATIVOS
    */
-  const removeSlot = async (date, slot) => {
+  const removeSlot = useCallback(async (date, slot) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
     try {
@@ -228,13 +228,13 @@ export const useAvailability = () => {
     } catch (err) {
       return { success: false, error: err.message };
     }
-  };
+  }, [user, appointments]);
 
   /* ==============================
      ACTIONS - APPOINTMENTS
   ============================== */
 
-  const bookAppointment = async ({ patientId, date, time, appointmentType, location, customValue }) => {
+  const bookAppointment = useCallback(async ({ patientId, date, time, appointmentType, location, customValue }) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
     if (isLimitReached) {
@@ -310,7 +310,7 @@ export const useAvailability = () => {
     } catch (err) {
       return { success: false, error: err.message };
     }
-  };
+  }, [user, isLimitReached, appointments, patients, availability, doctor]);
 
   /**
    * Deleta um agendamento (remove completamente)
@@ -378,7 +378,7 @@ export const useAvailability = () => {
       return { success: false, error: "Nenhuma data selecionada" };
     }
     return await removeSlot(selectedDate, slot);
-  }, [selectedDate]);
+  }, [selectedDate, removeSlot]);
 
   const handleBookAppointment = useCallback(async (patientId, time, appointmentType, location, customValue) => {
     if (!selectedDate) {

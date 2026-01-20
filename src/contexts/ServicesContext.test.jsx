@@ -5,12 +5,12 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
-import { ServicesProvider, useServices } from './ServicesContext';
-import { createDatabaseService, createFunctionsService } from '../services/interfaces';
+import { ServicesProvider } from './ServicesContext';
+import { useServices } from '../hooks/common/useServices';
 
 // Mock das interfaces
 vi.mock('../services/interfaces', () => ({
-  createDatabaseService: vi.fn((db) => ({
+  createDatabaseService: vi.fn(() => ({
     getDoc: vi.fn(),
     setDoc: vi.fn(),
     updateDoc: vi.fn(),
@@ -22,14 +22,13 @@ vi.mock('../services/interfaces', () => ({
     where: vi.fn(),
     serverTimestamp: vi.fn(),
   })),
-  createFunctionsService: vi.fn((functions) => ({
+  createFunctionsService: vi.fn(() => ({
     call: vi.fn(),
   })),
 }));
 
 // Mock do Firebase config
 vi.mock('../services/firebase/config', () => ({
-  db: {},
   default: {},
 }));
 

@@ -10,14 +10,12 @@ import { useDayManagement } from "../../../hooks/appointments/useDayManagement";
 import "./DayManagement.css";
 
 export default function DayManagement({
-  date,
   formattedDate,
   // Props agrupadas (ISP)
   slots = null,
   context = null,
   handlers: externalHandlers = null,
   // Props individuais (compatibilidade)
-  availableSlots,
   allSlots,
   appointments,
   patients,
@@ -30,7 +28,6 @@ export default function DayManagement({
   isLimitReached = false,
 }) {
   // Extrair valores das props agrupadas ou usar valores individuais (compatibilidade)
-  const finalAvailableSlots = slots?.available || availableSlots;
   const finalAllSlots = slots?.all || allSlots;
   const finalAppointments = context?.appointments || appointments;
   const finalPatients = context?.patients || patients;
@@ -136,6 +133,7 @@ export default function DayManagement({
         </button>
       </div>
 
+      {/* eslint-disable-next-line react-hooks/refs */}
       <div ref={refs.formSectionRef}>
         {state.mode === "add" && (
           <SlotForm

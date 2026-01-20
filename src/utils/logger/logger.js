@@ -4,7 +4,6 @@
 // ============================================
 
 const isDevelopment = import.meta.env.DEV;
-const isProduction = import.meta.env.PROD;
 
 /**
  * Logs message only in development
