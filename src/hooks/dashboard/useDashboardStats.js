@@ -30,14 +30,6 @@ export const useDashboardStats = ({
   patients,
   filterOptions,
 }) => {
-  const priceMap = useMemo(() => {
-    const prices = {};
-    patients.forEach(patient => {
-      prices[patient.whatsapp] = patient.price || 0;
-    });
-    return prices;
-  }, [patients]);
-
   const filteredAppointments = useMemo(() =>
     filterAppointments(appointments, filterOptions), 
     [appointments, filterOptions]
@@ -97,7 +89,7 @@ export const useDashboardStats = ({
         return appointmentDate < today;
       })
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
     
@@ -107,7 +99,7 @@ export const useDashboardStats = ({
         return appointmentDate >= today;
       })
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
     
@@ -118,12 +110,12 @@ export const useDashboardStats = ({
                appointment.status === APPOINTMENT_STATUS.NO_SHOW;
       })
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
     
     return { realized, predicted, atRisk };
-  }, [filteredAppointments, priceMap]);
+  }, [filteredAppointments]);
 
   const newPatientsRevenue = useMemo(() => {
     const newPatientsSet = new Set();
@@ -153,10 +145,10 @@ export const useDashboardStats = ({
       .filter(appointment => isStatusInGroup(appointment.status, 'CONFIRMED') && 
                    newPatientsSet.has(appointment.patientWhatsapp))
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
-  }, [appointments, filteredAppointments, priceMap]);
+  }, [appointments, filteredAppointments]);
 
   const newPatientsRevenuePercent = useMemo(() => {
     const totalRevenue = revenueStats.realized + revenueStats.predicted;
@@ -177,7 +169,7 @@ export const useDashboardStats = ({
     const prevRevenue = previousMonthAppointments
       .filter(appointment => isStatusInGroup(appointment.status, 'CONFIRMED'))
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
     
@@ -189,7 +181,7 @@ export const useDashboardStats = ({
       value: Math.abs(percentChange),
       trend: percentChange > 0 ? "up" : percentChange < 0 ? "down" : "neutral"
     };
-  }, [revenueStats, appointments, filterOptions.selectedMonth, filterOptions.selectedYear, priceMap]);
+  }, [revenueStats, appointments, filterOptions.selectedMonth, filterOptions.selectedYear]);
 
   const confirmedComparison = useMemo(() => {
     const { month: prevMonth, year: prevYear } = getPreviousMonth(filterOptions.selectedMonth, filterOptions.selectedYear);
@@ -245,7 +237,7 @@ export const useDashboardStats = ({
 
   const enhancedStats = useMemo(() => {
     // calculateAppointmentStats já filtra por STATUS_GROUPS.ACTIVE internamente
-    const basicStats = calculateAppointmentStats(filteredAppointments, priceMap);
+    const basicStats = calculateAppointmentStats(filteredAppointments);
     
     // Total de agendamentos (ACTIVE já inclui NO_SHOW)
     const totalAppointments = filteredAppointments.filter(appointment => 
@@ -295,7 +287,7 @@ export const useDashboardStats = ({
       confirmedComparison,
       pendingComparison,
     };
-  }, [filteredAppointments, priceMap, slotsOpen, appointments, filterOptions, totalPatients, revenueStats, newPatientsRevenue, newPatientsRevenuePercent, monthlyFinancialComparison, confirmedComparison, pendingComparison]);
+  }, [filteredAppointments, slotsOpen, appointments, filterOptions, totalPatients, revenueStats, newPatientsRevenue, newPatientsRevenuePercent, monthlyFinancialComparison, confirmedComparison, pendingComparison]);
 
   const statusSummary = useMemo(() => {
     const grouped = calculateGroupedStats(filteredAppointments);
@@ -435,14 +427,14 @@ export const useDashboardStats = ({
     const pendingTotal = filteredAppointments
       .filter(appointment => STATUS_GROUPS.PENDING.includes(appointment.status))
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
     
     const noShowTotal = filteredAppointments
       .filter(appointment => appointment.status === APPOINTMENT_STATUS.NO_SHOW)
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
     
@@ -454,7 +446,7 @@ export const useDashboardStats = ({
       noShow: noShowTotal,
       total,
     };
-  }, [filteredAppointments, priceMap, revenueStats]);
+  }, [filteredAppointments, revenueStats]);
 
   // Financial Breakdown - Detalhamento por status
   const financialBreakdown = useMemo(() => {
@@ -467,7 +459,7 @@ export const useDashboardStats = ({
         total: filteredAppointments
           .filter(appointment => STATUS_GROUPS.PENDING.includes(appointment.status))
           .reduce((sum, appointment) => {
-            const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+            const price = appointment.value || 0;
             return sum + Number(price);
           }, 0),
       },
@@ -475,12 +467,12 @@ export const useDashboardStats = ({
         total: filteredAppointments
           .filter(appointment => appointment.status === APPOINTMENT_STATUS.NO_SHOW)
           .reduce((sum, appointment) => {
-            const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+            const price = appointment.value || 0;
             return sum + Number(price);
           }, 0),
       },
     };
-  }, [filteredAppointments, priceMap, revenueStats]);
+  }, [filteredAppointments, revenueStats]);
 
   return {
     stats: enhancedStats,

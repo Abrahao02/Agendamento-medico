@@ -51,11 +51,6 @@ export const useDashboard = () => {
   });
 
   // Transformação para gráficos
-  const priceMap = {};
-  patients.forEach(patient => {
-    priceMap[patient.whatsapp] = patient.price || 0;
-  });
-
   const {
     chartData,
     upcomingAppointments,
@@ -64,7 +59,6 @@ export const useDashboard = () => {
   } = useDashboardCharts({
     filteredAppointments,
     patients,
-    priceMap,
     appointments,
   });
 

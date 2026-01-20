@@ -7,7 +7,7 @@ import { STATUS_GROUPS, isStatusInGroup, APPOINTMENT_STATUS } from "../../consta
 /**
  * Calcula estatísticas básicas de appointments
  */
-export const calculateAppointmentStats = (appointments, priceMap = {}) => {
+export const calculateAppointmentStats = (appointments) => {
   if (!Array.isArray(appointments)) {
     return {
       totalAppointments: 0,
@@ -26,7 +26,7 @@ export const calculateAppointmentStats = (appointments, priceMap = {}) => {
   const totalRevenue = appointments
     .filter(a => isStatusInGroup(a.status, 'CONFIRMED'))
     .reduce((sum, a) => {
-      const price = a.value || priceMap[a.patientWhatsapp] || 0;
+      const price = a.value || 0;
       return sum + Number(price);
     }, 0);
 

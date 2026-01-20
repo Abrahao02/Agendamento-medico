@@ -12,7 +12,6 @@ import { createPatientsMap } from "../../utils/patients/createPatientsMap";
 export const useDashboardCharts = ({
   filteredAppointments,
   patients,
-  priceMap,
   appointments,
 }) => {
   const chartData = useMemo(() => {
@@ -75,7 +74,7 @@ export const useDashboardCharts = ({
             revenue: 0
           };
         }
-        const price = a.value || priceMap[a.patientWhatsapp] || 0;
+        const price = a.value || 0;
         byDay[a.date].revenue += Number(price);
       }
     });
@@ -85,7 +84,7 @@ export const useDashboardCharts = ({
         date: item.date,
         revenue: Number(item.revenue.toFixed(2))
       }));
-  }, [filteredAppointments, priceMap]);
+  }, [filteredAppointments]);
 
   const monthlyData = useMemo(() => {
     const months = [];
@@ -110,7 +109,7 @@ export const useDashboardCharts = ({
       const revenue = monthAppointments
         .filter(appointment => isStatusInGroup(appointment.status, 'CONFIRMED'))
         .reduce((sum, appointment) => {
-          const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+          const price = appointment.value || 0;
           return sum + Number(price);
         }, 0);
       
@@ -124,7 +123,7 @@ export const useDashboardCharts = ({
     }
     
     return months;
-  }, [appointments, priceMap]);
+  }, [appointments]);
 
   return {
     chartData,
