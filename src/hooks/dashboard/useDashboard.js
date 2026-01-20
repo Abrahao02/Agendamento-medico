@@ -40,6 +40,9 @@ export const useDashboard = () => {
     statusSummary,
     detailsSummary,
     filteredAppointments,
+    filteredAvailability,
+    financialForecast,
+    financialBreakdown,
   } = useDashboardStats({
     appointments,
     availability,
@@ -86,5 +89,10 @@ export const useDashboard = () => {
     setSelectedYear,
     resetFilters,
     isLimitReached,
+    filteredAppointments,
+    filteredAvailability,
+    patients,
+    financialForecast,
+    financialBreakdown,
   };
 };

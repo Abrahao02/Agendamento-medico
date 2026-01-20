@@ -1,44 +1,59 @@
-import { useEffect } from "react";
+// ============================================
+// 📁 src/hooks/common/useModal.js
+// Hook reutilizável para gerenciar estado e comportamento de modais
+// ============================================
+
+import { useEffect, useCallback } from 'react';
 
 /**
- * Hook genérico para gerenciar comportamento de modais
- * @param {Object} params - Parâmetros do hook
- * @param {boolean} params.isOpen - Estado de abertura do modal
- * @param {Function} params.onClose - Callback para fechar o modal
- * @returns {Object} Handlers para eventos do modal
+ * Hook para gerenciar estado e comportamento de modais
+ * Controla overflow do body e fornece handlers padrão
+ * 
+ * @param {boolean} isOpen - Estado de abertura do modal
+ * @param {Function} onClose - Função para fechar o modal
+ * @returns {Object} Handlers e funções utilitárias
+ * 
+ * @example
+ * function MyModal({ isOpen, onClose }) {
+ *   const { handleBackdropClick, handleKeyDown } = useModal(isOpen, onClose);
+ *   
+ *   return (
+ *     <div className="modal-overlay" onClick={handleBackdropClick} onKeyDown={handleKeyDown}>
+ *       <div className="modal-content">...</div>
+ *     </div>
+ *   );
+ * }
  */
-export const useModal = ({ isOpen, onClose }) => {
-  // Gerencia overflow do body quando modal está aberto
+export function useModal(isOpen, onClose) {
+  // Controla overflow do body quando modal está aberto
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     }
 
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     };
   }, [isOpen]);
 
-  // Fecha modal ao clicar no backdrop
-  const handleBackdropClick = (e) => {
+  // Handler para fechar ao clicar no backdrop
+  const handleBackdropClick = useCallback((e) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
-  };
+  }, [onClose]);
 
-  // Fecha modal com tecla ESC
-  const handleKeyDown = (e) => {
-    if (e.key === "Escape") {
+  // Handler para fechar com tecla ESC
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') {
       onClose();
     }
-  };
+  }, [onClose]);
 
   return {
-    handlers: {
-      handleBackdropClick,
-      handleKeyDown,
-    },
+    handleBackdropClick,
+    handleKeyDown,
   };
-};
+}

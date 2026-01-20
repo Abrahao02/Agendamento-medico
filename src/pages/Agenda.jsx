@@ -2,8 +2,8 @@
 // 📁 src/pages/Agenda.jsx - MELHORADO
 // Seguindo padrão do Dashboard com cards separados
 // ============================================
-import { useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useOutletContext, useLocation } from "react-router-dom";
 
 import useAgenda from "../hooks/agenda/useAgenda";
 import PageHeader from "../components/common/PageHeader";
@@ -18,7 +18,60 @@ import "./Agenda.css";
 
 export default function Agenda() {
   const { isLimitReached } = useOutletContext() || {};
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const location = useLocation();
+  
+  // Função auxiliar para converter string YYYY-MM-DD para Date sem problemas de timezone
+  const parseDateString = (dateString) => {
+    if (!dateString) return null;
+    
+    // Se já for uma Date, retorna
+    if (dateString instanceof Date) {
+      return dateString;
+    }
+    
+    // Se for string no formato YYYY-MM-DD, parse manualmente
+    if (typeof dateString === 'string') {
+      const dateRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
+      const match = dateString.match(dateRegex);
+      
+      if (match) {
+        const [, year, month, day] = match;
+        // Criar Date usando componentes locais (evita problemas de timezone)
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+      
+      // Se não for formato YYYY-MM-DD, tenta new Date normal
+      const parsed = new Date(dateString);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+    
+    return null;
+  };
+  
+  // Inicializa com a data do location.state se disponível, senão usa a data atual
+  const getInitialDate = () => {
+    if (location.state?.date) {
+      const parsedDate = parseDateString(location.state.date);
+      if (parsedDate) {
+        return parsedDate;
+      }
+    }
+    return new Date();
+  };
+  
+  const [currentDate, setCurrentDate] = useState(getInitialDate());
+  
+  // Atualiza a data quando o location.state mudar
+  useEffect(() => {
+    if (location.state?.date) {
+      const parsedDate = parseDateString(location.state.date);
+      if (parsedDate) {
+        setCurrentDate(parsedDate);
+      }
+    }
+  }, [location.state]);
 
   const {
     appointments,
