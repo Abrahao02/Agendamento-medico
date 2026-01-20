@@ -33,8 +33,8 @@ export const useDateRangePicker = ({
       return [null, null];
     }
     return [
-      parseLocalDate(dateFrom),
-      parseLocalDate(dateTo)
+    parseLocalDate(dateFrom),
+    parseLocalDate(dateTo)
     ];
   }, [dateFrom, dateTo]);
 

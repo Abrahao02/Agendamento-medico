@@ -75,9 +75,9 @@ export const useDayManagement = ({
   // Memoizar appointmentTypeConfig e locations para evitar recriação
   const appointmentTypeConfig = useMemo(() => 
     doctor?.appointmentTypeConfig || {
-      mode: APPOINTMENT_TYPE_MODE.DISABLED,
-      fixedType: APPOINTMENT_TYPE.ONLINE,
-      locations: [],
+    mode: APPOINTMENT_TYPE_MODE.DISABLED,
+    fixedType: APPOINTMENT_TYPE.ONLINE,
+    locations: [],
     },
     [doctor?.appointmentTypeConfig]
   );
@@ -116,7 +116,7 @@ export const useDayManagement = ({
   const suggestedLocationId = useMemo(() => {
     if (bookAppointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length === 1) {
       return locations[0].name;
-    }
+      }
     if (bookAppointmentType === APPOINTMENT_TYPE.ONLINE) {
       return "";
     }
