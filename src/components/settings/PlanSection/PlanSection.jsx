@@ -116,8 +116,8 @@ export default function PlanSection({
             disabled={reactivateLoading}
             loading={reactivateLoading}
             variant="primary"
+            leftIcon={<RotateCcw size={18} />}
           >
-            <RotateCcw size={18} />
             Reativar assinatura
           </Button>
         </div>
@@ -136,8 +136,8 @@ export default function PlanSection({
             disabled={cancelLoading}
             loading={cancelLoading}
             variant="danger"
+            leftIcon={<XCircle size={18} />}
           >
-            <XCircle size={18} />
             Cancelar assinatura
           </Button>
         </div>
