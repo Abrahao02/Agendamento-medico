@@ -222,16 +222,67 @@ export const createPublicAppointment = onCall(
       // ========================================
       // CALCULATE APPOINTMENT VALUE
       // ========================================
-      let appointmentValue = appointmentTypeConfig.defaultValueOnline || 0;
+      // If appointmentType is not configured (disabled mode), use defaultValueSchedule
+      let appointmentValue = doctorData?.defaultValueSchedule || 0;
 
-      if (appointmentType === 'presencial' && location) {
-        const selectedLocation = appointmentTypeConfig.locations.find(
-          (loc: any) => loc.name === location
-        );
-        appointmentValue = selectedLocation?.defaultValue || appointmentTypeConfig.defaultValuePresencial || 0;
-      } else if (appointmentType === 'online') {
-        appointmentValue = appointmentTypeConfig.defaultValueOnline || 0;
+      // If appointmentType is provided, use the specific values
+      if (appointmentType) {
+        if (appointmentType === 'presencial' && location) {
+          const validLocations = appointmentTypeConfig.locations || [];
+          
+          // Try to find location (case-insensitive and trimmed)
+          const locationTrimmed = location.trim();
+          const selectedLocation = validLocations.find(
+            (loc: any) => loc.name && loc.name.trim().toLowerCase() === locationTrimmed.toLowerCase()
+          );
+          
+          logger.info('Searching for location', {
+            requestedLocation: location,
+            locationTrimmed,
+            availableLocations: validLocations.map((loc: any) => ({
+              name: loc.name,
+              defaultValue: loc.defaultValue,
+            })),
+            foundLocation: selectedLocation ? {
+              name: selectedLocation.name,
+              defaultValue: selectedLocation.defaultValue,
+            } : null,
+          });
+          
+          if (selectedLocation) {
+            // Use location's defaultValue if it exists and is not null/undefined
+            if (selectedLocation.defaultValue !== undefined && selectedLocation.defaultValue !== null) {
+              appointmentValue = Number(selectedLocation.defaultValue) || 0;
+            } else {
+              // Fallback to defaultValuePresencial
+              appointmentValue = Number(appointmentTypeConfig.defaultValuePresencial) || 0;
+            }
+          } else {
+            // Location not found, use defaultValuePresencial
+            appointmentValue = Number(appointmentTypeConfig.defaultValuePresencial) || 0;
+            logger.warn('Location not found, using defaultValuePresencial', {
+              requestedLocation: location,
+              defaultValuePresencial: appointmentTypeConfig.defaultValuePresencial,
+            });
+          }
+          
+          logger.info('Calculating presencial appointment value', {
+            location,
+            selectedLocation: selectedLocation ? { name: selectedLocation.name, defaultValue: selectedLocation.defaultValue } : null,
+            defaultValuePresencial: appointmentTypeConfig.defaultValuePresencial,
+            calculatedValue: appointmentValue,
+          });
+        } else if (appointmentType === 'online') {
+          appointmentValue = Number(appointmentTypeConfig.defaultValueOnline) || 0;
+        }
       }
+      
+      logger.info('Final appointment value calculated', {
+        appointmentType,
+        location,
+        appointmentValue,
+        defaultValueSchedule: doctorData?.defaultValueSchedule,
+      });
 
       // ========================================
       // CREATE APPOINTMENT ATOMICALLY
@@ -277,12 +328,14 @@ export const createPublicAppointment = onCall(
         date,
         time,
         patientName: patientName.trim(),
+        value: appointmentValue,
       });
 
       return {
         success: true,
         appointmentId: 'created', // ID is generated in transaction
         message: 'Agendamento criado com sucesso',
+        value: appointmentValue,
       };
     } catch (error: any) {
       logger.error('Error creating public appointment', {
