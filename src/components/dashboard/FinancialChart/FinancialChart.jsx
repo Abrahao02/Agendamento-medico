@@ -15,6 +15,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import formatDate from "../../../utils/formatter/formatDate";
+import { formatCurrency } from "../../../utils/formatter/formatCurrency";
 import "./FinancialChart.css";
 
 export default function FinancialChart({ data = [] }) {
@@ -48,11 +49,11 @@ export default function FinancialChart({ data = [] }) {
             <YAxis
               tick={{ fill: "#6b7280", fontSize: 12 }}
               stroke="#9ca3af"
-              tickFormatter={(value) => `R$ ${value.toFixed(0)}`}
+              tickFormatter={(value) => formatCurrency(value)}
             />
             <Tooltip
               labelFormatter={formatDate}
-              formatter={(value) => [`R$ ${Number(value).toFixed(2)}`, "Faturamento"]}
+              formatter={(value) => [formatCurrency(Number(value)), "Faturamento"]}
               contentStyle={{
                 backgroundColor: "#ffffff",
                 border: "1px solid #e5e7eb",

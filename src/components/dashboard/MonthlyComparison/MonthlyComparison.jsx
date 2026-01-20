@@ -3,6 +3,7 @@
 // Comparativo mensal financeiro em formato de lista
 // ============================================
 import React from "react";
+import { formatCurrency } from "../../../utils/formatter/formatCurrency";
 import "./MonthlyComparison.css";
 
 export default function MonthlyComparison({ data = [] }) {
@@ -24,7 +25,7 @@ export default function MonthlyComparison({ data = [] }) {
         {data.map((month, index) => (
           <div className="comparison-item" key={month.key}>
             <span className="month-name">{month.name}</span>
-            <span className="month-value">R$ {month.revenue.toFixed(2)}</span>
+            <span className="month-value">{formatCurrency(month.revenue)}</span>
             {month.trend && (
               <span className={`trend-icon ${month.trend}`}>
                 {month.trend === 'up' ? '↑' : '↓'}
