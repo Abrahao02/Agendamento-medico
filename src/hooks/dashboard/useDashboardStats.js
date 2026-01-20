@@ -9,6 +9,7 @@ import {
   filterAvailableSlots,
   countAvailableSlots,
   countAvailableSlotsIncludingCancelled,
+  getAvailableSlotsIncludingCancelled,
 } from "../../utils/filters/availabilityFilters";
 import {
   calculateAppointmentStats,
@@ -20,8 +21,10 @@ import {
   calculateMonthComparison 
 } from "../../utils/stats/enhancedStats";
 import { STATUS_GROUPS, isStatusInGroup, APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
+import { DEFAULT_PATIENT_NAME } from "../../constants/formatters";
 import { getPreviousMonth } from "../../utils/date/getPreviousMonth";
 import { convertTimestampToDate } from "../../utils/firebase/convertTimestamp";
+import { createPatientsMap } from "../../utils/patients/createPatientsMap";
 
 export const useDashboardStats = ({
   appointments,
@@ -45,10 +48,13 @@ export const useDashboardStats = ({
   const filteredAvailability = useMemo(() => {
     const inPeriod = filterAppointments(availability.map(day => ({ date: day.date })), filterOptions);
     const filteredDates = new Set(inPeriod.map(day => day.date));
+    const filteredAvailabilityForPeriod = availability.filter(d => filteredDates.has(d.date));
     
-    return filterAvailableSlots(
-      availability.filter(d => filteredDates.has(d.date)), 
-      appointments
+    // Usa getAvailableSlotsIncludingCancelled para incluir slots cancelados (igual ao contador)
+    return getAvailableSlotsIncludingCancelled(
+      filteredAvailabilityForPeriod,
+      appointments,
+      new Date()
     );
   }, [availability, appointments, filterOptions]);
 
@@ -107,7 +113,18 @@ export const useDashboardStats = ({
         return sum + Number(price);
       }, 0);
     
-    return { realized, predicted };
+    // Em risco: Pendentes (PENDING + MESSAGE_SENT) + Não compareceu (NO_SHOW)
+    const atRisk = filteredAppointments
+      .filter(appointment => {
+        return STATUS_GROUPS.PENDING.includes(appointment.status) || 
+               appointment.status === APPOINTMENT_STATUS.NO_SHOW;
+      })
+      .reduce((sum, appointment) => {
+        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        return sum + Number(price);
+      }, 0);
+    
+    return { realized, predicted, atRisk };
   }, [filteredAppointments, priceMap]);
 
   const newPatientsRevenue = useMemo(() => {
@@ -273,6 +290,7 @@ export const useDashboardStats = ({
       totalPatients,
       revenueRealized: revenueStats.realized,
       revenuePredicted: revenueStats.predicted,
+      revenueAtRisk: revenueStats.atRisk,
       newPatientsRevenue,
       newPatientsRevenuePercent,
       monthlyFinancialComparison,
@@ -312,9 +330,21 @@ export const useDashboardStats = ({
     const totalUniquePatients = uniquePatientWhatsapps.size;
     
     // Cria mapa de pacientes por WhatsApp para acesso rápido
-    const patientsMap = {};
-    patients.forEach(patient => {
-      patientsMap[patient.whatsapp] = patient;
+    const patientsMap = createPatientsMap(patients);
+    
+    // Console.log para debug: mostrar nomes dos pacientes únicos
+    const uniquePatientsList = Array.from(uniquePatientWhatsapps).map(whatsapp => {
+      const patient = patientsMap[whatsapp];
+      return {
+        whatsapp,
+        name: patient?.name || patient?.referenceName || DEFAULT_PATIENT_NAME,
+        referenceName: patient?.referenceName || null,
+      };
+    });
+    console.log('📊 Pacientes únicos no período:', {
+      total: totalUniquePatients,
+      pacientes: uniquePatientsList,
+      nomes: uniquePatientsList.map(p => p.name),
     });
     
     // Determina o mês/ano que está sendo visualizado
@@ -330,6 +360,7 @@ export const useDashboardStats = ({
     
     // Verifica se o paciente foi criado no mesmo mês/ano visualizado
     let newPatientsCurrent = 0;
+    const newPatientsList = [];
     
     uniquePatientWhatsapps.forEach(whatsapp => {
       const patient = patientsMap[whatsapp];
@@ -344,6 +375,12 @@ export const useDashboardStats = ({
       
       if (createdAtMonth === targetMonth && createdAtYear === targetYear) {
         newPatientsCurrent++;
+        newPatientsList.push({
+          whatsapp: patient.whatsapp,
+          name: patient.name || null,
+          referenceName: patient.referenceName || null,
+          createdAt: patient.createdAt,
+        });
       }
     });
     
@@ -378,6 +415,12 @@ export const useDashboardStats = ({
     return {
       newPatients: newPatientsCurrent,
       newPatientsTotal: totalUniquePatients,
+      newPatientsList: newPatientsList.sort((a, b) => {
+        // Ordena por nome
+        const nameA = a.name || a.referenceName || '';
+        const nameB = b.name || b.referenceName || '';
+        return nameA.localeCompare(nameB);
+      }),
       messagesSent,
       messagesSentTotal,
       noShow,
@@ -387,10 +430,67 @@ export const useDashboardStats = ({
     };
   }, [filteredAppointments, patients, filterOptions]);
 
+  // Financial Forecast - Breakdown por status
+  const financialForecast = useMemo(() => {
+    const confirmedTotal = revenueStats.realized + revenueStats.predicted;
+    
+    const pendingTotal = filteredAppointments
+      .filter(appointment => STATUS_GROUPS.PENDING.includes(appointment.status))
+      .reduce((sum, appointment) => {
+        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        return sum + Number(price);
+      }, 0);
+    
+    const noShowTotal = filteredAppointments
+      .filter(appointment => appointment.status === APPOINTMENT_STATUS.NO_SHOW)
+      .reduce((sum, appointment) => {
+        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        return sum + Number(price);
+      }, 0);
+    
+    const total = confirmedTotal + pendingTotal + noShowTotal;
+    
+    return {
+      confirmed: confirmedTotal,
+      pending: pendingTotal,
+      noShow: noShowTotal,
+      total,
+    };
+  }, [filteredAppointments, priceMap, revenueStats]);
+
+  // Financial Breakdown - Detalhamento por status
+  const financialBreakdown = useMemo(() => {
+    return {
+      confirmed: {
+        realized: revenueStats.realized,
+        future: revenueStats.predicted,
+      },
+      pending: {
+        total: filteredAppointments
+          .filter(appointment => STATUS_GROUPS.PENDING.includes(appointment.status))
+          .reduce((sum, appointment) => {
+            const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+            return sum + Number(price);
+          }, 0),
+      },
+      noShow: {
+        total: filteredAppointments
+          .filter(appointment => appointment.status === APPOINTMENT_STATUS.NO_SHOW)
+          .reduce((sum, appointment) => {
+            const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+            return sum + Number(price);
+          }, 0),
+      },
+    };
+  }, [filteredAppointments, priceMap, revenueStats]);
+
   return {
     stats: enhancedStats,
     statusSummary,
     detailsSummary,
     filteredAppointments,
+    filteredAvailability,
+    financialForecast,
+    financialBreakdown,
   };
 };

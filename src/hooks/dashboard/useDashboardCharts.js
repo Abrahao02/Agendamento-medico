@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { STATUS_GROUPS, isStatusInGroup } from "../../constants/appointmentStatus";
 import { getMonthName } from "../../constants/months";
 import { filterAppointments } from "../../utils/filters/appointmentFilters";
+import { createPatientsMap } from "../../utils/patients/createPatientsMap";
 
 export const useDashboardCharts = ({
   filteredAppointments,
@@ -40,10 +41,7 @@ export const useDashboardCharts = ({
     );
 
     // Cria mapa de WhatsApp -> dados atualizados do paciente
-    const patientsMap = {};
-    patients.forEach(patient => {
-      patientsMap[patient.whatsapp] = patient;
-    });
+    const patientsMap = createPatientsMap(patients);
 
     return activeAppointments
       .filter(appointment => new Date(`${appointment.date}T${appointment.time || "00:00"}:00`) >= today)
