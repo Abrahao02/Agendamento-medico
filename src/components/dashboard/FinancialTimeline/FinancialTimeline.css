@@ -1,0 +1,79 @@
+/* ============================================
+   📁 src/components/dashboard/FinancialTimeline/FinancialTimeline.css
+   ============================================ */
+@import url('../../../styles/variables.css');
+
+.financial-timeline-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+.financial-timeline-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.financial-timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.financial-timeline-values {
+  display: flex;
+  justify-content: space-around;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+}
+
+.timeline-value-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
+.timeline-value-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.timeline-value-amount {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  font-family: var(--font-family-mono);
+}
+
+.financial-timeline-chart {
+  width: 100%;
+  height: 200px;
+}
+
+@media (max-width: 768px) {
+  .financial-timeline-card {
+    padding: var(--spacing-lg);
+  }
+
+  .financial-timeline-values {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .timeline-value-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
