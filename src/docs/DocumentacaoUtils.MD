@@ -20,6 +20,7 @@
 10. [Helpers de Appointments](#-helpers-de-appointments) ✨ NOVO
 11. [Helpers de Mensagens](#-helpers-de-mensagens) ✨ NOVO
 12. [Helpers Gerais](#-helpers-gerais)
+13. [Utilitários de Pacientes](#-utilitários-de-pacientes) ✨ NOVO
 
 ---
 
@@ -847,6 +848,102 @@ const message = generateWhatsappMessage({
 
 **Uso nos Hooks:**
 - `useSettings` - Preview de mensagem
+
+---
+
+## 🧑‍⚕️ Utilitários de Pacientes ✨ NOVO
+
+### `createPatientsMap(patients)` ✨ NOVO
+**Arquivo**: `src/utils/patients/createPatientsMap.js`
+
+Cria um mapa de pacientes indexado por WhatsApp para busca rápida.
+
+```javascript
+import { createPatientsMap } from "@/utils/patients/createPatientsMap";
+
+const patients = [
+  { whatsapp: '5511999999999', name: 'João', referenceName: 'João Silva' },
+  { whatsapp: '5511888888888', name: 'Maria', referenceName: 'Maria Santos' }
+];
+
+const map = createPatientsMap(patients);
+// ➜ {
+//   '5511999999999': { whatsapp: '5511999999999', name: 'João', ... },
+//   '5511888888888': { whatsapp: '5511888888888', name: 'Maria', ... }
+// }
+
+// Uso em componentes
+const patientsMap = React.useMemo(() => 
+  createPatientsMap(patients), 
+  [patients]
+);
+
+const patientData = patientsMap[appointment.patientWhatsapp];
+```
+
+**Parâmetros:**
+- `patients` (Array): Array de objetos paciente
+
+**Retorna:** `Object` - Mapa `{ [whatsapp]: patient }`
+
+**Uso nos Componentes:**
+- `ConfirmedAppointmentsModal`
+- `NoShowModal`
+- `CancelledModal`
+- `PendingAppointmentsModal`
+- `useDashboardStats`
+- `useDashboardCharts`
+
+---
+
+### `getPatientName({ patientData, appointment, defaultName })` ✨ NOVO
+**Arquivo**: `src/utils/patients/getPatientName.js`
+
+Obtém o nome do paciente com fallback hierárquico.
+
+**Hierarquia de prioridade:**
+1. `patientData.name` (nome completo do paciente - mais atualizado)
+2. `patientData.referenceName` (nome de referência do paciente)
+3. `appointment.referenceName` (nome de referência do appointment - fallback)
+4. `appointment.patientName` (nome do appointment - fallback antigo)
+5. `defaultName` (padrão: 'Sem nome')
+
+```javascript
+import { getPatientName } from "@/utils/patients/getPatientName";
+
+// Com dados atualizados do paciente
+const patientData = { name: 'João Silva', referenceName: 'João' };
+const appointment = { referenceName: 'João', patientName: 'João Silva' };
+getPatientName({ patientData, appointment });
+// ➜ 'João Silva'
+
+// Sem patientData, usa dados do appointment
+const appointment = { referenceName: 'Maria' };
+getPatientName({ appointment });
+// ➜ 'Maria'
+
+// Sem dados, retorna padrão
+getPatientName({});
+// ➜ 'Sem nome'
+
+// Com nome padrão customizado
+getPatientName({ defaultName: 'Paciente não identificado' });
+// ➜ 'Paciente não identificado'
+```
+
+**Parâmetros:**
+- `patientData` (Object, opcional): Dados do paciente do array patients
+- `appointment` (Object, opcional): Dados do appointment (fallback)
+- `defaultName` (string, opcional): Nome padrão se nenhum for encontrado (padrão: 'Sem nome')
+
+**Retorna:** `string` - Nome do paciente
+
+**Uso nos Componentes:**
+- `ConfirmedAppointmentsModal`
+- `NoShowModal`
+- `CancelledModal`
+- `PendingAppointmentsModal`
+- `useDashboardCharts`
 
 ---
 

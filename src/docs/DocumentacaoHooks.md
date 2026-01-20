@@ -18,6 +18,7 @@
 8. [Stripe Hooks](#-stripe-hooks) ✨ NOVO
 9. [Common Hooks](#-common-hooks)
 10. [Guia de Uso](#-guia-de-uso)
+11. [Novos Hooks](#-novos-hooks) ✨ NOVO
 
 ---
 
@@ -1102,6 +1103,82 @@ function Component() {
 #### **Comportamento**
 
 - ✅ Faz scroll suave para elemento
+
+---
+
+### `useModal(isOpen, onClose)` ✨ NOVO
+
+**Arquivo:** `src/hooks/common/useModal.js`
+
+Hook reutilizável para gerenciar estado e comportamento de modais. Controla overflow do body e fornece handlers padrão.
+
+#### **Uso**
+
+```javascript
+import { useModal } from "@/hooks/common/useModal";
+
+function MyModal({ isOpen, onClose }) {
+  const { handleBackdropClick, handleKeyDown } = useModal(isOpen, onClose);
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div 
+      className="modal-overlay" 
+      onClick={handleBackdropClick}
+      onKeyDown={handleKeyDown}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="modal-content">
+        <button onClick={onClose}>Fechar</button>
+        {/* Conteúdo do modal */}
+      </div>
+    </div>
+  );
+}
+```
+
+#### **Parâmetros**
+
+```typescript
+{
+  isOpen: boolean,        // Estado de abertura do modal
+  onClose: () => void    // Função para fechar o modal
+}
+```
+
+#### **Retorna**
+
+```typescript
+{
+  handleBackdropClick: (e: MouseEvent) => void,  // Handler para fechar ao clicar no backdrop
+  handleKeyDown: (e: KeyboardEvent) => void      // Handler para fechar com ESC
+}
+```
+
+#### **Comportamento**
+
+- ✅ Controla `overflow` do body quando modal está aberto
+- ✅ Fecha modal ao clicar no backdrop (overlay)
+- ✅ Fecha modal com tecla ESC
+- ✅ Limpa overflow ao desmontar componente
+
+#### **Uso nos Componentes**
+
+- `PendingAppointmentsModal`
+- `ConfirmedAppointmentsModal`
+- `NoShowModal`
+- `CancelledModal`
+- `AvailableSlotsModal`
+- `AppointmentsSummaryModal`
+- `NewPatientsModal`
+
+#### **Benefícios**
+
+- ✅ Elimina duplicação de código (~20 linhas por modal)
+- ✅ Garante consistência comportamental
+- ✅ Facilita manutenção
 - ✅ Aplica offset configurável
 - ✅ Fecha menu após scroll (opcional)
 
