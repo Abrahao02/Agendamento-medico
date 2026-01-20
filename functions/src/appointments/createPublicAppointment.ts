@@ -78,6 +78,13 @@ export const createPublicAppointment = onCall(
         throw new Error('Horário inválido. Use formato HH:mm');
       }
 
+      // Validate appointment is not in the past
+      const appointmentDateTime = new Date(`${date}T${time}:00`);
+      const now = new Date();
+      if (appointmentDateTime <= now) {
+        throw new Error('Não é possível agendar consultas no passado');
+      }
+
       if (!patientName || typeof patientName !== 'string' || patientName.trim().length === 0) {
         throw new Error('Nome do paciente é obrigatório');
       }
@@ -166,22 +173,8 @@ export const createPublicAppointment = onCall(
 
       // ========================================
       // VALIDATE SLOT IS NOT ALREADY BOOKED
+      // Note: Final check happens inside transaction for atomicity
       // ========================================
-      const existingAppointmentsSnapshot = await db
-        .collection('appointments')
-        .where('doctorId', '==', doctorId)
-        .where('date', '==', date)
-        .where('time', '==', time)
-        .get();
-
-      const hasActiveBooking = existingAppointmentsSnapshot.docs.some((doc) => {
-        const appointment = doc.data();
-        return isActiveStatus(appointment.status);
-      });
-
-      if (hasActiveBooking) {
-        throw new Error('Este horário já foi agendado');
-      }
 
       // ========================================
       // VALIDATE APPOINTMENT TYPE & LOCATION
@@ -301,10 +294,24 @@ export const createPublicAppointment = onCall(
           throw new Error('Horário não disponível');
         }
 
-        // Re-check for active bookings by reading existing appointments
-        // Since we can't query efficiently in transaction, we rely on the pre-validation
-        // and the fact that transaction will fail if availability document changes
-        // This prevents race conditions at the document level
+        // Query appointments within transaction to atomically check for conflicts
+        // This prevents race conditions: if two requests run concurrently, only one will succeed
+        const appointmentsQuery = db
+          .collection('appointments')
+          .where('doctorId', '==', doctorId)
+          .where('date', '==', date)
+          .where('time', '==', time);
+        const appointmentsSnapshot = await transaction.get(appointmentsQuery);
+
+        // Check for active bookings atomically
+        const hasActiveBooking = appointmentsSnapshot.docs.some((doc) => {
+          const appointment = doc.data();
+          return isActiveStatus(appointment.status);
+        });
+
+        if (hasActiveBooking) {
+          throw new Error('Este horário já foi agendado');
+        }
 
         // Create appointment
         transaction.set(appointmentRef, {
@@ -333,7 +340,7 @@ export const createPublicAppointment = onCall(
 
       return {
         success: true,
-        appointmentId: 'created', // ID is generated in transaction
+        appointmentId: appointmentRef.id,
         message: 'Agendamento criado com sucesso',
         value: appointmentValue,
       };
