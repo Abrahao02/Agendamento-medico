@@ -1,63 +1,55 @@
 // ============================================
 // 📁 src/components/dashboard/FinancialView.jsx
-// Visualização Financeiro (Strategy Pattern)
+// Visualização Financeiro (Strategy Pattern) - REFATORADO
 // ============================================
 
 import React from "react";
-import { DollarSign, Users, UserPlus } from "lucide-react";
-import StatsCard from "./StatsCard";
-import FinancialChart from "./FinancialChart";
-import MonthlyComparison from "./MonthlyComparison";
+import FinancialOverviewCards from "./FinancialOverviewCards";
+import FinancialForecast from "./FinancialForecast";
+import FinancialTimeline from "./FinancialTimeline";
+import FinancialBreakdown from "./FinancialBreakdown";
+import "./FinancialView.css";
 
 export default function FinancialView({
   stats,
-  financialChartData,
-  monthlyData,
+  financialForecast = {},
+  financialBreakdown = {},
+  filteredAppointments,
+  filteredAvailability,
+  patients,
 }) {
   return (
     <>
-      {/* Visualização Financeiro */}
-      <div className="stats-grid">
-        <StatsCard
-          icon={DollarSign}
-          value={`R$ ${stats.revenueRealized.toFixed(2)}`}
-          title="Faturamento realizado"
-          subtitle="Consultas já realizadas"
-          color="green"
+      {/* BLOCO 1 - Visão geral (3 cards principais) */}
+      <FinancialOverviewCards
+        received={stats.revenueRealized || 0}
+        toReceive={stats.revenuePredicted || 0}
+        atRisk={stats.revenueAtRisk || 0}
+      />
+
+      {/* Layout em grid para os outros blocos */}
+      <div className="financial-content-grid">
+        {/* BLOCO 2 - Previsão financeira do período */}
+        <FinancialForecast
+          confirmed={financialForecast.confirmed || 0}
+          pending={financialForecast.pending || 0}
+          noShow={financialForecast.noShow || 0}
+          total={financialForecast.total || 0}
         />
-        <StatsCard
-          icon={DollarSign}
-          value={`R$ ${stats.revenuePredicted.toFixed(2)}`}
-          title="Faturamento previsto"
-          subtitle="Consultas confirmadas futuras"
-          color="blue"
-          comparison={stats.monthlyFinancialComparison}
+
+        {/* BLOCO 3 - Linha do tempo financeira */}
+        <FinancialTimeline
+          realized={stats.revenueRealized || 0}
+          toReceive={stats.revenuePredicted || 0}
         />
-        <StatsCard
-          icon={Users}
-          value={`R$ ${stats.averageTicket}`}
-          title="Ticket médio"
-          subtitle="Por paciente"
-          color="purple"
-        />
-        {stats.newPatientsRevenue > 0 && (
-          <StatsCard
-            icon={UserPlus}
-            value={`R$ ${stats.newPatientsRevenue.toFixed(2)}`}
-            title="Receita de novos pacientes"
-            subtitle={`${stats.newPatientsRevenuePercent}% do faturamento`}
-            color="amber"
-          />
-        )}
       </div>
 
-      {/* Financial Chart and Monthly Comparison */}
-      <div className="charts-section financial-view">
-        <FinancialChart data={financialChartData} />
-        {monthlyData && monthlyData.length > 0 && (
-          <MonthlyComparison data={monthlyData} />
-        )}
-      </div>
+      {/* BLOCO 4 - Detalhamento por status */}
+      <FinancialBreakdown
+        confirmed={financialBreakdown.confirmed || { realized: 0, future: 0 }}
+        pending={financialBreakdown.pending || { total: 0 }}
+        noShow={financialBreakdown.noShow || { total: 0 }}
+      />
     </>
   );
 }

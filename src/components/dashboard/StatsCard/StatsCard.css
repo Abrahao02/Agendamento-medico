@@ -17,6 +17,9 @@
   opacity: 0;
   position: relative;
   overflow: hidden;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Efeito de gradiente sutil no hover */
@@ -106,6 +109,8 @@
 .stats-info {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+  width: 100%;
 }
 
 .stats-value-wrapper {
@@ -114,6 +119,9 @@
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-xs);
   flex-wrap: wrap;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .stats-value {
@@ -121,6 +129,12 @@
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  flex-shrink: 0;
+  word-break: keep-all;
 }
 
 .stats-title {
@@ -191,7 +205,7 @@
 .stats-card:nth-child(4) { animation-delay: 0.4s; }
 
 /* Responsive */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .stats-card {
     padding: var(--spacing-lg);
   }
@@ -211,5 +225,18 @@
 
   .stats-subtitle {
     font-size: var(--text-sm);
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-value {
+    font-size: var(--text-xl);
+  }
+}
+
+/* Garante que valores monetários sempre caibam no card */
+@media (min-width: 1401px) {
+  .stats-value {
+    font-size: clamp(1.5rem, 2vw, 2rem);
   }
 }
