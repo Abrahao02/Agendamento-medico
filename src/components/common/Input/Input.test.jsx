@@ -81,11 +81,18 @@ describe('Input', () => {
     expect(screen.getByRole('textbox')).toHaveClass('input-disabled');
   });
 
-  it('deve aplicar type correto', () => {
-    const { rerender, container } = render(<Input type="email" />);
-    expect(screen.getByRole('textbox')).toHaveAttribute('type', 'email');
+  it.each([
+    ['email', 'email', 'textbox'],
+    ['text', 'text', 'textbox'],
+    ['tel', 'tel', 'textbox']
+  ])('deve aplicar type %s corretamente', (type, expectedType, role) => {
+    render(<Input type={type} />);
+    const input = screen.getByRole(role);
+    expect(input).toHaveAttribute('type', expectedType);
+  });
 
-    rerender(<Input type="password" />);
+  it('deve aplicar type password corretamente', () => {
+    const { container } = render(<Input type="password" />);
     // Password inputs don't have role="textbox" by default, so we query by type directly
     const passwordInput = container.querySelector('input[type="password"]');
     expect(passwordInput).toBeInTheDocument();

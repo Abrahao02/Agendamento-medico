@@ -45,23 +45,21 @@ describe('Button', () => {
     expect(button).toBeDisabled();
   });
 
-  it('deve aplicar variante correta', () => {
-    const { rerender } = render(<Button variant="primary">Botão</Button>);
-    expect(screen.getByRole('button')).toHaveClass('btn-primary');
-
-    rerender(<Button variant="secondary">Botão</Button>);
-    expect(screen.getByRole('button')).toHaveClass('btn-secondary');
-
-    rerender(<Button variant="danger">Botão</Button>);
-    expect(screen.getByRole('button')).toHaveClass('btn-danger');
+  it.each([
+    ['primary', 'btn-primary'],
+    ['secondary', 'btn-secondary'],
+    ['danger', 'btn-danger']
+  ])('deve aplicar variante %s corretamente', (variant, expectedClass) => {
+    render(<Button variant={variant}>Botão</Button>);
+    expect(screen.getByRole('button')).toHaveClass(expectedClass);
   });
 
-  it('deve aplicar tamanho correto', () => {
-    const { rerender } = render(<Button size="sm">Botão</Button>);
-    expect(screen.getByRole('button')).toHaveClass('btn-sm');
-
-    rerender(<Button size="lg">Botão</Button>);
-    expect(screen.getByRole('button')).toHaveClass('btn-lg');
+  it.each([
+    ['sm', 'btn-sm'],
+    ['lg', 'btn-lg']
+  ])('deve aplicar tamanho %s corretamente', (size, expectedClass) => {
+    render(<Button size={size}>Botão</Button>);
+    expect(screen.getByRole('button')).toHaveClass(expectedClass);
   });
 
   it('deve aplicar fullWidth quando especificado', () => {
@@ -111,12 +109,13 @@ describe('Button', () => {
     expect(div).toHaveAttribute('tabIndex', '-1');
   });
 
-  it('deve aplicar type correto', () => {
-    const { rerender } = render(<Button type="submit">Submit</Button>);
-    expect(screen.getByRole('button')).toHaveAttribute('type', 'submit');
-
-    rerender(<Button type="reset">Reset</Button>);
-    expect(screen.getByRole('button')).toHaveAttribute('type', 'reset');
+  it.each([
+    ['submit', 'submit'],
+    ['reset', 'reset'],
+    ['button', 'button']
+  ])('deve aplicar type %s corretamente', (type, expectedType) => {
+    render(<Button type={type}>Botão</Button>);
+    expect(screen.getByRole('button')).toHaveAttribute('type', expectedType);
   });
 });
 
