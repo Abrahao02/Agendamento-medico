@@ -18,8 +18,10 @@ export const useDayManagement = ({
   onDeleteAppointment,
   onMarkAsCancelled,
   isLimitReached = false,
+  initialMode = null,
+  onModeChange = null,
 }) => {
-  const [mode, setMode] = useState("add");
+  const [mode, setMode] = useState(initialMode || null);
   const [slotTime, setSlotTime] = useState("12:00");
   // Calcular valor inicial baseado em appointmentTypeConfig (será atualizado após primeiro render)
   const [slotAppointmentType, setSlotAppointmentType] = useState(() => {
@@ -48,6 +50,30 @@ export const useDayManagement = ({
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   const formSectionRef = useRef(null);
+
+  // Sincronizar mode com initialMode quando mudar externamente
+  useEffect(() => {
+    if (initialMode !== null && initialMode !== mode) {
+      setMode(initialMode);
+    } else if (initialMode === null && mode !== null && onModeChange) {
+      // Se initialMode for null e há controle externo, resetar o mode
+      setMode(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMode, onModeChange]);
+
+  // Notificar mudança de modo para componente pai (apenas quando mudar internamente)
+  const prevModeRef = useRef(mode);
+  useEffect(() => {
+    if (onModeChange && prevModeRef.current !== mode) {
+      // Só notifica se a mudança não veio de initialMode
+      if (initialMode === null || initialMode === mode) {
+        onModeChange(mode);
+      }
+      prevModeRef.current = mode;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, onModeChange]);
 
   useEffect(() => {
     if (formSectionRef.current) {
@@ -296,7 +322,7 @@ export const useDayManagement = ({
 
     if (result.success) {
       setSelectedPatient("");
-      setSelectedTime("");
+      setSelectedTime("12:00"); // Sempre resetar para 12:00 para facilitar o uso
       const resetAppointmentType = isFixed
         ? appointmentTypeConfig.fixedType
         : bookAppointmentType;

@@ -219,8 +219,21 @@ export const useAvailability = () => {
       const result = await removeAvailability(user.uid, date, slot);
       if (!result.success) throw new Error(result.error);
 
+      // Extrair o horário do slot (pode ser string ou objeto)
+      const slotTime = getSlotTime(slot) || slot;
+      
+      // Atualizar estado removendo o slot pela comparação de horário
       setAvailability(prev => prev
-        .map(a => a.date === date ? { ...a, slots: a.slots.filter(s => s !== slot) } : a)
+        .map(a => {
+          if (a.date === date) {
+            const filteredSlots = a.slots.filter(s => {
+              const sTime = getSlotTime(s);
+              return sTime !== slotTime;
+            });
+            return { ...a, slots: filteredSlots };
+          }
+          return a;
+        })
         .filter(a => a.slots.length > 0)
       );
 

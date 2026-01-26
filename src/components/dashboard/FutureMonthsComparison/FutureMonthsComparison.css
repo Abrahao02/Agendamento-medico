@@ -1,0 +1,281 @@
+/* ============================================
+   📁 src/components/dashboard/FutureMonthsComparison/FutureMonthsComparison.css
+   ============================================ */
+@import url('../../../styles/variables.css');
+
+.future-months-comparison-card {
+  background: var(--white);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.future-months-comparison-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  padding-bottom: 180px; /* Espaço para o total fixo */
+}
+
+.future-months-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(500px - 200px);
+  padding-right: var(--spacing-xs);
+}
+
+.future-months-month-item {
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-primary);
+  transition: var(--transition-base);
+}
+
+.future-months-month-item.current-month {
+  background: linear-gradient(135deg, var(--color-secondary-light) 0%, var(--color-primary-light) 100%);
+  border-left: 4px solid var(--color-secondary);
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--color-secondary);
+}
+
+.future-months-month-item.future-month {
+  background: linear-gradient(135deg, var(--warning-50) 0%, var(--accent-50) 100%);
+  border-left: 4px solid var(--warning-500);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--warning-300);
+  opacity: 0.95;
+}
+
+.future-months-month-item:hover {
+  background: var(--bg-tertiary);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
+}
+
+.future-months-month-item.current-month:hover {
+  background: linear-gradient(135deg, var(--color-secondary-light) 0%, var(--color-primary-light) 100%);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.future-months-month-item.future-month:hover {
+  background: linear-gradient(135deg, var(--warning-50) 0%, var(--accent-50) 100%);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+  opacity: 1;
+}
+
+.future-months-month-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.future-months-month-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.future-months-month-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.current-month-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-secondary);
+  background: var(--white);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--color-secondary);
+}
+
+.forecast-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--warning-700);
+  background: var(--white);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--warning-500);
+}
+
+.future-months-month-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.future-months-month-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.future-months-month-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--text-secondary);
+}
+
+.future-months-icon {
+  flex-shrink: 0;
+}
+
+.future-months-icon.confirmed {
+  color: var(--success-500);
+}
+
+.future-months-icon.pending {
+  color: var(--warning-500);
+}
+
+.future-months-icon.total {
+  color: var(--color-primary);
+}
+
+.future-months-month-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.future-months-month-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-light);
+  font-weight: 600;
+}
+
+.future-months-month-total-label {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.future-months-month-total-value {
+  color: var(--color-primary);
+  font-size: 1.1rem;
+}
+
+.future-months-empty {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--text-secondary);
+}
+
+.future-months-total {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-secondary-light) 100%);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.year-filter-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+  background: var(--color-secondary-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  margin-left: var(--spacing-xs);
+  border: 1px solid var(--color-secondary);
+}
+
+.future-months-total-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.future-months-total-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.future-months-total-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.future-months-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--color-primary);
+}
+
+.future-months-total-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-align: right;
+  margin-top: var(--spacing-xs);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .future-months-comparison-card {
+    padding: var(--spacing-md);
+  }
+
+  .future-months-month-item {
+    padding: var(--spacing-sm);
+  }
+
+  .future-months-total {
+    padding: var(--spacing-md);
+  }
+
+  .future-months-total-value {
+    font-size: 1.2rem;
+  }
+}

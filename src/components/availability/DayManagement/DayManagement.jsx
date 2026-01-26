@@ -26,6 +26,8 @@ export default function DayManagement({
   onDeleteAppointment,
   onMarkAsCancelled,
   isLimitReached = false,
+  initialMode = null,
+  onModeChange = null,
 }) {
   // Extrair valores das props agrupadas ou usar valores individuais (compatibilidade)
   const finalAllSlots = slots?.all || allSlots;
@@ -56,6 +58,8 @@ export default function DayManagement({
     onDeleteAppointment: finalOnDeleteAppointment,
     onMarkAsCancelled: finalOnMarkAsCancelled,
     isLimitReached: finalIsLimitReached,
+    initialMode,
+    onModeChange,
   });
 
   return (
@@ -109,29 +113,32 @@ export default function DayManagement({
         )}
       </div>
 
-      <div className="mode-toggle">
-        <button
-          className={state.mode === "add" ? "active" : ""}
-          onClick={() => {
-            handlers.setMode("add");
-            handlers.setError("");
-          }}
-        >
-          Adicionar Horário
-        </button>
-        <button
-          className={state.mode === "book" ? "active" : ""}
-          onClick={() => {
-            handlers.setMode("book");
-            handlers.setError("");
-            if (!state.selectedTime) {
-              handlers.setSelectedTime("12:00");
-            }
-          }}
-        >
-          Marcar Consulta
-        </button>
-      </div>
+      {/* Mostrar mode-toggle apenas se não houver controle externo */}
+      {!onModeChange && (
+        <div className="mode-toggle">
+          <button
+            className={state.mode === "add" ? "active" : ""}
+            onClick={() => {
+              handlers.setMode("add");
+              handlers.setError("");
+            }}
+          >
+            Adicionar Horário
+          </button>
+          <button
+            className={state.mode === "book" ? "active" : ""}
+            onClick={() => {
+              handlers.setMode("book");
+              handlers.setError("");
+              if (!state.selectedTime) {
+                handlers.setSelectedTime("12:00");
+              }
+            }}
+          >
+            Marcar Consulta
+          </button>
+        </div>
+      )}
 
       {/* eslint-disable-next-line react-hooks/refs */}
       <div ref={refs.formSectionRef}>
@@ -146,6 +153,7 @@ export default function DayManagement({
             locations={data.locations}
             appointmentTypeConfig={data.appointmentTypeConfig}
             onSubmit={handlers.handleAddSlotSubmit}
+            onCancel={onModeChange ? () => handlers.setMode(null) : undefined}
             loading={state.loading || finalIsLimitReached}
             error={state.error}
           />
@@ -252,13 +260,26 @@ export default function DayManagement({
               data-format="24"
             />
 
-            <button 
-              onClick={handlers.handleBookAppointment} 
-              disabled={state.loading || finalIsLimitReached} 
-              title={finalIsLimitReached ? "Limite do plano atingido" : ""}
-            >
-              {state.loading ? "Confirmando..." : "Confirmar"}
-            </button>
+            <div className="book-slot-actions">
+              <button 
+                onClick={handlers.handleBookAppointment} 
+                disabled={state.loading || finalIsLimitReached} 
+                title={finalIsLimitReached ? "Limite do plano atingido" : ""}
+                className="book-slot-confirm-button"
+              >
+                {state.loading ? "Confirmando..." : "Confirmar"}
+              </button>
+              {onModeChange && (
+                <button
+                  type="button"
+                  onClick={() => handlers.setMode(null)}
+                  disabled={state.loading}
+                  className="book-slot-cancel-button"
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

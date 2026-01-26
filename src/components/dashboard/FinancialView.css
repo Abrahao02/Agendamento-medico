@@ -16,8 +16,26 @@
   }
 }
 
+.financial-breakdown-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-xl);
+}
+
+@media (min-width: 1024px) {
+  .financial-breakdown-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .financial-content-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+
+  .financial-breakdown-grid {
     grid-template-columns: 1fr;
     gap: var(--spacing-lg);
   }

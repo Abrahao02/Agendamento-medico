@@ -40,13 +40,13 @@ export const useDashboardStats = ({
     const filteredDates = new Set(inPeriod.map(day => day.date));
     const filteredAvailabilityForPeriod = availability.filter(d => filteredDates.has(d.date));
     
-    // Usa getAvailableSlotsIncludingCancelled para incluir slots cancelados (igual ao contador)
+    // Usa filteredAppointments ao invés de appointments para respeitar o filtro de mês
     return getAvailableSlotsIncludingCancelled(
       filteredAvailabilityForPeriod,
-      appointments,
+      filteredAppointments,
       new Date()
     );
-  }, [availability, appointments, filterOptions]);
+  }, [availability, filteredAppointments, filterOptions]);
 
   // ✅ Conta slots disponíveis incluindo cancelados (similar ao publicSchedule)
   const slotsOpen = useMemo(() => {
@@ -59,12 +59,13 @@ export const useDashboardStats = ({
       filteredDates.includes(d.date)
     );
     
+    // Usa filteredAppointments ao invés de appointments para respeitar o filtro de mês
     return countAvailableSlotsIncludingCancelled(
       filteredAvailabilityForPeriod,
-      appointments,
+      filteredAppointments,
       new Date()
     );
-  }, [availability, appointments, filterOptions]);
+  }, [availability, filteredAppointments, filterOptions]);
 
   const totalPatients = useMemo(() => {
     const uniquePatients = new Set(
@@ -331,11 +332,6 @@ export const useDashboardStats = ({
         referenceName: patient?.referenceName || null,
       };
     });
-    console.log('📊 Pacientes únicos no período:', {
-      total: totalUniquePatients,
-      pacientes: uniquePatientsList,
-      nomes: uniquePatientsList.map(p => p.name),
-    });
     
     // Determina o mês/ano que está sendo visualizado
     let targetMonth = filterOptions.selectedMonth;
@@ -474,6 +470,158 @@ export const useDashboardStats = ({
     };
   }, [filteredAppointments, revenueStats]);
 
+  // Previous Months Summary - Agrupado por mês (Recebido + Pendentes + Não compareceu)
+  // Filtra apenas o ano atual (inclui meses anteriores e o mês atual do ano atual)
+  const previousMonthsSummary = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentMonth = today.getMonth() + 1; // 1-12
+    const currentYear = today.getFullYear();
+    
+    // Filtrar appointments apenas do ano atual (meses anteriores e o mês atual)
+    const allMonthsAppointments = appointments.filter(appointment => {
+      if (!appointment.date) return false;
+      
+      const appointmentDate = new Date(appointment.date);
+      const appointmentMonth = appointmentDate.getMonth() + 1;
+      const appointmentYear = appointmentDate.getFullYear();
+      
+      // Apenas ano atual, incluindo meses anteriores e o mês atual
+      return appointmentYear === currentYear && appointmentMonth <= currentMonth;
+    });
+    
+    // Agrupar por mês/ano
+    const monthsMap = new Map();
+    
+    allMonthsAppointments.forEach(appointment => {
+      const appointmentDate = new Date(appointment.date);
+      const month = appointmentDate.getMonth() + 1;
+      const year = appointmentDate.getFullYear();
+      const key = `${year}-${String(month).padStart(2, '0')}`;
+      
+      if (!monthsMap.has(key)) {
+        monthsMap.set(key, {
+          year,
+          month,
+          received: 0,
+          noShow: 0,
+        });
+      }
+      
+      const monthData = monthsMap.get(key);
+      const price = appointment.value || 0;
+      
+      // Recebido (Confirmados realizados)
+      if (isStatusInGroup(appointment.status, 'CONFIRMED')) {
+        const appointmentDateTime = new Date(`${appointment.date}T${appointment.time || "00:00"}:00`);
+        if (appointmentDateTime < today) {
+          monthData.received += Number(price);
+        }
+      }
+      
+      // Não compareceu
+      if (appointment.status === APPOINTMENT_STATUS.NO_SHOW) {
+        monthData.noShow += Number(price);
+      }
+    });
+    
+    // Converter para array e ordenar (mais recente primeiro)
+    const monthsArray = Array.from(monthsMap.values())
+      .sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year;
+        return b.month - a.month;
+      });
+    
+    // Calcular totais
+    const totals = monthsArray.reduce((acc, month) => ({
+      received: acc.received + month.received,
+      noShow: acc.noShow + month.noShow,
+    }), { received: 0, noShow: 0 });
+    
+    totals.total = totals.received + totals.noShow;
+    
+    return {
+      months: monthsArray,
+      totals,
+    };
+  }, [appointments]);
+
+  // Future Months Comparison - Meses atuais e futuros com appointments (previsão)
+  const futureMonthsComparison = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentMonth = today.getMonth() + 1; // 1-12
+    const currentYear = today.getFullYear();
+    
+    // Filtrar appointments do mês atual e futuros do ano atual
+    const futureMonthsAppointments = appointments.filter(appointment => {
+      if (!appointment.date) return false;
+      
+      const appointmentDate = new Date(appointment.date);
+      const appointmentMonth = appointmentDate.getMonth() + 1;
+      const appointmentYear = appointmentDate.getFullYear();
+      
+      // Mês atual e futuros do ano atual
+      return appointmentYear === currentYear && appointmentMonth >= currentMonth;
+    });
+    
+    // Agrupar por mês/ano
+    const monthsMap = new Map();
+    
+    futureMonthsAppointments.forEach(appointment => {
+      const appointmentDate = new Date(appointment.date);
+      const month = appointmentDate.getMonth() + 1;
+      const year = appointmentDate.getFullYear();
+      const key = `${year}-${String(month).padStart(2, '0')}`;
+      
+      if (!monthsMap.has(key)) {
+        monthsMap.set(key, {
+          year,
+          month,
+          confirmed: 0, // Confirmados futuros
+          pending: 0,     // Pendentes
+        });
+      }
+      
+      const monthData = monthsMap.get(key);
+      const price = appointment.value || 0;
+      
+      // Confirmados futuros (status confirmado E data futura)
+      if (isStatusInGroup(appointment.status, 'CONFIRMED')) {
+        const appointmentDateTime = new Date(`${appointment.date}T${appointment.time || "00:00"}:00`);
+        // Apenas appointments com data futura (não passada)
+        if (appointmentDateTime >= today) {
+          monthData.confirmed += Number(price);
+        }
+      }
+      
+      // Pendentes
+      if (isStatusInGroup(appointment.status, 'PENDING')) {
+        monthData.pending += Number(price);
+      }
+    });
+    
+    // Converter para array e ordenar (mais próximo primeiro)
+    const monthsArray = Array.from(monthsMap.values())
+      .sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.month - b.month;
+      });
+    
+    // Calcular totais
+    const totals = monthsArray.reduce((acc, month) => ({
+      confirmed: acc.confirmed + month.confirmed,
+      pending: acc.pending + month.pending,
+    }), { confirmed: 0, pending: 0 });
+    
+    totals.total = totals.confirmed + totals.pending;
+    
+    return {
+      months: monthsArray,
+      totals,
+    };
+  }, [appointments]);
+
   return {
     stats: enhancedStats,
     statusSummary,
@@ -482,5 +630,7 @@ export const useDashboardStats = ({
     filteredAvailability,
     financialForecast,
     financialBreakdown,
+    previousMonthsSummary,
+    futureMonthsComparison,
   };
 };

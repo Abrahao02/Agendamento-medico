@@ -114,5 +114,74 @@
   .availability-page {
     padding: var(--spacing-lg) var(--spacing-sm);
   }
+}
 
+/* ========================================
+   BOTÃO FIXO (FAB)
+   ======================================== */
+.availability-page .fab-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--secondary-700) 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4),
+              0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-base);
+  z-index: 999;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.availability-page .fab-button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5),
+              0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.availability-page .fab-button:active:not(:disabled) {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4),
+              0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.availability-page .fab-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.availability-page .fab-button:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 4px;
+}
+
+@media (max-width: 768px) {
+  .availability-page .fab-button {
+    bottom: 20px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+  }
+}
+
+@media (max-width: 640px) {
+  .availability-page .fab-button {
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .availability-page .fab-button svg {
+    width: 20px;
+    height: 20px;
+  }
 }

@@ -71,8 +71,9 @@ export const filterAppointments = (appointments, config = {}) => {
       }
     } 
     // 4. Filtro de Mês/Ano (se não houver range)
-    else if (selectedMonth && selectedYear) {
-      if (!isDateInMonthYear(appointment.date, selectedMonth, selectedYear)) {
+    // Permite filtrar apenas por ano quando o mês não está selecionado
+    else if (selectedYear) {
+      if (!isDateInMonthYear(appointment.date, selectedMonth || null, selectedYear)) {
         return false;
       }
     }

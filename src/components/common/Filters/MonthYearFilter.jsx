@@ -29,15 +29,25 @@ export default function MonthYearFilter({
   availableYears = [],
   isDisabled = false,
 }) {
+  // Garantir que o mês sempre seja renderizado se a prop foi passada (mesmo que seja null/undefined)
+  // Se month for undefined, não renderiza (não foi passado como prop)
+  // Se month for null ou número, renderiza
+  const shouldRenderMonth = month !== undefined;
+  
   return (
     <>
-      {month !== undefined && (
+      {shouldRenderMonth && (
         <div className="filter-item">
           <label htmlFor="month">Mês</label>
           <select
             id="month"
             value={month || ""}
-            onChange={(e) => onMonthChange(e.target.value)}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (onMonthChange) {
+                onMonthChange(newValue ? Number(newValue) : null);
+              }
+            }}
             disabled={isDisabled}
             className="filter-select"
           >
@@ -55,8 +65,13 @@ export default function MonthYearFilter({
           <label htmlFor="year">Ano</label>
           <select
             id="year"
-            value={year || ""}
-            onChange={(e) => onYearChange(e.target.value)}
+            value={year || availableYears[0] || new Date().getFullYear()}
+            onChange={(e) => {
+              const newYear = Number(e.target.value);
+              if (newYear && !isNaN(newYear)) {
+                onYearChange(newYear);
+              }
+            }}
             disabled={isDisabled}
             className="filter-select"
           >

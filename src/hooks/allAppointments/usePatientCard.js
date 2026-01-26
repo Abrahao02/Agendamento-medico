@@ -12,11 +12,17 @@ import { formatCurrency } from "../../utils/formatter/formatCurrency";
 export const usePatientCard = ({ patient, onToggle, onSendWhatsapp }) => {
   const handleSendReport = (e) => {
     e.stopPropagation();
+    
+    // Calcular o total
+    const total = patient.appointments.reduce((sum, app) => sum + (app.value || 0), 0);
+    
     const messages = patient.appointments.map(
       (app) =>
         `${formatDate(app.date)} às ${app.time} - ${formatCurrency(app.value || 0)}`
     );
-    const text = `Seguem as datas e valores de suas consultas:\n${messages.join("\n")}`;
+    
+    const text = `Seguem as datas e valores de suas consultas:\n${messages.join("\n")}\n\n*Total: ${formatCurrency(total)}*`;
+    
     onSendWhatsapp(patient.whatsapp, text);
   };
 

@@ -177,7 +177,7 @@ export const usePublicSchedule = (slug) => {
     setSelectedDay(selectedDay?.id === day.id ? null : day);
     setSelectedSlot(null);
   };
-
+  
   const handleSlotSelect = (day, slot) => {
     if (!day || !day.date) return;
     

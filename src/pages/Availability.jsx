@@ -1,7 +1,8 @@
 // ============================================
 // 📁 src/pages/Availability.jsx - VERSÃO CORRIGIDA
 // ============================================
-import React from "react";
+import React, { useState } from "react";
+import { Plus } from "lucide-react";
 
 // Hook
 import { useAvailability } from "../hooks/appointments/useAvailability";
@@ -12,6 +13,7 @@ import CalendarWrapper from "../components/availability/CalendarWrapper";
 import DayManagement from "../components/availability/DayManagement";
 import ContentLoading from "../components/common/ContentLoading";
 import LimitWarningBanner from "../components/common/LimitWarningBanner";
+import AgendaActionsModal from "../components/agenda/AgendaActionsModal";
 
 // Utils
 import formatDate from "../utils/formatter/formatDate";
@@ -19,6 +21,9 @@ import formatDate from "../utils/formatter/formatDate";
 import "./Availability.css";
 
 export default function Availability() {
+  const [isActionsModalOpen, setIsActionsModalOpen] = useState(false);
+  const [initialMode, setInitialMode] = useState(null); // "add" | "book" | null
+
   const {
     // Estado
     loading,
@@ -45,6 +50,33 @@ export default function Availability() {
     // Limit state
     isLimitReached,
   } = useAvailability();
+
+  const handleOpenActionsModal = () => {
+    if (!selectedDate) {
+      // Se não houver data selecionada, não abre o modal
+      return;
+    }
+    setIsActionsModalOpen(true);
+  };
+
+  const handleCloseActionsModal = () => {
+    setIsActionsModalOpen(false);
+  };
+
+  const handleSelectBook = () => {
+    setInitialMode("book");
+    setIsActionsModalOpen(false);
+  };
+
+  const handleSelectAddSlot = () => {
+    setInitialMode("add");
+    setIsActionsModalOpen(false);
+  };
+
+  const handleModeChange = (mode) => {
+    // Quando o modo mudar no DayManagement, atualiza o estado
+    setInitialMode(mode);
+  };
 
   /* ==============================
      CALENDAR: TILE CONTENT (BADGES)
@@ -133,9 +165,47 @@ export default function Availability() {
             onDeleteAppointment={deleteAppointment}
             onMarkAsCancelled={markAsCancelled}
             isLimitReached={isLimitReached}
+            initialMode={initialMode}
+            onModeChange={handleModeChange}
           />
         )}
       </div>
+
+      {/* FAB Button */}
+      {selectedDate && (
+        <button
+          type="button"
+          className="fab-button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleOpenActionsModal();
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+          }}
+          disabled={isLimitReached}
+          aria-label="Abrir opções de ação"
+          title={isLimitReached ? "Limite do plano atingido" : "Adicionar consulta ou horário"}
+        >
+          <Plus size={24} />
+        </button>
+      )}
+
+      {/* Modal de Ações */}
+      {selectedDate && (
+        <AgendaActionsModal
+          isOpen={isActionsModalOpen}
+          onClose={handleCloseActionsModal}
+          onSelectBook={handleSelectBook}
+          onSelectAddSlot={handleSelectAddSlot}
+          isLimitReached={isLimitReached}
+        />
+      )}
     </div>
   );
 }

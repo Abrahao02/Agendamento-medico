@@ -41,7 +41,7 @@ export default function FinancialTimeline({
 
   return (
     <div className="financial-timeline-card">
-      <h3 className="financial-timeline-title">Linha do tempo financeira</h3>
+      <h3 className="standardized-h3">Linha do tempo financeira</h3>
       
       <div className="financial-timeline-content">
         <div className="financial-timeline-values">

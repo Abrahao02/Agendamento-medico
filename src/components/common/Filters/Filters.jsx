@@ -66,7 +66,10 @@ export default function Filters({
   const onDateFromChange = onDateFromChangeProp ?? dateRange?.onChange?.from ?? dateRange?.onChange;
   const onDateToChange = onDateToChangeProp ?? dateRange?.onChange?.to ?? dateRange?.onChange;
   
-  const month = monthProp ?? monthYear?.month;
+  // Garantir que month preserve null quando "Todos" está selecionado
+  // Se monthProp for explicitamente passado (mesmo que null), usa ele
+  // Caso contrário, tenta usar monthYear?.month
+  const month = monthProp !== undefined ? monthProp : monthYear?.month;
   const year = yearProp ?? monthYear?.year;
   const onMonthChange = onMonthChangeProp ?? monthYear?.onChange?.month ?? monthYear?.onChange;
   const onYearChange = onYearChangeProp ?? monthYear?.onChange?.year ?? monthYear?.onChange;

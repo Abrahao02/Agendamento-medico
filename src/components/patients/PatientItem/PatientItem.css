@@ -6,7 +6,7 @@
   border: 1px solid var(--border-light);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-md);
-  transition: all 0.2s ease;
+  transition: all 0.2s ease, box-shadow 0.3s ease;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
 }
@@ -146,25 +146,54 @@
 
 /* Conteúdo colapsável */
 .patient-item-details-wrapper {
-  padding: var(--spacing-lg) 0;
   border-top: 1px solid var(--border-light);
   margin-top: var(--spacing-xs);
-  animation: slideDown 0.3s ease-out;
   overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s ease;
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+  border-top-color: transparent;
+}
+
+.patient-item-details-wrapper.expanded {
+  max-height: 1000px;
+  opacity: 1;
+  padding: var(--spacing-lg) 0;
+  border-top-color: var(--border-light);
+}
+
+/* Efeito visual suave no item quando expandir */
+.patient-item.patient-item-expanded {
+  box-shadow: var(--shadow-md);
+}
+
+.patient-item-details-wrapper.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+  border-top-color: transparent;
+}
+
+.patient-item-details {
+  /* Removido transições de transform - animação será via keyframes */
+}
+
+.patient-item-details-wrapper.expanded .patient-item-details {
+  animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
+    transform: translateY(-20px);
   }
   to {
     opacity: 1;
-    max-height: 500px;
-    padding-top: var(--spacing-lg);
-    padding-bottom: var(--spacing-lg);
+    transform: translateY(0);
   }
 }
 

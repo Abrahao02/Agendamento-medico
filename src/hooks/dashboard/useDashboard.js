@@ -43,6 +43,8 @@ export const useDashboard = () => {
     filteredAvailability,
     financialForecast,
     financialBreakdown,
+    previousMonthsSummary,
+    futureMonthsComparison,
   } = useDashboardStats({
     appointments,
     availability,
@@ -88,5 +90,7 @@ export const useDashboard = () => {
     patients,
     financialForecast,
     financialBreakdown,
+    previousMonthsSummary,
+    futureMonthsComparison,
   };
 };

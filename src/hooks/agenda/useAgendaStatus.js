@@ -79,6 +79,7 @@ export const useAgendaStatus = (appointments, setAppointments) => {
 
   return {
     statusUpdates,
+    setStatusUpdates,
     lockedAppointments,
     hasUnsavedChanges,
     handleStatusChange,

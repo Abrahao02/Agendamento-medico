@@ -58,17 +58,23 @@ export const isDateInRange = (date, startDate, endDate) => {
 /**
  * Verifica se uma data pertence a um mês/ano específico
  * @param {string} dateStr - Data a verificar (YYYY-MM-DD)
- * @param {number} month - Mês (1-12)
+ * @param {number|null} month - Mês (1-12) ou null para filtrar apenas por ano
  * @param {number} year - Ano
  * @returns {boolean}
  */
 export const isDateInMonthYear = (dateStr, month, year) => {
   if (!dateStr) return false;
-  if (!month || !year) return true;
+  if (!year) return true; // Se não tem ano, não filtra
   
   const extracted = extractYearMonth(dateStr);
   if (!extracted) return false;
   
+  // Se não tem mês, filtra apenas por ano
+  if (!month) {
+    return extracted.year === Number(year);
+  }
+  
+  // Se tem mês e ano, filtra por ambos
   return extracted.month === Number(month) && extracted.year === Number(year);
 };
 

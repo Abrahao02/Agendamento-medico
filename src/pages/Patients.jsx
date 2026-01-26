@@ -164,25 +164,39 @@ export default function Patients() {
 
       {/* Botão Fixo (FAB) */}
       <button
+        type="button"
         className="fab-button"
-        onClick={() => setIsModalOpen(true)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsModalOpen(true);
+        }}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onTouchStart={(e) => {
+          e.stopPropagation();
+        }}
         aria-label="Adicionar novo paciente"
       >
         <UserPlus size={24} />
       </button>
 
       {/* Modal de Adicionar Paciente */}
-      <AddPatientModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSubmit={handleAddPatient}
-        newPatient={newPatient}
-        updateNewPatientField={updateNewPatientField}
-        handleWhatsappChange={handleWhatsappChange}
-        isWhatsappDuplicate={isWhatsappDuplicate}
-        error={error}
-        loading={saving !== null}
-      />
+      {isModalOpen && (
+        <AddPatientModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSubmit={handleAddPatient}
+          newPatient={newPatient}
+          updateNewPatientField={updateNewPatientField}
+          handleWhatsappChange={handleWhatsappChange}
+          isWhatsappDuplicate={isWhatsappDuplicate}
+          error={error}
+          loading={saving !== null}
+        />
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 // 📁 src/components/agenda/AppointmentItem.jsx - VERSÃO FINAL
 // ============================================
 import React from "react";
-import { Lock, MessageCircle, UserPlus } from "lucide-react";
+import { Lock, MessageCircle, UserPlus, Trash2 } from "lucide-react";
 import Button from "../common/Button";
 import { APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
 import { useAppointmentItem } from "../../hooks/agenda/useAppointmentItem";
@@ -16,7 +16,8 @@ function AppointmentItem({
   isLocked,
   onStatusChange,
   onAddPatient,
-  onSendWhatsapp
+  onSendWhatsapp,
+  onDeleteAppointment,
 }) {
   const { state, handlers } = useAppointmentItem({ 
     isLocked, 
@@ -92,6 +93,20 @@ function AppointmentItem({
             leftIcon={<UserPlus size={16} />}
           >
             Adicionar
+          </Button>
+        )}
+
+        {onDeleteAppointment && (
+          <Button
+            type="button"
+            size="sm"
+            variant="danger"
+            onClick={() => onDeleteAppointment(appt.id)}
+            disabled={isLocked}
+            leftIcon={<Trash2 size={16} />}
+            title={isLocked ? "Não é possível excluir consulta bloqueada" : "Excluir consulta"}
+          >
+            Excluir
           </Button>
         )}
       </div>

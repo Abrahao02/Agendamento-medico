@@ -19,7 +19,7 @@ export default function FinancialForecast({
 
   return (
     <div className="financial-forecast-card">
-      <h3 className="financial-forecast-title">Previsão financeira do período</h3>
+      <h3 className="standardized-h3">Previsão financeira do período</h3>
       
       <div className="financial-forecast-total">
         <span className="financial-forecast-total-label">Valor total esperado:</span>

@@ -7,13 +7,15 @@ import React from "react";
 import FinancialOverviewCards from "./FinancialOverviewCards";
 import FinancialForecast from "./FinancialForecast";
 import FinancialTimeline from "./FinancialTimeline";
-import FinancialBreakdown from "./FinancialBreakdown";
+import PreviousMonthsSummary from "./PreviousMonthsSummary";
+import FutureMonthsComparison from "./FutureMonthsComparison";
 import "./FinancialView.css";
 
 export default function FinancialView({
   stats,
   financialForecast = {},
-  financialBreakdown = {},
+  previousMonthsSummary = {},
+  futureMonthsComparison = {},
 }) {
   return (
     <>
@@ -41,12 +43,17 @@ export default function FinancialView({
         />
       </div>
 
-      {/* BLOCO 4 - Detalhamento por status */}
-      <FinancialBreakdown
-        confirmed={financialBreakdown.confirmed || { realized: 0, future: 0 }}
-        pending={financialBreakdown.pending || { total: 0 }}
-        noShow={financialBreakdown.noShow || { total: 0 }}
-      />
+      {/* BLOCO 4 - Comparação mensal (passado e futuro) */}
+      <div className="financial-breakdown-grid">
+        <PreviousMonthsSummary
+          months={previousMonthsSummary.months || []}
+          totals={previousMonthsSummary.totals || { received: 0, noShow: 0, total: 0 }}
+        />
+        <FutureMonthsComparison
+          months={futureMonthsComparison.months || []}
+          totals={futureMonthsComparison.totals || { confirmed: 0, pending: 0, total: 0 }}
+        />
+      </div>
     </>
   );
 }

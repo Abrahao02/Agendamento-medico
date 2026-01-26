@@ -49,6 +49,8 @@ export default function Dashboard() {
     patients,
     financialForecast,
     financialBreakdown,
+    previousMonthsSummary,
+    futureMonthsComparison,
   } = useDashboard();
 
   if (loading) return <ContentLoading message="Carregando dashboard..." height={400} />;
@@ -120,6 +122,8 @@ export default function Dashboard() {
         patients={patients}
         financialForecast={financialForecast}
         financialBreakdown={financialBreakdown}
+        previousMonthsSummary={previousMonthsSummary}
+        futureMonthsComparison={futureMonthsComparison}
       />
     </div>
   );

@@ -10,7 +10,7 @@ export default function PublicScheduleHeader({ doctor }) {
         </div>
         <div>
           <h1>Agende sua consulta</h1>
-          <p className="doctor-name">Dr(a). {doctor.name}</p>
+          <p className="doctor-name">Profissional da Saúde: {doctor.name}</p>
         </div>
       </div>
     </header>
