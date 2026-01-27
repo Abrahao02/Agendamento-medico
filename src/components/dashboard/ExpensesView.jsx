@@ -5,23 +5,33 @@ import { auth } from "../../services/firebase";
 import ExpenseFormModal from "./ExpenseFormModal/ExpenseFormModal";
 import { formatCurrency } from "../../utils/formatter/formatCurrency";
 import { parseLocalDate } from "../../utils/date/dateHelpers";
-import Filters from "../common/Filters";
 
 import "./ExpensesView.css";
 
 export default function ExpensesView({
   expenses: propExpenses = [],
   availableLocations = [],
-  selectedDateFrom,
-  selectedDateTo,
-  selectedLocation,
-  setSelectedDateFrom,
-  setSelectedDateTo,
-  setSelectedMonth,
-  setSelectedYear,
-  setSelectedLocation,
-  resetFilters,
+  // Props de filtro (reservadas para uso futuro)
+  selectedDateFrom: _selectedDateFrom,
+  selectedDateTo: _selectedDateTo,
+  selectedLocation: _selectedLocation,
+  setSelectedDateFrom: _setSelectedDateFrom,
+  setSelectedDateTo: _setSelectedDateTo,
+  setSelectedMonth: _setSelectedMonth,
+  setSelectedYear: _setSelectedYear,
+  setSelectedLocation: _setSelectedLocation,
+  resetFilters: _resetFilters,
 }) {
+  // Silenciar warnings de variáveis não usadas (reservadas para filtros futuros)
+  void _selectedDateFrom;
+  void _selectedDateTo;
+  void _selectedLocation;
+  void _setSelectedDateFrom;
+  void _setSelectedDateTo;
+  void _setSelectedMonth;
+  void _setSelectedYear;
+  void _setSelectedLocation;
+  void _resetFilters;
   const user = auth.currentUser;
   const expenses = propExpenses;
 

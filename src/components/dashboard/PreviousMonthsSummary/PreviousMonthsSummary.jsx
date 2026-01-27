@@ -32,7 +32,7 @@ export default function PreviousMonthsSummary({
         {/* Lista de meses */}
         {months.length > 0 ? (
           <div className="previous-months-list">
-            {months.map((monthData, index) => {
+            {months.map((monthData) => {
               const monthName = getMonthName(monthData.month);
               const monthTotal = monthData.received + monthData.noShow;
               const isCurrent = isCurrentMonth(monthData);

@@ -29,7 +29,8 @@ vi.mock('../services/interfaces', () => ({
 
 // Mock do Firebase config
 vi.mock('../services/firebase/config', () => ({
-  default: {},
+  default: {}, // app
+  db: {},      // Firestore db instance
 }));
 
 vi.mock('firebase/functions', () => ({

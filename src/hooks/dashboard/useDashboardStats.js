@@ -335,17 +335,7 @@ export const useDashboardStats = ({
     
     // Cria mapa de pacientes por WhatsApp para acesso rápido
     const patientsMap = createPatientsMap(patients);
-    
-    // Console.log para debug: mostrar nomes dos pacientes únicos
-    const uniquePatientsList = Array.from(uniquePatientWhatsapps).map(whatsapp => {
-      const patient = patientsMap[whatsapp];
-      return {
-        whatsapp,
-        name: patient?.name || patient?.referenceName || DEFAULT_PATIENT_NAME,
-        referenceName: patient?.referenceName || null,
-      };
-    });
-    
+
     // Determina o mês/ano que está sendo visualizado
     let targetMonth = filterOptions.selectedMonth;
     let targetYear = filterOptions.selectedYear;

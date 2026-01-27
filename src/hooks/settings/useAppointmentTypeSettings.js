@@ -3,7 +3,7 @@
 // Responsabilidade: Configurações de tipo de atendimento
 // ============================================
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { modeToSelection, selectionToMode, APPOINTMENT_TYPE_SELECTION } from "../../constants/appointmentType";
 
 export const useAppointmentTypeSettings = (initialConfig = null) => {
@@ -19,7 +19,8 @@ export const useAppointmentTypeSettings = (initialConfig = null) => {
   const [newLocationName, setNewLocationName] = useState("");
   const [newLocationValue, setNewLocationValue] = useState("");
 
-  const savedConfigRef = useRef(initialConfig);
+  // Usar estado ao invés de ref para permitir reatividade no useMemo
+  const [savedConfig, setSavedConfig] = useState(initialConfig);
 
   const updateAppointmentTypeField = (field, value) => {
     setAppointmentTypeConfig((prev) => {
@@ -54,7 +55,7 @@ export const useAppointmentTypeSettings = (initialConfig = null) => {
       locations: data?.locations || [],
     };
     setAppointmentTypeConfig(config);
-    savedConfigRef.current = config;
+    setSavedConfig(config);
   };
 
   const addLocation = (location) => {
@@ -90,18 +91,17 @@ export const useAppointmentTypeSettings = (initialConfig = null) => {
   };
 
   const hasUnsavedChanges = useMemo(() => {
-    if (!savedConfigRef.current) return false;
-    const saved = savedConfigRef.current;
+    if (!savedConfig) return false;
     const currentSelection = appointmentTypeConfig.selection || modeToSelection(appointmentTypeConfig.mode, appointmentTypeConfig.fixedType);
-    const savedSelection = saved.selection || modeToSelection(saved.mode, saved.fixedType);
+    const savedSelection = savedConfig.selection || modeToSelection(savedConfig.mode, savedConfig.fixedType);
 
     return (
       currentSelection !== savedSelection ||
-      saved.defaultValueOnline !== appointmentTypeConfig.defaultValueOnline ||
-      saved.defaultValuePresencial !== appointmentTypeConfig.defaultValuePresencial ||
-      JSON.stringify(saved.locations || []) !== JSON.stringify(appointmentTypeConfig.locations || [])
+      savedConfig.defaultValueOnline !== appointmentTypeConfig.defaultValueOnline ||
+      savedConfig.defaultValuePresencial !== appointmentTypeConfig.defaultValuePresencial ||
+      JSON.stringify(savedConfig.locations || []) !== JSON.stringify(appointmentTypeConfig.locations || [])
     );
-  }, [appointmentTypeConfig]);
+  }, [appointmentTypeConfig, savedConfig]);
 
   const getConfigForSave = () => {
     const selection = appointmentTypeConfig.selection || APPOINTMENT_TYPE_SELECTION.ONLINE_ONLY;
@@ -118,7 +118,7 @@ export const useAppointmentTypeSettings = (initialConfig = null) => {
   };
 
   const markAsSaved = () => {
-    savedConfigRef.current = { ...appointmentTypeConfig };
+    setSavedConfig({ ...appointmentTypeConfig });
   };
 
   return {

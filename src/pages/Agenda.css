@@ -258,6 +258,17 @@
   margin-bottom: var(--spacing-xl);
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .agenda-form-card {
   background: var(--bg-primary);
   border: 1px solid var(--border-light);
@@ -265,6 +276,7 @@
   padding: var(--spacing-xl);
   box-shadow: var(--shadow-sm);
   margin-bottom: var(--spacing-xl);
+  animation: fadeInUp 0.3s ease-out;
 }
 
 .agenda-form-card h3 {

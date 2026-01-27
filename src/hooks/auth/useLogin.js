@@ -1,7 +1,7 @@
 // ============================================
 // 📁 src/hooks/useLogin.js - REFATORADO
 // ============================================
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser, resetPassword } from "../../services/firebase/auth.service";
 

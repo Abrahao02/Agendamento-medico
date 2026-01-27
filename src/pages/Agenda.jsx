@@ -162,14 +162,7 @@ export default function Agenda() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   
   const currentDateStr = formatDateToQuery(currentDate);
-  
-  // Obter slots do dia atual
-  const dayAvailability = appointments.length > 0 || freeSlots.length > 0 
-    ? { date: currentDateStr, slots: freeSlots } 
-    : null;
-  
-  const allSlots = dayAvailability?.slots || [];
-  
+
   // Handlers para modal de ações
   const handleOpenActionsModal = () => {
     setIsActionsModalOpen(true);
@@ -256,9 +249,8 @@ export default function Agenda() {
     };
     
     const isFixed = appointmentTypeConfig.mode === "fixed";
-    const showLocationSelector = bookAppointmentType === "presencial" && appointmentTypeConfig.locations?.length > 0;
     const requiresLocation = bookAppointmentType === "presencial" && appointmentTypeConfig.locations?.length > 0;
-    
+
     if (requiresLocation && !bookLocationId) {
       setFormError("Selecione um local para atendimento presencial");
       return;

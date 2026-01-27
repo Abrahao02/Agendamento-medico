@@ -3,7 +3,7 @@
 // Formulário para adicionar horário disponível
 // ============================================
 import { createPortal } from 'react-dom';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Clock, X } from 'lucide-react';
 import { useModal } from '../../../hooks/common/useModal';
 import { getAppointmentTypeOptions } from '../../../constants/appointmentType';
@@ -23,12 +23,7 @@ export default function AddSlotForm({
 }) {
   const { handleBackdropClick, handleKeyDown } = useModal(isOpen, onClose);
 
-  const [slotTime, setSlotTime] = useState("12:00");
-  const [appointmentType, setAppointmentType] = useState(APPOINTMENT_TYPE.ONLINE);
-  const [locationIds, setLocationIds] = useState([]);
-  const [error, setError] = useState("");
-
-  const appointmentTypeConfig = useMemo(() => 
+  const appointmentTypeConfig = useMemo(() =>
     doctor?.appointmentTypeConfig || {
       mode: APPOINTMENT_TYPE_MODE.DISABLED,
       fixedType: APPOINTMENT_TYPE.ONLINE,
@@ -37,7 +32,7 @@ export default function AddSlotForm({
     [doctor?.appointmentTypeConfig]
   );
 
-  const locations = useMemo(() => 
+  const locations = useMemo(() =>
     appointmentTypeConfig.locations || [],
     [appointmentTypeConfig.locations]
   );
@@ -45,29 +40,30 @@ export default function AddSlotForm({
   const showAppointmentType = appointmentTypeConfig.mode !== APPOINTMENT_TYPE_MODE.DISABLED;
   const isFixed = appointmentTypeConfig.mode === APPOINTMENT_TYPE_MODE.FIXED;
 
-  // Inicializar appointmentType baseado na config
-  useEffect(() => {
-    if (isFixed) {
-      setAppointmentType(appointmentTypeConfig.fixedType);
-    }
-  }, [isFixed, appointmentTypeConfig.fixedType]);
+  // Estados inicializados com valores derivados da config
+  const [slotTime, setSlotTime] = useState("12:00");
+  const [appointmentType, setAppointmentType] = useState(() =>
+    isFixed ? appointmentTypeConfig.fixedType : APPOINTMENT_TYPE.ONLINE
+  );
+  const [locationIds, setLocationIds] = useState([]);
+  const [localError, setLocalError] = useState("");
 
-  // Resetar formulário quando modal fecha
-  useEffect(() => {
-    if (!isOpen) {
-      setSlotTime("12:00");
-      setAppointmentType(isFixed ? appointmentTypeConfig.fixedType : APPOINTMENT_TYPE.ONLINE);
-      setLocationIds([]);
-      setError("");
-    }
-  }, [isOpen, isFixed, appointmentTypeConfig.fixedType]);
+  // Erro combinado: local ou externo
+  const error = localError || externalError || "";
 
-  // Atualizar erro externo
-  useEffect(() => {
-    if (externalError) {
-      setError(externalError);
-    }
-  }, [externalError]);
+  // Função para resetar o formulário
+  const resetForm = () => {
+    setSlotTime("12:00");
+    setAppointmentType(isFixed ? appointmentTypeConfig.fixedType : APPOINTMENT_TYPE.ONLINE);
+    setLocationIds([]);
+    setLocalError("");
+  };
+
+  // Handler para fechar modal (reseta form + chama onClose)
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
 
   const handleLocationToggle = (locationName) => {
     setLocationIds(prev => {
@@ -81,17 +77,17 @@ export default function AddSlotForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setLocalError("");
 
     if (!slotTime) {
-      setError("Selecione um horário");
+      setLocalError("Selecione um horário");
       return;
     }
 
     const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
     const normalizedTime = normalizeTo24Hour(slotTime);
     if (!timeRegex.test(normalizedTime)) {
-      setError("Horário inválido. Use o formato HH:mm (ex: 14:30)");
+      setLocalError("Horário inválido. Use o formato HH:mm (ex: 14:30)");
       return;
     }
 
@@ -102,7 +98,7 @@ export default function AddSlotForm({
     });
 
     if (slotExists) {
-      setError("Este horário já existe");
+      setLocalError("Este horário já existe");
       return;
     }
 
@@ -115,9 +111,9 @@ export default function AddSlotForm({
     const result = await onSubmit(slotData);
 
     if (result?.success) {
-      onClose();
+      handleClose();
     } else if (result?.error) {
-      setError(result.error);
+      setLocalError(result.error);
     }
   };
 
@@ -137,7 +133,7 @@ export default function AddSlotForm({
         <div className="add-slot-modal__header">
           <button
             className="add-slot-modal__close"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Fechar modal"
             disabled={loading}
           >
@@ -224,7 +220,7 @@ export default function AddSlotForm({
           <button
             type="button"
             className="add-slot-modal__button add-slot-modal__button--cancel"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={loading}
           >
             Cancelar

@@ -3,7 +3,7 @@
 // Formulário para marcar consulta
 // ============================================
 import { createPortal } from 'react-dom';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar, X } from 'lucide-react';
 import { useModal } from '../../../hooks/common/useModal';
 import { getAppointmentTypeOptions } from '../../../constants/appointmentType';
@@ -25,15 +25,7 @@ export default function BookAppointmentForm({
 }) {
   const { handleBackdropClick, handleKeyDown } = useModal(isOpen, onClose);
 
-  const [selectedPatient, setSelectedPatient] = useState("");
-  const [selectedTime, setSelectedTime] = useState("12:00");
-  const [appointmentType, setAppointmentType] = useState(APPOINTMENT_TYPE.ONLINE);
-  const [locationId, setLocationId] = useState("");
-  const [priceMode, setPriceMode] = useState("patient");
-  const [dealValue, setDealValue] = useState("");
-  const [error, setError] = useState("");
-
-  const appointmentTypeConfig = useMemo(() => 
+  const appointmentTypeConfig = useMemo(() =>
     doctor?.appointmentTypeConfig || {
       mode: APPOINTMENT_TYPE_MODE.DISABLED,
       fixedType: APPOINTMENT_TYPE.ONLINE,
@@ -42,51 +34,59 @@ export default function BookAppointmentForm({
     [doctor?.appointmentTypeConfig]
   );
 
-  const locations = useMemo(() => 
+  const locations = useMemo(() =>
     appointmentTypeConfig.locations || [],
     [appointmentTypeConfig.locations]
   );
 
   const showAppointmentType = appointmentTypeConfig.mode !== APPOINTMENT_TYPE_MODE.DISABLED;
   const isFixed = appointmentTypeConfig.mode === APPOINTMENT_TYPE_MODE.FIXED;
+
+  // Estados inicializados com valores derivados da config
+  const [selectedPatient, setSelectedPatient] = useState("");
+  const [selectedTime, setSelectedTime] = useState("12:00");
+  const [appointmentType, setAppointmentType] = useState(() =>
+    isFixed ? appointmentTypeConfig.fixedType : APPOINTMENT_TYPE.ONLINE
+  );
+  const [locationId, setLocationId] = useState("");
+  const [priceMode, setPriceMode] = useState("patient");
+  const [dealValue, setDealValue] = useState("");
+  const [localError, setLocalError] = useState("");
+
+  // Erro combinado: local ou externo
+  const error = localError || externalError || "";
+
+  // Variáveis derivadas que dependem de appointmentType
   const showLocationSelector = appointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length > 0;
   const requiresLocation = appointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length > 1;
 
-  // Inicializar appointmentType baseado na config
-  useEffect(() => {
-    if (isFixed) {
-      setAppointmentType(appointmentTypeConfig.fixedType);
-    }
-  }, [isFixed, appointmentTypeConfig.fixedType]);
+  // Função para resetar o formulário
+  const resetForm = () => {
+    setSelectedPatient("");
+    setSelectedTime("12:00");
+    setAppointmentType(isFixed ? appointmentTypeConfig.fixedType : APPOINTMENT_TYPE.ONLINE);
+    setLocationId("");
+    setPriceMode("patient");
+    setDealValue("");
+    setLocalError("");
+  };
 
-  // Inicializar locationId quando presencial e há apenas um local
-  useEffect(() => {
-    if (appointmentType === APPOINTMENT_TYPE.PRESENCIAL && locations.length === 1) {
+  // Handler para fechar modal (reseta form + chama onClose)
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  // Handler para mudança de tipo de consulta
+  const handleAppointmentTypeChange = (newType) => {
+    setAppointmentType(newType);
+    // Auto-selecionar location quando presencial e há apenas 1 local
+    if (newType === APPOINTMENT_TYPE.PRESENCIAL && locations.length === 1) {
       setLocationId(locations[0].name);
-    } else if (appointmentType === APPOINTMENT_TYPE.ONLINE) {
+    } else if (newType === APPOINTMENT_TYPE.ONLINE) {
       setLocationId("");
     }
-  }, [appointmentType, locations]);
-
-  // Resetar formulário quando modal fecha
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedPatient("");
-      setSelectedTime("12:00");
-      setAppointmentType(isFixed ? appointmentTypeConfig.fixedType : APPOINTMENT_TYPE.ONLINE);
-      setLocationId("");
-      setPriceMode("patient");
-      setDealValue("");
-      setError("");
-    }
-  }, [isOpen, isFixed, appointmentTypeConfig.fixedType]);
-
-  // Atualizar erro externo
-  useEffect(() => {
-    if (externalError) {
-      setError(externalError);
-    }
-  }, [externalError]);
+  };
 
   const sortedPatients = useMemo(
     () =>
@@ -111,45 +111,45 @@ export default function BookAppointmentForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setLocalError("");
 
     if (!selectedPatient) {
-      setError("Selecione um paciente");
+      setLocalError("Selecione um paciente");
       return;
     }
 
     if (!selectedTime) {
-      setError("Selecione um horário");
+      setLocalError("Selecione um horário");
       return;
     }
 
     const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
     const normalizedTime = normalizeTo24Hour(selectedTime);
     if (!timeRegex.test(normalizedTime)) {
-      setError("Horário inválido. Use o formato HH:mm (ex: 14:30)");
+      setLocalError("Horário inválido. Use o formato HH:mm (ex: 14:30)");
       return;
     }
 
     if (isTimeBooked(normalizedTime)) {
-      setError("Este horário já está ocupado. Selecione outro horário.");
+      setLocalError("Este horário já está ocupado. Selecione outro horário.");
       return;
     }
 
     if (requiresLocation && !locationId) {
-      setError("Selecione pelo menos um local para atendimento presencial");
+      setLocalError("Selecione pelo menos um local para atendimento presencial");
       return;
     }
 
     let customValue = null;
     if (priceMode === "deal") {
       if (!dealValue.trim()) {
-        setError("Informe o valor do acordo");
+        setLocalError("Informe o valor do acordo");
         return;
       }
       const normalizedDealValue = dealValue.replace(",", ".");
       const parsedValue = Number(normalizedDealValue);
       if (Number.isNaN(parsedValue) || parsedValue < 0) {
-        setError("Valor inválido. Use 0,00 ou maior.");
+        setLocalError("Valor inválido. Use 0,00 ou maior.");
         return;
       }
       customValue = parsedValue;
@@ -164,9 +164,9 @@ export default function BookAppointmentForm({
     });
 
     if (result?.success) {
-      onClose();
+      handleClose();
     } else if (result?.error) {
-      setError(result.error);
+      setLocalError(result.error);
     }
   };
 
@@ -186,7 +186,7 @@ export default function BookAppointmentForm({
         <div className="book-appointment-modal__header">
           <button
             className="book-appointment-modal__close"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Fechar modal"
             disabled={loading}
           >
@@ -250,7 +250,7 @@ export default function BookAppointmentForm({
               <select
                 id="book-appointment-type"
                 value={appointmentType}
-                onChange={(e) => setAppointmentType(e.target.value)}
+                onChange={(e) => handleAppointmentTypeChange(e.target.value)}
                 disabled={loading || isLimitReached}
               >
                 {getAppointmentTypeOptions().map((option) => (
@@ -339,7 +339,7 @@ export default function BookAppointmentForm({
           <button
             type="button"
             className="book-appointment-modal__button book-appointment-modal__button--cancel"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={loading}
           >
             Cancelar
