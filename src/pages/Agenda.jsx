@@ -2,7 +2,7 @@
 // 📁 src/pages/Agenda.jsx - MELHORADO
 // Seguindo padrão do Dashboard com cards separados
 // ============================================
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useOutletContext, useLocation } from "react-router-dom";
 import { Plus } from "lucide-react";
 
@@ -107,6 +107,7 @@ export default function Agenda() {
   const toast = useToast();
   const [isActionsModalOpen, setIsActionsModalOpen] = useState(false);
   const [formMode, setFormMode] = useState(null); // "book" | "add" | null
+  const formSectionRef = useRef(null);
   
   // Estados para formulário de marcar consulta
   const [selectedPatient, setSelectedPatient] = useState("");
@@ -141,7 +142,20 @@ export default function Agenda() {
       }
     }
   }, [doctor]);
-  
+
+  // Scroll para centralizar o formulário quando formMode muda
+  useEffect(() => {
+    if (formSectionRef.current && formMode) {
+      setTimeout(() => {
+        formSectionRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest",
+        });
+      }, 100);
+    }
+  }, [formMode]);
+
   // Estados para modal de confirmação de exclusão
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedAppointmentForDelete, setSelectedAppointmentForDelete] = useState(null);
@@ -393,7 +407,7 @@ export default function Agenda() {
 
       {/* Seção de Formulários */}
       {formMode && (
-        <div className="agenda-form-section">
+        <div className="agenda-form-section" ref={formSectionRef}>
           {formMode === "add" && (
             <div className="agenda-form-card">
               <h3>Adicionar Horário Disponível</h3>
