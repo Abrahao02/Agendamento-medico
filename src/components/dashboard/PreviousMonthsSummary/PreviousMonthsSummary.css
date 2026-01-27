@@ -33,7 +33,8 @@
   gap: var(--spacing-md);
   flex: 1;
   overflow-y: auto;
-  max-height: calc(500px - 200px); /* Altura total menos espaço do total fixo */
+  max-height: calc(500px - 200px);
+  /* Altura total menos espaço do total fixo */
   padding-right: var(--spacing-xs);
 }
 
@@ -257,5 +258,15 @@
 
   .previous-months-total-value {
     font-size: 1.2rem;
+  }
+
+  .previous-months-total {
+    position: static;
+    margin-top: var(--spacing-md);
+  }
+
+  .previous-months-list {
+    max-height: none;
+    overflow-y: visible;
   }
 }

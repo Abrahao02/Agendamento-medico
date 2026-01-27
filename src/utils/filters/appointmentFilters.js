@@ -16,6 +16,7 @@ import { STATUS_GROUPS } from "../../constants/appointmentStatus";
  * @property {number} [selectedYear] - Ano selecionado
  * @property {boolean} [futureOnly] - Apenas datas futuras
  * @property {string} [specificDate] - Data específica (YYYY-MM-DD)
+ * @property {string} [selectedLocation] - Local de atendimento ("all" para todos)
  */
 
 /**
@@ -50,7 +51,8 @@ export const filterAppointments = (appointments, config = {}) => {
     selectedMonth,
     selectedYear,
     futureOnly = false,
-    specificDate
+    specificDate,
+    selectedLocation
   } = config;
 
   return appointments.filter((appointment) => {
@@ -83,7 +85,15 @@ export const filterAppointments = (appointments, config = {}) => {
       return false;
     }
 
-    // 6. Filtro de Busca (nome ou telefone)
+    // 6. Filtro de Location
+    // Appointments sem location aparecem apenas quando filtro = "all"
+    if (selectedLocation && selectedLocation !== "all") {
+      if (!appointment.location || appointment.location !== selectedLocation) {
+        return false;
+      }
+    }
+
+    // 7. Filtro de Busca (nome ou telefone)
     if (searchTerm) {
       const search = searchTerm.toLowerCase().trim();
       if (!search) return true;

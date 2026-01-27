@@ -63,6 +63,7 @@ Documentação completa dos serviços Firebase:
 - Appointment Service
 - Availability Service
 - Email Service
+- Expenses Service
 
 **Status:** ✅ Completa e revisada
 
@@ -110,6 +111,9 @@ Documentação completa de todos os hooks do projeto:
 
 - **Settings Hooks**
   - `useSettings(user)` - Configurações do médico
+
+- **Expenses Hooks**
+  - `useExpenses(doctorId)` - Gestão de gastos (real-time)
 
 - **Common Hooks**
   - `useDashboardLayout()` - Layout do dashboard
@@ -224,6 +228,11 @@ Documentação dos principais componentes reutilizáveis:
   - `FeaturesSection` - Seção de funcionalidades
   - `PricingSection` - Seção de planos
   - `Footer` - Rodapé
+
+- **Expenses Components**
+  - `ExpenseForm` - Formulário de despesa
+  - `ExpensesList` - Lista de despesas
+  - `DeleteExpenseModal` - Modal de exclusão
 
 **Status:** ✅ Completa e nova
 

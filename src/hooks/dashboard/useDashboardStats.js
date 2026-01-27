@@ -12,22 +12,25 @@ import {
 import {
   calculateAppointmentStats,
 } from "../../utils/stats/appointmentStats";
-import { 
+import {
   calculateNewPatientsStats,
   calculateGroupedStats,
   calculateConversionRate,
-  calculateMonthComparison 
+  calculateMonthComparison
 } from "../../utils/stats/enhancedStats";
 import { STATUS_GROUPS, isStatusInGroup, APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
 import { DEFAULT_PATIENT_NAME } from "../../constants/formatters";
 import { getPreviousMonth } from "../../utils/date/getPreviousMonth";
 import { convertTimestampToDate } from "../../utils/firebase/convertTimestamp";
 import { createPatientsMap } from "../../utils/patients/createPatientsMap";
+import { useExpenseStats } from "../expenses/useExpenseStats";
+import { getTodayLocal } from "../../utils/date/dateHelpers";
 
 export const useDashboardStats = ({
   appointments,
   availability,
   patients,
+  expenses = [],
   filterOptions,
 }) => {
   const filteredAppointments = useMemo(() =>
@@ -77,46 +80,53 @@ export const useDashboardStats = ({
   }, [appointments]);
 
   const revenueStats = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const confirmed = filteredAppointments.filter(appointment => 
+    const today = getTodayLocal(); // "2026-01-26" - timezone-safe
+
+    const confirmed = filteredAppointments.filter(appointment =>
       isStatusInGroup(appointment.status, 'CONFIRMED')
     );
-    
+
     const realized = confirmed
       .filter(appointment => {
-        const appointmentDate = new Date(`${appointment.date}T${appointment.time || "00:00"}:00`);
-        return appointmentDate < today;
+        // Comparação direta de strings YYYY-MM-DD (evita timezone issues)
+        return appointment.date < today;
       })
       .reduce((sum, appointment) => {
         const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
-    
+
     const predicted = confirmed
       .filter(appointment => {
-        const appointmentDate = new Date(`${appointment.date}T${appointment.time || "00:00"}:00`);
-        return appointmentDate >= today;
+        // Comparação direta de strings YYYY-MM-DD (evita timezone issues)
+        return appointment.date >= today;
       })
       .reduce((sum, appointment) => {
         const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
-    
+
     // Em risco: Pendentes (PENDING + MESSAGE_SENT) + Não compareceu (NO_SHOW)
     const atRisk = filteredAppointments
       .filter(appointment => {
-        return STATUS_GROUPS.PENDING.includes(appointment.status) || 
+        return STATUS_GROUPS.PENDING.includes(appointment.status) ||
                appointment.status === APPOINTMENT_STATUS.NO_SHOW;
       })
       .reduce((sum, appointment) => {
         const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
-    
+
     return { realized, predicted, atRisk };
   }, [filteredAppointments]);
+
+  // Expense Stats - Calculate expenses filtered by date
+  const expenseStats = useExpenseStats(expenses, filterOptions);
+
+  // Net Income - Revenue Realized minus Total Expenses
+  const netIncome = useMemo(() => {
+    return revenueStats.realized - expenseStats.total;
+  }, [revenueStats.realized, expenseStats.total]);
 
   const newPatientsRevenue = useMemo(() => {
     const newPatientsSet = new Set();
@@ -287,8 +297,11 @@ export const useDashboardStats = ({
       monthlyFinancialComparison,
       confirmedComparison,
       pendingComparison,
+      totalExpenses: expenseStats.total,
+      netIncome,
+      expensesByLocation: expenseStats.byLocation,
     };
-  }, [filteredAppointments, slotsOpen, appointments, filterOptions, totalPatients, revenueStats, newPatientsRevenue, newPatientsRevenuePercent, monthlyFinancialComparison, confirmedComparison, pendingComparison]);
+  }, [filteredAppointments, slotsOpen, appointments, filterOptions, totalPatients, revenueStats, newPatientsRevenue, newPatientsRevenuePercent, monthlyFinancialComparison, confirmedComparison, pendingComparison, expenseStats, netIncome]);
 
   const statusSummary = useMemo(() => {
     const grouped = calculateGroupedStats(filteredAppointments);
@@ -473,10 +486,10 @@ export const useDashboardStats = ({
   // Previous Months Summary - Agrupado por mês (Recebido + Pendentes + Não compareceu)
   // Filtra apenas o ano atual (inclui meses anteriores e o mês atual do ano atual)
   const previousMonthsSummary = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const currentMonth = today.getMonth() + 1; // 1-12
-    const currentYear = today.getFullYear();
+    const today = getTodayLocal(); // "2026-01-26" - timezone-safe
+    const todayDate = new Date(); // Usar apenas para extrair mês/ano
+    const currentMonth = todayDate.getMonth() + 1; // 1-12
+    const currentYear = todayDate.getFullYear();
     
     // Filtrar appointments apenas do ano atual (meses anteriores e o mês atual)
     const allMonthsAppointments = appointments.filter(appointment => {
@@ -513,8 +526,8 @@ export const useDashboardStats = ({
       
       // Recebido (Confirmados realizados)
       if (isStatusInGroup(appointment.status, 'CONFIRMED')) {
-        const appointmentDateTime = new Date(`${appointment.date}T${appointment.time || "00:00"}:00`);
-        if (appointmentDateTime < today) {
+        // Comparação direta de strings YYYY-MM-DD (evita timezone issues)
+        if (appointment.date < today) {
           monthData.received += Number(price);
         }
       }
@@ -548,10 +561,10 @@ export const useDashboardStats = ({
 
   // Future Months Comparison - Meses atuais e futuros com appointments (previsão)
   const futureMonthsComparison = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const currentMonth = today.getMonth() + 1; // 1-12
-    const currentYear = today.getFullYear();
+    const today = getTodayLocal(); // "2026-01-26" - timezone-safe
+    const todayDate = new Date(); // Usar apenas para extrair mês/ano
+    const currentMonth = todayDate.getMonth() + 1; // 1-12
+    const currentYear = todayDate.getFullYear();
     
     // Filtrar appointments do mês atual e futuros do ano atual
     const futureMonthsAppointments = appointments.filter(appointment => {
@@ -588,9 +601,9 @@ export const useDashboardStats = ({
       
       // Confirmados futuros (status confirmado E data futura)
       if (isStatusInGroup(appointment.status, 'CONFIRMED')) {
-        const appointmentDateTime = new Date(`${appointment.date}T${appointment.time || "00:00"}:00`);
+        // Comparação direta de strings YYYY-MM-DD (evita timezone issues)
         // Apenas appointments com data futura (não passada)
-        if (appointmentDateTime >= today) {
+        if (appointment.date >= today) {
           monthData.confirmed += Number(price);
         }
       }
@@ -622,12 +635,16 @@ export const useDashboardStats = ({
     };
   }, [appointments]);
 
+  // Extract filtered expenses from expenseStats
+  const filteredExpenses = useMemo(() => expenseStats.filtered, [expenseStats]);
+
   return {
     stats: enhancedStats,
     statusSummary,
     detailsSummary,
     filteredAppointments,
     filteredAvailability,
+    filteredExpenses,
     financialForecast,
     financialBreakdown,
     previousMonthsSummary,

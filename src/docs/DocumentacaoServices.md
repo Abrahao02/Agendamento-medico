@@ -13,8 +13,9 @@
 6. [Appointment Service](#-appointment-service)
 7. [Availability Service](#-availability-service)
 8. [Email Service](#-email-service)
-9. [Sugestões de Melhorias](#-sugestões-de-melhorias)
-10. [Guia de Uso Completo](#-guia-de-uso-completo)
+9. [Expenses Service](#-expenses-service)
+10. [Sugestões de Melhorias](#-sugestões-de-melhorias)
+11. [Guia de Uso Completo](#-guia-de-uso-completo)
 
 ---
 
@@ -31,7 +32,8 @@ src/services/firebase/
 ├── doctors.service.js    # CRUD de médicos
 ├── patients.service.js   # CRUD de pacientes
 ├── appointments.service.js # CRUD de agendamentos
-└── availability.service.js # CRUD de disponibilidade
+├── availability.service.js # CRUD de disponibilidade
+└── expenses.service.js     # CRUD de gastos (real-time)
 
 src/services/api/
 └── email.service.js      # Envio de emails
@@ -1011,6 +1013,96 @@ await setDayAvailability("doc123", "2026-01-15", []);
 - `slots` com valores: substitui todos os horários
 - Remove duplicatas automaticamente
 - Ordena slots automaticamente
+
+---
+
+## 💸 Expenses Service
+
+### **createExpense(data)**
+
+Registra um novo gasto/despesa.
+
+```javascript
+import { createExpense } from "@/services/firebase/expenses.service";
+
+const result = await createExpense({
+  doctorId: "doc123",
+  description: "Aluguel Consultório",
+  value: 1500.00,
+  date: "2026-01-05",
+  location: "Consultório Centro" // Opcional
+});
+
+if (result.success) {
+  // Gasto criado: result.expenseId
+}
+```
+
+**Parâmetros:**
+```typescript
+{
+  doctorId: string,
+  description: string,
+  value: number,
+  date: string,        // YYYY-MM-DD
+  location?: string
+}
+```
+
+**Retorna:**
+```typescript
+{
+  success: true,
+  expenseId: string
+}
+```
+
+---
+
+### **subscribeToExpenses(doctorId, callback)**
+
+Listener em tempo real para gastos de um médico.
+
+```javascript
+import { subscribeToExpenses } from "@/services/firebase/expenses.service";
+
+const unsubscribe = subscribeToExpenses("doc123", (result) => {
+  if (result.success) {
+    // result.data contém array de gastos atualizado
+  }
+});
+
+// Cleanup
+unsubscribe();
+```
+
+**Retorna:** Função de unsubscribe.
+
+---
+
+### **updateExpense(expenseId, data)**
+
+Atualiza um gasto existente.
+
+```javascript
+import { updateExpense } from "@/services/firebase/expenses.service";
+
+await updateExpense("exp123", {
+  value: 1600.00
+});
+```
+
+---
+
+### **deleteExpense(expenseId)**
+
+Remove um gasto.
+
+```javascript
+import { deleteExpense } from "@/services/firebase/expenses.service";
+
+await deleteExpense("exp123");
+```
 
 ---
 

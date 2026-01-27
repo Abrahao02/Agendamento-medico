@@ -19,11 +19,13 @@ export default function FinancialView({
 }) {
   return (
     <>
-      {/* BLOCO 1 - Visão geral (3 cards principais) */}
+      {/* BLOCO 1 - Visão geral (5 cards principais) */}
       <FinancialOverviewCards
         received={stats.revenueRealized || 0}
         toReceive={stats.revenuePredicted || 0}
         atRisk={stats.revenueAtRisk || 0}
+        totalExpenses={stats.totalExpenses || 0}
+        netIncome={stats.netIncome || 0}
       />
 
       {/* Layout em grid para os outros blocos */}
@@ -40,6 +42,7 @@ export default function FinancialView({
         <FinancialTimeline
           realized={stats.revenueRealized || 0}
           toReceive={stats.revenuePredicted || 0}
+          totalExpenses={stats.totalExpenses || 0}
         />
       </div>
 

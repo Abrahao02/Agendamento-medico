@@ -481,6 +481,7 @@
   background-color: var(--bg-secondary);
   min-height: 100dvh;
   overflow-x: hidden;
+  overflow-y: auto;
   transition: margin-left var(--transition-base);
 }
 

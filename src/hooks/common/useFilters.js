@@ -169,6 +169,7 @@ export const useFilters = ({
       onReset();
     }
     setIsDatePickerOpen(false);
+    setManualActiveFilter(null);
   };
 
   return {

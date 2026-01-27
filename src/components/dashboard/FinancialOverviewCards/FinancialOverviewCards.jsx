@@ -4,7 +4,7 @@
 // ============================================
 
 import React from "react";
-import { DollarSign, Clock, AlertTriangle } from "lucide-react";
+import { DollarSign, Clock, AlertTriangle, TrendingDown, TrendingUp } from "lucide-react";
 import StatsCard from "../StatsCard";
 import { formatCurrency } from "../../../utils/formatter/formatCurrency";
 import "./FinancialOverviewCards.css";
@@ -13,6 +13,8 @@ export default function FinancialOverviewCards({
   received = 0,
   toReceive = 0,
   atRisk = 0,
+  totalExpenses = 0,
+  netIncome = 0,
 }) {
   return (
     <div className="financial-overview-cards">
@@ -36,6 +38,20 @@ export default function FinancialOverviewCards({
         title="Em risco"
         subtitle="Pendentes / faltas"
         color="amber"
+      />
+      <StatsCard
+        icon={TrendingDown}
+        value={formatCurrency(totalExpenses)}
+        title="Gastos"
+        subtitle="Despesas do período"
+        color="red"
+      />
+      <StatsCard
+        icon={netIncome >= 0 ? TrendingUp : TrendingDown}
+        value={formatCurrency(netIncome)}
+        title="Lucro Líquido"
+        subtitle="Recebido - Gastos"
+        color={netIncome >= 0 ? "green" : "red"}
       />
     </div>
   );

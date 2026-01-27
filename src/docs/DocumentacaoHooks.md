@@ -15,10 +15,11 @@
 5. [Appointments Hooks](#-appointments-hooks)
 6. [Patients Hooks](#-patients-hooks)
 7. [Settings Hooks](#-settings-hooks)
-8. [Stripe Hooks](#-stripe-hooks) ✨ NOVO
-9. [Common Hooks](#-common-hooks)
-10. [Guia de Uso](#-guia-de-uso)
-11. [Novos Hooks](#-novos-hooks) ✨ NOVO
+8. [Expenses Hooks](#-expenses-hooks) ✨ NOVO
+9. [Stripe Hooks](#-stripe-hooks) ✨ NOVO
+10. [Common Hooks](#-common-hooks)
+11. [Guia de Uso](#-guia-de-uso)
+12. [Novos Hooks](#-novos-hooks) ✨ NOVO
 
 ---
 
@@ -43,6 +44,8 @@ src/hooks/
 │   └── usePatients.js
 ├── settings/
 │   └── useSettings.js
+├── expenses/
+│   └── useExpenses.js
 └── stripe/
     ├── useStripeCheckout.js
     ├── useCancelSubscription.js
@@ -691,6 +694,53 @@ function Patients() {
 - ✅ Valida duplicatas antes de adicionar
 - ✅ Gerencia estado de edição por paciente
 - ✅ Calcula total de consultas por paciente
+
+---
+
+
+---
+
+## 💸 Expenses Hooks
+
+### `useExpenses(doctorId)`
+
+**Arquivo:** `src/hooks/expenses/useExpenses.js`
+
+Hook para gerenciar e sincronizar gastos em tempo real.
+
+#### **Uso**
+
+```javascript
+import { useExpenses } from "@/hooks/expenses/useExpenses";
+
+function FinancialDashboard() {
+  const user = auth.currentUser;
+  const { expenses, loading, error } = useExpenses(user.uid);
+
+  // ...
+}
+```
+
+#### **Parâmetros**
+
+- `doctorId` (string): ID do médico autenticado
+
+#### **Estados Retornados**
+
+```typescript
+{
+  expenses: Array<Expense>,
+  loading: boolean,
+  error: string | null
+}
+```
+
+#### **Comportamento**
+
+- ✅ Inscreve-se para atualizações em tempo real (onSnapshot)
+- ✅ Carrega gastos ordenados por data (decrescente)
+- ✅ Gerencia estado de loading e erro automaticamente
+- ✅ Realiza cleanup da subscription ao desmontar
 
 ---
 
