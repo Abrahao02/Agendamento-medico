@@ -17,6 +17,10 @@ export default function CalendarWrapper({
         onClickDay={onSelectDate}
         tileContent={tileContent}
         locale="pt-BR"
+        calendarType="gregory"
+        formatShortWeekday={(locale, date) =>
+          date.toLocaleDateString(locale, { weekday: 'narrow' })
+        }
       />
       
       <CalendarLegend />
