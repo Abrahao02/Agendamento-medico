@@ -3,7 +3,7 @@
 // Responsabilidade: Configurações de WhatsApp
 // ============================================
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { generateWhatsappMessage } from "../../utils/message/generateWhatsappMessage";
 
 export const useWhatsappSettings = (initialConfig = null) => {
@@ -14,7 +14,8 @@ export const useWhatsappSettings = (initialConfig = null) => {
     showValue: true,
   });
 
-  const savedConfigRef = useRef(initialConfig);
+  // Usar estado ao invés de ref para permitir reatividade no useMemo
+  const [savedConfig, setSavedConfig] = useState(initialConfig);
 
   const updateWhatsappField = (field, value) => {
     setWhatsappConfig((prev) => ({
@@ -31,19 +32,18 @@ export const useWhatsappSettings = (initialConfig = null) => {
       showValue: data?.showValue ?? true,
     };
     setWhatsappConfig(config);
-    savedConfigRef.current = config;
+    setSavedConfig(config);
   };
 
   const hasUnsavedChanges = useMemo(() => {
-    if (!savedConfigRef.current) return false;
-    const saved = savedConfigRef.current;
+    if (!savedConfig) return false;
     return (
-      saved.intro !== whatsappConfig.intro ||
-      saved.body !== whatsappConfig.body ||
-      saved.footer !== whatsappConfig.footer ||
-      saved.showValue !== whatsappConfig.showValue
+      savedConfig.intro !== whatsappConfig.intro ||
+      savedConfig.body !== whatsappConfig.body ||
+      savedConfig.footer !== whatsappConfig.footer ||
+      savedConfig.showValue !== whatsappConfig.showValue
     );
-  }, [whatsappConfig]);
+  }, [whatsappConfig, savedConfig]);
 
   const generatePreview = (
     patientName = "João",
@@ -71,7 +71,7 @@ export const useWhatsappSettings = (initialConfig = null) => {
   });
 
   const markAsSaved = () => {
-    savedConfigRef.current = { ...whatsappConfig };
+    setSavedConfig({ ...whatsappConfig });
   };
 
   return {

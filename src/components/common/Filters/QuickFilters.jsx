@@ -7,6 +7,7 @@ import React from "react";
 import { RotateCcw } from "lucide-react";
 import Button from "../Button";
 import DateRangePicker from "../DateRangePicker";
+import LocationFilter from "./LocationFilter";
 import "./Filters.css";
 
 export default function QuickFilters({
@@ -18,8 +19,13 @@ export default function QuickFilters({
   state,
   refs,
   handlers,
+  showLocation = false,
+  selectedLocation,
+  onLocationChange,
+  availableLocations,
 }) {
   return (
+    // eslint-disable-next-line react-hooks/refs
     <div className="quick-filters-wrapper" ref={refs.pickerWrapperRef}>
       <div className="quick-filters-row">
         <div className="quick-filters">
@@ -60,7 +66,7 @@ export default function QuickFilters({
             >
               Personalizado
             </button>
-            
+
             {/* DateRangePicker - aparece apenas quando Personalizado é clicado */}
             <DateRangePicker
               dateFrom={dateFrom}
@@ -73,6 +79,16 @@ export default function QuickFilters({
               onClose={() => handlers.setIsDatePickerOpen(false)}
             />
           </div>
+
+          {/* Filtro de Location - ao lado do Personalizado */}
+          {showLocation && selectedLocation !== undefined && (
+            <LocationFilter
+              selectedLocation={selectedLocation}
+              onLocationChange={onLocationChange}
+              availableLocations={availableLocations}
+              disabled={false}
+            />
+          )}
         </div>
         
         {/* Botão Limpar filtros à direita */}

@@ -38,7 +38,6 @@ export default function DashboardLayout() {
     appointmentsThisMonth,
     isLimitReached,
     loading,
-    handleLogout,
   } = useDashboardLayout();
 
   if (loading) {

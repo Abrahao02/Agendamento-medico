@@ -55,7 +55,7 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-undef': 'warn', // Tornar warning para require, process, etc em arquivos de teste
+      'no-undef': 'off', // Desabilitar para permitir require, process, etc em arquivos Node.js
     },
   },
 ])

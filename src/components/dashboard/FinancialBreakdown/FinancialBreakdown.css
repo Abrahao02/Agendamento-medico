@@ -11,12 +11,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-.financial-breakdown-title {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-lg) 0;
-}
+/* Título agora usa standardized-h3 */
 
 .financial-breakdown-sections {
   display: flex;

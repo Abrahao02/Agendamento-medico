@@ -16,9 +16,10 @@
 6. [Availability Components](#-availability-components)
 7. [Landing Components](#-landing-components)
 8. [Public Schedule Components](#-public-schedule-components)
-9. [Stripe Components](#-stripe-components) ✨ NOVO
-10. [Settings Components](#-settings-components) ✨ NOVO
-11. [Guia de Uso](#-guia-de-uso)
+9. [Expenses Components](#-expenses-components) ✨ NOVO
+10. [Stripe Components](#-stripe-components) ✨ NOVO
+11. [Settings Components](#-settings-components) ✨ NOVO
+12. [Guia de Uso](#-guia-de-uso)
 
 ---
 
@@ -48,6 +49,10 @@ src/components/
 │   ├── DetailsSummary/
 │   ├── FinancialChart/
 │   └── MonthlyComparison/
+├── expenses/            # Componentes de gastos
+│   ├── ExpenseForm/
+│   ├── ExpensesList/
+│   └── DeleteExpenseModal/
 ├── layout/              # Componentes de layout
 │   ├── Header/
 │   └── Sidebar/
@@ -760,6 +765,65 @@ Componente que exibe detalhamento financeiro por status.
 - ✅ Ícones representativos (CheckCircle, Clock, XCircle)
 - ✅ Cores semânticas por status
 - ✅ Valores formatados em R$ (padrão brasileiro)
+
+---
+
+
+---
+
+## 💸 Expenses Components
+
+### `ExpenseForm`
+
+**Arquivo:** `src/components/expenses/ExpenseForm/ExpenseForm.jsx`
+
+Formulário para adicionar ou editar despesas.
+
+#### **Props**
+
+```typescript
+{
+  onSubmit: (data: ExpenseData) => void,
+  initialData?: ExpenseData,
+  loading?: boolean,
+  onCancel?: () => void
+}
+```
+
+### `ExpensesList`
+
+**Arquivo:** `src/components/expenses/ExpensesList/ExpensesList.jsx`
+
+Lista de despesas com opções de filtro e ações.
+
+#### **Props**
+
+```typescript
+{
+  expenses: Array<Expense>,
+  loading: boolean,
+  onEdit: (expense: Expense) => void,
+  onDelete: (expenseId: string) => void
+}
+```
+
+### `DeleteExpenseModal`
+
+**Arquivo:** `src/components/expenses/DeleteExpenseModal/DeleteExpenseModal.jsx`
+
+Modal de confirmação para exclusão de despesa.
+
+#### **Props**
+
+```typescript
+{
+  isOpen: boolean,
+  onClose: () => void,
+  onConfirm: () => void,
+  loading?: boolean,
+  expenseDescription?: string
+}
+```
 
 ---
 

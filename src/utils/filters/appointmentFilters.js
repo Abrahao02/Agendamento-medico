@@ -16,6 +16,7 @@ import { STATUS_GROUPS } from "../../constants/appointmentStatus";
  * @property {number} [selectedYear] - Ano selecionado
  * @property {boolean} [futureOnly] - Apenas datas futuras
  * @property {string} [specificDate] - Data específica (YYYY-MM-DD)
+ * @property {string} [selectedLocation] - Local de atendimento ("all" para todos)
  */
 
 /**
@@ -50,7 +51,8 @@ export const filterAppointments = (appointments, config = {}) => {
     selectedMonth,
     selectedYear,
     futureOnly = false,
-    specificDate
+    specificDate,
+    selectedLocation
   } = config;
 
   return appointments.filter((appointment) => {
@@ -71,8 +73,9 @@ export const filterAppointments = (appointments, config = {}) => {
       }
     } 
     // 4. Filtro de Mês/Ano (se não houver range)
-    else if (selectedMonth && selectedYear) {
-      if (!isDateInMonthYear(appointment.date, selectedMonth, selectedYear)) {
+    // Permite filtrar apenas por ano quando o mês não está selecionado
+    else if (selectedYear) {
+      if (!isDateInMonthYear(appointment.date, selectedMonth || null, selectedYear)) {
         return false;
       }
     }
@@ -82,7 +85,15 @@ export const filterAppointments = (appointments, config = {}) => {
       return false;
     }
 
-    // 6. Filtro de Busca (nome ou telefone)
+    // 6. Filtro de Location
+    // Appointments sem location aparecem apenas quando filtro = "all"
+    if (selectedLocation && selectedLocation !== "all") {
+      if (!appointment.location || appointment.location !== selectedLocation) {
+        return false;
+      }
+    }
+
+    // 7. Filtro de Busca (nome ou telefone)
     if (searchTerm) {
       const search = searchTerm.toLowerCase().trim();
       if (!search) return true;

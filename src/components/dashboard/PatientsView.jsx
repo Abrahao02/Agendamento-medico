@@ -4,7 +4,6 @@
 // ============================================
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Calendar, Clock, CheckCircle, AlertTriangle } from "lucide-react";
 import StatsCard from "./StatsCard";
 import DetailsSummary from "./DetailsSummary";
@@ -27,7 +26,6 @@ export default function PatientsView({
   filteredAvailability = [],
   patients = [],
 }) {
-  const navigate = useNavigate();
   const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
   const [isAvailableSlotsModalOpen, setIsAvailableSlotsModalOpen] = useState(false);
   const [isConfirmedModalOpen, setIsConfirmedModalOpen] = useState(false);

@@ -8,8 +8,6 @@ import "./DetailsSummary.css";
 export default function DetailsSummary({
   newPatients = 0,
   newPatientsTotal = 0,
-  messagesSent = 0,
-  messagesSentTotal = 0,
   noShow = 0,
   noShowTotal = 0,
   cancelled = 0,
@@ -62,7 +60,7 @@ export default function DetailsSummary({
     <div className="details-summary-card">
       <h3 className="standardized-h3">Indicadores do período</h3>
       <div className="details-list">
-        {items.map((item, index) => {
+        {items.map((item) => {
           const isNewPatientsClickable = item.label === "Novos pacientes" && onNewPatientsClick && item.current > 0;
           const isNoShowClickable = item.label === "Taxa de faltas" && onNoShowClick && item.current > 0;
           const isCancelledClickable = item.label === "Taxa de cancelamento" && onCancelledClick && item.current > 0;

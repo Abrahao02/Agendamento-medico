@@ -1,7 +1,7 @@
 import AppointmentItem from "./AppointmentItem";
 import "./AppointmentList.css";
 
-export default function AppointmentList({ appointments, lockedAppointments, statusUpdates, referenceNames, patientStatus, onStatusChange, onAddPatient, onSendWhatsapp }) {
+export default function AppointmentList({ appointments, lockedAppointments, statusUpdates, referenceNames, patientStatus, onStatusChange, onAddPatient, onSendWhatsapp, onDeleteAppointment }) {
   if (appointments.length === 0) return <p>Nenhum paciente agendado para este dia.</p>;
 
   return (
@@ -17,6 +17,7 @@ export default function AppointmentList({ appointments, lockedAppointments, stat
           onStatusChange={onStatusChange}
           onAddPatient={onAddPatient}
           onSendWhatsapp={onSendWhatsapp}
+          onDeleteAppointment={onDeleteAppointment}
         />
       ))}
     </ul>

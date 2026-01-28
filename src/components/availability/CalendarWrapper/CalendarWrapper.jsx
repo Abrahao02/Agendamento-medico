@@ -8,9 +8,7 @@ import './CalendarWrapper.css';
 export default function CalendarWrapper({ 
   value, 
   onSelectDate, 
-  tileContent,
-  appointments, // <- novo
-  availability  // <- novo
+  tileContent
 }) {
   return (
     <div className="calendar-wrapper">
@@ -19,6 +17,10 @@ export default function CalendarWrapper({
         onClickDay={onSelectDate}
         tileContent={tileContent}
         locale="pt-BR"
+        calendarType="gregory"
+        formatShortWeekday={(locale, date) =>
+          date.toLocaleDateString(locale, { weekday: 'narrow' })
+        }
       />
       
       <CalendarLegend />

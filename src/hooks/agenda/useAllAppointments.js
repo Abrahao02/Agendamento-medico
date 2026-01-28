@@ -86,7 +86,7 @@ export default function useAllAppointments(user) {
     };
 
     fetchAppointments();
-  }, [user]);
+  }, [user, identifyLockedAppointments]);
 
   // FILTRO PRINCIPAL
   const filteredAppointments = useMemo(() => {

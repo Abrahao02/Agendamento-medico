@@ -1,7 +1,7 @@
 // ============================================
 // 📁 src/hooks/useLogin.js - REFATORADO
 // ============================================
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser, resetPassword } from "../../services/firebase/auth.service";
 
@@ -16,14 +16,12 @@ export function useLogin() {
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [resetError, setResetError] = useState("");
 
-  useEffect(() => {
-    setError("");
-    setResetError("");
-  }, [form.email, form.password]);
-
   function handleChange(e) {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+    // Limpar erros quando o usuário começar a digitar
+    if (error) setError("");
+    if (resetError) setResetError("");
   }
 
   function toggleShowPassword() {

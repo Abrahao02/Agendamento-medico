@@ -6,57 +6,60 @@
 import { useMemo } from "react";
 import { filterAppointments } from "../../utils/filters/appointmentFilters";
 import {
-  filterAvailableSlots,
-  countAvailableSlots,
   countAvailableSlotsIncludingCancelled,
   getAvailableSlotsIncludingCancelled,
 } from "../../utils/filters/availabilityFilters";
 import {
   calculateAppointmentStats,
 } from "../../utils/stats/appointmentStats";
-import { 
+import {
   calculateNewPatientsStats,
   calculateGroupedStats,
   calculateConversionRate,
-  calculateMonthComparison 
+  calculateMonthComparison
 } from "../../utils/stats/enhancedStats";
 import { STATUS_GROUPS, isStatusInGroup, APPOINTMENT_STATUS } from "../../constants/appointmentStatus";
 import { DEFAULT_PATIENT_NAME } from "../../constants/formatters";
 import { getPreviousMonth } from "../../utils/date/getPreviousMonth";
 import { convertTimestampToDate } from "../../utils/firebase/convertTimestamp";
 import { createPatientsMap } from "../../utils/patients/createPatientsMap";
+import { useExpenseStats } from "../expenses/useExpenseStats";
+import { getTodayLocal } from "../../utils/date/dateHelpers";
 
 export const useDashboardStats = ({
   appointments,
   availability,
   patients,
+  expenses = [],
   filterOptions,
 }) => {
-  const priceMap = useMemo(() => {
-    const prices = {};
-    patients.forEach(patient => {
-      prices[patient.whatsapp] = patient.price || 0;
-    });
-    return prices;
-  }, [patients]);
-
   const filteredAppointments = useMemo(() =>
-    filterAppointments(appointments, filterOptions), 
+    filterAppointments(appointments, filterOptions),
     [appointments, filterOptions]
   );
+
+  // Appointments filtrados apenas por location (para cálculos que ignoram filtro de data)
+  const locationFilteredAppointments = useMemo(() => {
+    if (!filterOptions.selectedLocation || filterOptions.selectedLocation === "all") {
+      return appointments;
+    }
+    return appointments.filter(appointment =>
+      appointment.location === filterOptions.selectedLocation
+    );
+  }, [appointments, filterOptions.selectedLocation]);
 
   const filteredAvailability = useMemo(() => {
     const inPeriod = filterAppointments(availability.map(day => ({ date: day.date })), filterOptions);
     const filteredDates = new Set(inPeriod.map(day => day.date));
     const filteredAvailabilityForPeriod = availability.filter(d => filteredDates.has(d.date));
     
-    // Usa getAvailableSlotsIncludingCancelled para incluir slots cancelados (igual ao contador)
+    // Usa filteredAppointments ao invés de appointments para respeitar o filtro de mês
     return getAvailableSlotsIncludingCancelled(
       filteredAvailabilityForPeriod,
-      appointments,
+      filteredAppointments,
       new Date()
     );
-  }, [availability, appointments, filterOptions]);
+  }, [availability, filteredAppointments, filterOptions]);
 
   // ✅ Conta slots disponíveis incluindo cancelados (similar ao publicSchedule)
   const slotsOpen = useMemo(() => {
@@ -69,12 +72,13 @@ export const useDashboardStats = ({
       filteredDates.includes(d.date)
     );
     
+    // Usa filteredAppointments ao invés de appointments para respeitar o filtro de mês
     return countAvailableSlotsIncludingCancelled(
       filteredAvailabilityForPeriod,
-      appointments,
+      filteredAppointments,
       new Date()
     );
-  }, [availability, appointments, filterOptions]);
+  }, [availability, filteredAppointments, filterOptions]);
 
   const totalPatients = useMemo(() => {
     const uniquePatients = new Set(
@@ -86,46 +90,53 @@ export const useDashboardStats = ({
   }, [appointments]);
 
   const revenueStats = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const confirmed = filteredAppointments.filter(appointment => 
+    const today = getTodayLocal(); // "2026-01-26" - timezone-safe
+
+    const confirmed = filteredAppointments.filter(appointment =>
       isStatusInGroup(appointment.status, 'CONFIRMED')
     );
-    
+
     const realized = confirmed
       .filter(appointment => {
-        const appointmentDate = new Date(`${appointment.date}T${appointment.time || "00:00"}:00`);
-        return appointmentDate < today;
+        // Comparação direta de strings YYYY-MM-DD (evita timezone issues)
+        return appointment.date < today;
       })
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
-    
+
     const predicted = confirmed
       .filter(appointment => {
-        const appointmentDate = new Date(`${appointment.date}T${appointment.time || "00:00"}:00`);
-        return appointmentDate >= today;
+        // Comparação direta de strings YYYY-MM-DD (evita timezone issues)
+        return appointment.date >= today;
       })
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
-    
+
     // Em risco: Pendentes (PENDING + MESSAGE_SENT) + Não compareceu (NO_SHOW)
     const atRisk = filteredAppointments
       .filter(appointment => {
-        return STATUS_GROUPS.PENDING.includes(appointment.status) || 
+        return STATUS_GROUPS.PENDING.includes(appointment.status) ||
                appointment.status === APPOINTMENT_STATUS.NO_SHOW;
       })
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
-    
+
     return { realized, predicted, atRisk };
-  }, [filteredAppointments, priceMap]);
+  }, [filteredAppointments]);
+
+  // Expense Stats - Calculate expenses filtered by date
+  const expenseStats = useExpenseStats(expenses, filterOptions);
+
+  // Net Income - Revenue Realized minus Total Expenses
+  const netIncome = useMemo(() => {
+    return revenueStats.realized - expenseStats.total;
+  }, [revenueStats.realized, expenseStats.total]);
 
   const newPatientsRevenue = useMemo(() => {
     const newPatientsSet = new Set();
@@ -155,10 +166,10 @@ export const useDashboardStats = ({
       .filter(appointment => isStatusInGroup(appointment.status, 'CONFIRMED') && 
                    newPatientsSet.has(appointment.patientWhatsapp))
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
-  }, [appointments, filteredAppointments, priceMap]);
+  }, [appointments, filteredAppointments]);
 
   const newPatientsRevenuePercent = useMemo(() => {
     const totalRevenue = revenueStats.realized + revenueStats.predicted;
@@ -179,7 +190,7 @@ export const useDashboardStats = ({
     const prevRevenue = previousMonthAppointments
       .filter(appointment => isStatusInGroup(appointment.status, 'CONFIRMED'))
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
     
@@ -191,7 +202,7 @@ export const useDashboardStats = ({
       value: Math.abs(percentChange),
       trend: percentChange > 0 ? "up" : percentChange < 0 ? "down" : "neutral"
     };
-  }, [revenueStats, appointments, filterOptions.selectedMonth, filterOptions.selectedYear, priceMap]);
+  }, [revenueStats, appointments, filterOptions.selectedMonth, filterOptions.selectedYear]);
 
   const confirmedComparison = useMemo(() => {
     const { month: prevMonth, year: prevYear } = getPreviousMonth(filterOptions.selectedMonth, filterOptions.selectedYear);
@@ -247,7 +258,7 @@ export const useDashboardStats = ({
 
   const enhancedStats = useMemo(() => {
     // calculateAppointmentStats já filtra por STATUS_GROUPS.ACTIVE internamente
-    const basicStats = calculateAppointmentStats(filteredAppointments, priceMap);
+    const basicStats = calculateAppointmentStats(filteredAppointments);
     
     // Total de agendamentos (ACTIVE já inclui NO_SHOW)
     const totalAppointments = filteredAppointments.filter(appointment => 
@@ -296,8 +307,11 @@ export const useDashboardStats = ({
       monthlyFinancialComparison,
       confirmedComparison,
       pendingComparison,
+      totalExpenses: expenseStats.total,
+      netIncome,
+      expensesByLocation: expenseStats.byLocation,
     };
-  }, [filteredAppointments, priceMap, slotsOpen, appointments, filterOptions, totalPatients, revenueStats, newPatientsRevenue, newPatientsRevenuePercent, monthlyFinancialComparison, confirmedComparison, pendingComparison]);
+  }, [filteredAppointments, slotsOpen, appointments, filterOptions, totalPatients, revenueStats, newPatientsRevenue, newPatientsRevenuePercent, monthlyFinancialComparison, confirmedComparison, pendingComparison, expenseStats, netIncome]);
 
   const statusSummary = useMemo(() => {
     const grouped = calculateGroupedStats(filteredAppointments);
@@ -331,22 +345,7 @@ export const useDashboardStats = ({
     
     // Cria mapa de pacientes por WhatsApp para acesso rápido
     const patientsMap = createPatientsMap(patients);
-    
-    // Console.log para debug: mostrar nomes dos pacientes únicos
-    const uniquePatientsList = Array.from(uniquePatientWhatsapps).map(whatsapp => {
-      const patient = patientsMap[whatsapp];
-      return {
-        whatsapp,
-        name: patient?.name || patient?.referenceName || DEFAULT_PATIENT_NAME,
-        referenceName: patient?.referenceName || null,
-      };
-    });
-    console.log('📊 Pacientes únicos no período:', {
-      total: totalUniquePatients,
-      pacientes: uniquePatientsList,
-      nomes: uniquePatientsList.map(p => p.name),
-    });
-    
+
     // Determina o mês/ano que está sendo visualizado
     let targetMonth = filterOptions.selectedMonth;
     let targetYear = filterOptions.selectedYear;
@@ -437,14 +436,14 @@ export const useDashboardStats = ({
     const pendingTotal = filteredAppointments
       .filter(appointment => STATUS_GROUPS.PENDING.includes(appointment.status))
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
     
     const noShowTotal = filteredAppointments
       .filter(appointment => appointment.status === APPOINTMENT_STATUS.NO_SHOW)
       .reduce((sum, appointment) => {
-        const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+        const price = appointment.value || 0;
         return sum + Number(price);
       }, 0);
     
@@ -456,7 +455,7 @@ export const useDashboardStats = ({
       noShow: noShowTotal,
       total,
     };
-  }, [filteredAppointments, priceMap, revenueStats]);
+  }, [filteredAppointments, revenueStats]);
 
   // Financial Breakdown - Detalhamento por status
   const financialBreakdown = useMemo(() => {
@@ -469,7 +468,7 @@ export const useDashboardStats = ({
         total: filteredAppointments
           .filter(appointment => STATUS_GROUPS.PENDING.includes(appointment.status))
           .reduce((sum, appointment) => {
-            const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+            const price = appointment.value || 0;
             return sum + Number(price);
           }, 0),
       },
@@ -477,12 +476,171 @@ export const useDashboardStats = ({
         total: filteredAppointments
           .filter(appointment => appointment.status === APPOINTMENT_STATUS.NO_SHOW)
           .reduce((sum, appointment) => {
-            const price = appointment.value || priceMap[appointment.patientWhatsapp] || 0;
+            const price = appointment.value || 0;
             return sum + Number(price);
           }, 0),
       },
     };
-  }, [filteredAppointments, priceMap, revenueStats]);
+  }, [filteredAppointments, revenueStats]);
+
+  // Previous Months Summary - Agrupado por mês (Recebido + Pendentes + Não compareceu)
+  // Filtra apenas o ano atual (inclui meses anteriores e o mês atual do ano atual)
+  // Respeita o filtro de location
+  const previousMonthsSummary = useMemo(() => {
+    const today = getTodayLocal(); // "2026-01-26" - timezone-safe
+    const todayDate = new Date(); // Usar apenas para extrair mês/ano
+    const currentMonth = todayDate.getMonth() + 1; // 1-12
+    const currentYear = todayDate.getFullYear();
+
+    // Filtrar appointments apenas do ano atual (meses anteriores e o mês atual)
+    // Usa locationFilteredAppointments para respeitar o filtro de local
+    const allMonthsAppointments = locationFilteredAppointments.filter(appointment => {
+      if (!appointment.date) return false;
+      
+      const appointmentDate = new Date(appointment.date);
+      const appointmentMonth = appointmentDate.getMonth() + 1;
+      const appointmentYear = appointmentDate.getFullYear();
+      
+      // Apenas ano atual, incluindo meses anteriores e o mês atual
+      return appointmentYear === currentYear && appointmentMonth <= currentMonth;
+    });
+    
+    // Agrupar por mês/ano
+    const monthsMap = new Map();
+    
+    allMonthsAppointments.forEach(appointment => {
+      const appointmentDate = new Date(appointment.date);
+      const month = appointmentDate.getMonth() + 1;
+      const year = appointmentDate.getFullYear();
+      const key = `${year}-${String(month).padStart(2, '0')}`;
+      
+      if (!monthsMap.has(key)) {
+        monthsMap.set(key, {
+          year,
+          month,
+          received: 0,
+          noShow: 0,
+        });
+      }
+      
+      const monthData = monthsMap.get(key);
+      const price = appointment.value || 0;
+      
+      // Recebido (Confirmados realizados)
+      if (isStatusInGroup(appointment.status, 'CONFIRMED')) {
+        // Comparação direta de strings YYYY-MM-DD (evita timezone issues)
+        if (appointment.date < today) {
+          monthData.received += Number(price);
+        }
+      }
+      
+      // Não compareceu
+      if (appointment.status === APPOINTMENT_STATUS.NO_SHOW) {
+        monthData.noShow += Number(price);
+      }
+    });
+    
+    // Converter para array e ordenar (mais recente primeiro)
+    const monthsArray = Array.from(monthsMap.values())
+      .sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year;
+        return b.month - a.month;
+      });
+    
+    // Calcular totais
+    const totals = monthsArray.reduce((acc, month) => ({
+      received: acc.received + month.received,
+      noShow: acc.noShow + month.noShow,
+    }), { received: 0, noShow: 0 });
+    
+    totals.total = totals.received + totals.noShow;
+    
+    return {
+      months: monthsArray,
+      totals,
+    };
+  }, [locationFilteredAppointments]);
+
+  // Future Months Comparison - Meses atuais e futuros com appointments (previsão)
+  // Respeita o filtro de location
+  const futureMonthsComparison = useMemo(() => {
+    const today = getTodayLocal(); // "2026-01-26" - timezone-safe
+    const todayDate = new Date(); // Usar apenas para extrair mês/ano
+    const currentMonth = todayDate.getMonth() + 1; // 1-12
+    const currentYear = todayDate.getFullYear();
+
+    // Filtrar appointments do mês atual e futuros do ano atual
+    // Usa locationFilteredAppointments para respeitar o filtro de local
+    const futureMonthsAppointments = locationFilteredAppointments.filter(appointment => {
+      if (!appointment.date) return false;
+      
+      const appointmentDate = new Date(appointment.date);
+      const appointmentMonth = appointmentDate.getMonth() + 1;
+      const appointmentYear = appointmentDate.getFullYear();
+      
+      // Mês atual e futuros do ano atual
+      return appointmentYear === currentYear && appointmentMonth >= currentMonth;
+    });
+    
+    // Agrupar por mês/ano
+    const monthsMap = new Map();
+    
+    futureMonthsAppointments.forEach(appointment => {
+      const appointmentDate = new Date(appointment.date);
+      const month = appointmentDate.getMonth() + 1;
+      const year = appointmentDate.getFullYear();
+      const key = `${year}-${String(month).padStart(2, '0')}`;
+      
+      if (!monthsMap.has(key)) {
+        monthsMap.set(key, {
+          year,
+          month,
+          confirmed: 0, // Confirmados futuros
+          pending: 0,     // Pendentes
+        });
+      }
+      
+      const monthData = monthsMap.get(key);
+      const price = appointment.value || 0;
+      
+      // Confirmados futuros (status confirmado E data futura)
+      if (isStatusInGroup(appointment.status, 'CONFIRMED')) {
+        // Comparação direta de strings YYYY-MM-DD (evita timezone issues)
+        // Apenas appointments com data futura (não passada)
+        if (appointment.date >= today) {
+          monthData.confirmed += Number(price);
+        }
+      }
+      
+      // Pendentes
+      if (isStatusInGroup(appointment.status, 'PENDING')) {
+        monthData.pending += Number(price);
+      }
+    });
+    
+    // Converter para array e ordenar (mais próximo primeiro)
+    const monthsArray = Array.from(monthsMap.values())
+      .sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.month - b.month;
+      });
+    
+    // Calcular totais
+    const totals = monthsArray.reduce((acc, month) => ({
+      confirmed: acc.confirmed + month.confirmed,
+      pending: acc.pending + month.pending,
+    }), { confirmed: 0, pending: 0 });
+    
+    totals.total = totals.confirmed + totals.pending;
+    
+    return {
+      months: monthsArray,
+      totals,
+    };
+  }, [locationFilteredAppointments]);
+
+  // Extract filtered expenses from expenseStats
+  const filteredExpenses = useMemo(() => expenseStats.filtered, [expenseStats]);
 
   return {
     stats: enhancedStats,
@@ -490,7 +648,10 @@ export const useDashboardStats = ({
     detailsSummary,
     filteredAppointments,
     filteredAvailability,
+    filteredExpenses,
     financialForecast,
     financialBreakdown,
+    previousMonthsSummary,
+    futureMonthsComparison,
   };
 };

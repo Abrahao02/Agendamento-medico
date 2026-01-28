@@ -3,7 +3,7 @@
 // Responsabilidade: Configurações de agendamento público
 // ============================================
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useMemo } from "react";
 
 export const usePublicScheduleSettings = (initialConfig = null) => {
   const [publicScheduleConfig, setPublicScheduleConfig] = useState({
@@ -11,7 +11,8 @@ export const usePublicScheduleSettings = (initialConfig = null) => {
     showPrice: true,
   });
 
-  const savedConfigRef = useRef(initialConfig);
+  // Usar estado ao invés de ref para permitir reatividade no useMemo
+  const [savedConfig, setSavedConfig] = useState(initialConfig);
 
   const updatePublicScheduleField = (field, value) => {
     setPublicScheduleConfig((prev) => ({
@@ -26,17 +27,16 @@ export const usePublicScheduleSettings = (initialConfig = null) => {
       showPrice: data?.showPrice ?? true,
     };
     setPublicScheduleConfig(config);
-    savedConfigRef.current = config;
+    setSavedConfig(config);
   };
 
   const hasUnsavedChanges = useMemo(() => {
-    if (!savedConfigRef.current) return false;
-    const saved = savedConfigRef.current;
+    if (!savedConfig) return false;
     return (
-      saved.period !== publicScheduleConfig.period ||
-      (saved.showPrice ?? true) !== (publicScheduleConfig.showPrice ?? true)
+      savedConfig.period !== publicScheduleConfig.period ||
+      (savedConfig.showPrice ?? true) !== (publicScheduleConfig.showPrice ?? true)
     );
-  }, [publicScheduleConfig]);
+  }, [publicScheduleConfig, savedConfig]);
 
   const getConfigForSave = () => ({
     period: publicScheduleConfig.period,
@@ -44,7 +44,7 @@ export const usePublicScheduleSettings = (initialConfig = null) => {
   });
 
   const markAsSaved = () => {
-    savedConfigRef.current = { ...publicScheduleConfig };
+    setSavedConfig({ ...publicScheduleConfig });
   };
 
   return {

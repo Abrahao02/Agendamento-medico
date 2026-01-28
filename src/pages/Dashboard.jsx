@@ -15,6 +15,7 @@ import Button from "../components/common/Button";
 import ContentLoading from "../components/common/ContentLoading";
 import PatientsView from "../components/dashboard/PatientsView";
 import FinancialView from "../components/dashboard/FinancialView";
+import ExpensesView from "../components/dashboard/ExpensesView";
 
 import "./Dashboard.css";
 
@@ -22,6 +23,7 @@ import "./Dashboard.css";
 const VIEW_COMPONENTS = {
   pacientes: PatientsView,
   financeiro: FinancialView,
+  gastos: ExpensesView,
 };
 
 export default function Dashboard() {
@@ -33,19 +35,19 @@ export default function Dashboard() {
     stats,
     statusSummary,
     detailsSummary,
-    chartData,
     upcomingAppointments,
     financialChartData,
     monthlyData,
+    expenses,
     selectedDateFrom,
     selectedDateTo,
-    selectedMonth,
-    selectedYear,
-    availableYears,
+    selectedLocation,
+    availableLocations,
     setSelectedDateFrom,
     setSelectedDateTo,
     setSelectedMonth,
     setSelectedYear,
+    setSelectedLocation,
     resetFilters,
     isLimitReached,
     filteredAppointments,
@@ -53,6 +55,8 @@ export default function Dashboard() {
     patients,
     financialForecast,
     financialBreakdown,
+    previousMonthsSummary,
+    futureMonthsComparison,
   } = useDashboard();
 
   if (loading) return <ContentLoading message="Carregando dashboard..." height={400} />;
@@ -79,9 +83,13 @@ export default function Dashboard() {
         onDateToChange={setSelectedDateTo}
         onMonthChange={setSelectedMonth}
         onYearChange={setSelectedYear}
+        selectedLocation={selectedLocation}
+        onLocationChange={setSelectedLocation}
+        availableLocations={availableLocations}
         onReset={resetFilters}
         showSearch={false}
         showStatus={false}
+        showLocation={true}
         showQuickFilters
       />
 
@@ -109,6 +117,17 @@ export default function Dashboard() {
         >
           Financeiro
         </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={viewMode === "gastos" ? "primary" : "ghost"}
+          onClick={() => setViewMode("gastos")}
+          aria-label="Visualização Gastos"
+          aria-pressed={viewMode === "gastos"}
+          className="view-toggle-btn"
+        >
+          Gastos
+        </Button>
       </div>
 
       {/* Strategy Pattern: Renderiza componente selecionado */}
@@ -122,8 +141,21 @@ export default function Dashboard() {
         filteredAppointments={filteredAppointments}
         filteredAvailability={filteredAvailability}
         patients={patients}
+        expenses={expenses}
         financialForecast={financialForecast}
         financialBreakdown={financialBreakdown}
+        previousMonthsSummary={previousMonthsSummary}
+        futureMonthsComparison={futureMonthsComparison}
+        availableLocations={availableLocations}
+        selectedDateFrom={selectedDateFrom}
+        selectedDateTo={selectedDateTo}
+        selectedLocation={selectedLocation}
+        setSelectedDateFrom={setSelectedDateFrom}
+        setSelectedDateTo={setSelectedDateTo}
+        setSelectedMonth={setSelectedMonth}
+        setSelectedYear={setSelectedYear}
+        setSelectedLocation={setSelectedLocation}
+        resetFilters={resetFilters}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 // ============================================
-// 📁 src/hooks/useRegister.js - REFATORADO
+// src/hooks/useRegister.js - REFATORADO
 // ============================================
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import { validateFormField } from "../../utils/validators/formValidation";
 import { formatWhatsapp } from "../../utils/formatter/formatWhatsapp";
 import { cleanWhatsapp } from "../../utils/whatsapp/cleanWhatsapp";
 import { logError } from "../../utils/logger/logger";
+import { TERMS_VERSION, getCouncilByProfessionalType } from "../../constants/legal";
 
 export function useRegister() {
   const navigate = useNavigate();
@@ -21,6 +22,9 @@ export function useRegister() {
     password: "",
     confirmPassword: "",
     whatsapp: "",
+    professionalType: "",
+    acceptedTerms: false,
+    acceptedDoctorResponsibility: false,
   });
 
   const [errors, setErrors] = useState({});
@@ -30,8 +34,8 @@ export function useRegister() {
 
   function handleChange(e) {
     const { name, value } = e.target;
-    
-    // ✅ Usa util para formatar WhatsApp
+
+    // Usa util para formatar WhatsApp
     setForm(prev => ({
       ...prev,
       [name]: name === "whatsapp" ? formatWhatsapp(value) : value,
@@ -50,9 +54,9 @@ export function useRegister() {
     }
 
     // Valida email
-    const emailValidation = validateFormField("email", form.email, { 
-      required: true, 
-      email: true 
+    const emailValidation = validateFormField("email", form.email, {
+      required: true,
+      email: true
     });
     if (!emailValidation.valid) {
       newErrors.email = emailValidation.error;
@@ -77,7 +81,7 @@ export function useRegister() {
       }
     }
 
-    // ✅ Valida WhatsApp usando util
+    // Valida WhatsApp usando util
     if (touched.whatsapp) {
       const whatsappValidation = validateFormField("whatsapp", cleanWhatsapp(form.whatsapp), {
         required: true,
@@ -88,20 +92,36 @@ export function useRegister() {
       }
     }
 
+    // Valida tipo de profissional
+    if (!form.professionalType) {
+      newErrors.professionalType = "Selecione seu tipo de profissional.";
+    }
+
+    // Valida aceite dos Termos de Uso
+    if (!form.acceptedTerms) {
+      newErrors.acceptedTerms = "Você deve aceitar os Termos de Uso para continuar.";
+    }
+
+    // Valida aceite do Termo de Responsabilidade
+    if (!form.acceptedDoctorResponsibility) {
+      newErrors.acceptedDoctorResponsibility = "Você deve aceitar o Termo de Responsabilidade para continuar.";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    
+
     // Marca todos os campos como tocados antes de validar
     setTouched({
       name: true,
       email: true,
       password: true,
       confirmPassword: true,
-      whatsapp: true
+      whatsapp: true,
+      professionalType: true
     });
 
     if (!validateForm()) return;
@@ -127,6 +147,12 @@ export function useRegister() {
         name: form.name.trim(),
         email: form.email.trim(),
         whatsapp: cleanWhatsapp(form.whatsapp), // Remove formatação
+        professionalType: form.professionalType,
+        council: getCouncilByProfessionalType(form.professionalType),
+        termsVersion: TERMS_VERSION,
+        termsAcceptedAt: new Date(),
+        doctorResponsibilityVersion: TERMS_VERSION,
+        doctorResponsibilityAcceptedAt: new Date(),
       });
 
       if (!doctorResult.success) {
@@ -136,9 +162,9 @@ export function useRegister() {
       navigate("/login");
     } catch (error) {
       logError("Erro no registro:", error);
-      setErrors(prev => ({ 
-        ...prev, 
-        general: "Erro ao criar conta. Tente novamente." 
+      setErrors(prev => ({
+        ...prev,
+        general: "Erro ao criar conta. Tente novamente."
       }));
     }
   }

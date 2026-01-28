@@ -3,7 +3,7 @@
 // Context para injeção de dependências (DIP)
 // ============================================
 
-import { createContext, useContext } from "react";
+import { createContext } from "react";
 import { db } from "../services/firebase/config";
 import { getFunctions } from "firebase/functions";
 import app from "../services/firebase/config";
@@ -20,7 +20,7 @@ const defaultServices = {
 };
 
 // Criar context
-const ServicesContext = createContext(defaultServices);
+export const ServicesContext = createContext(defaultServices);
 
 /**
  * Provider de serviços
@@ -32,16 +32,4 @@ export const ServicesProvider = ({ children, services = defaultServices }) => {
       {children}
     </ServicesContext.Provider>
   );
-};
-
-/**
- * Hook para acessar serviços injetados
- * @returns {Object} Serviços disponíveis
- */
-export const useServices = () => {
-  const context = useContext(ServicesContext);
-  if (!context) {
-    throw new Error("useServices must be used within a ServicesProvider");
-  }
-  return context;
 };

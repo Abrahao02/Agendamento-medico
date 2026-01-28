@@ -15,6 +15,11 @@ const Register = lazy(() => import("../pages/Register"));
 const PublicSchedule = lazy(() => import("../pages/PublicSchedule"));
 const PublicScheduleSuccess = lazy(() => import("../pages/PublicScheduleSuccess"));
 
+// Páginas Legais
+const TermsOfUse = lazy(() => import("../pages/legal/TermsOfUse"));
+const PrivacyPolicy = lazy(() => import("../pages/legal/PrivacyPolicy"));
+const DoctorResponsibility = lazy(() => import("../pages/legal/DoctorResponsibility"));
+
 // Layout
 const DashboardLayout = lazy(() => import("../pages/DashboardLayout"));
 
@@ -38,19 +43,24 @@ export default function AppRoutes() {
           {/* ========================================
               ROTAS PÚBLICAS
               ======================================== */}
-          
+
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
           {/* Agendamento Público */}
           <Route path="/public/:slug" element={<PublicSchedule />} />
           <Route path="/public/:slug/success" element={<PublicScheduleSuccess />} />
 
+          {/* Páginas Legais */}
+          <Route path="/termos-de-uso" element={<TermsOfUse />} />
+          <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+          <Route path="/termo-de-responsabilidade-medico" element={<DoctorResponsibility />} />
+
           {/* ========================================
               ROTAS PRIVADAS (Dashboard)
               ======================================== */}
-          
+
           <Route
             path="/dashboard"
             element={
@@ -61,12 +71,12 @@ export default function AppRoutes() {
           >
             {/* Página Principal */}
             <Route index element={<Dashboard />} />
-            
+
             {/* Agendamentos */}
             <Route path="appointments" element={<Agenda />} />
             <Route path="availability" element={<Availability />} />
             <Route path="allappointments" element={<AllAppointments />} />
-            
+
             {/* Gestão */}
             <Route path="clients" element={<Patients />} />
             <Route path="settings" element={<Settings />} />
@@ -75,7 +85,7 @@ export default function AppRoutes() {
           {/* ========================================
               ROTAS DE FALLBACK
               ======================================== */}
-          
+
           {/* Redireciona rotas desconhecidas */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -161,7 +161,9 @@
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4),
               0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all var(--transition-base);
-  z-index: 1000;
+  z-index: 999;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 .fab-button:hover {

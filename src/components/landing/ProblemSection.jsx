@@ -4,7 +4,7 @@
 import { Check } from "lucide-react";
 
 const stats = [
-  { value: "5+", label: "Médicos ativos" },
+  { value: "5+", label: "Profissionais ativos" },
   { value: "100+", label: "Consultas/mês" },
   { value: "98%", label: "Satisfação" },
   { value: "24/7", label: "Disponível" },

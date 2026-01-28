@@ -29,6 +29,7 @@ export const useDashboardData = () => {
   const [patients, setPatients] = useState([]);
   const [doctorPlan, setDoctorPlan] = useState("free");
   const [isLimitReached, setIsLimitReached] = useState(false);
+  const [doctorConfig, setDoctorConfig] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -49,6 +50,7 @@ export const useDashboardData = () => {
           const doctorData = doctorSnapshot.data();
           setDoctorSlug(doctorData.slug || user.uid);
           setDoctorPlan(doctorData.plan || "free");
+          setDoctorConfig(doctorData);
         }
 
         setAppointments(appointmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -82,5 +84,6 @@ export const useDashboardData = () => {
     patients,
     doctorPlan,
     isLimitReached,
+    doctorConfig,
   };
 };

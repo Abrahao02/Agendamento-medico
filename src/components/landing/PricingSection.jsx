@@ -90,7 +90,6 @@ export default function PricingSection({
                 disabled={loading}
               >
                 Assinar PRO
-                <span className="pay-hint">Cartão de crédito ou Pix</span>
               </Button>
 
               {!user && !loading && (

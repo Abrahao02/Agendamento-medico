@@ -87,7 +87,6 @@ export const createAppointmentService = ({ database, getDoctor }) => {
       const value = Number(data.value) || 0;
 
       // Cria documento com ID automático
-      const appointmentsRef = database.collection(COLLECTIONS.APPOINTMENTS);
       const newAppointmentRef = database.doc(COLLECTIONS.APPOINTMENTS);
 
       await database.setDoc(newAppointmentRef, {

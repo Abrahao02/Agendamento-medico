@@ -110,6 +110,26 @@
    ======================================== */
 .agenda-appointments-card {
   /* AppointmentList já tem seus próprios estilos */
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.agenda-appointments-card::-webkit-scrollbar {
+  height: 6px;
+}
+
+.agenda-appointments-card::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.agenda-appointments-card::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: var(--radius-sm);
+}
+
+.agenda-appointments-card::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
 }
 
 /* ========================================
@@ -158,5 +178,230 @@
   .agenda-appointments-card {
     padding: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
+  }
+}
+
+/* ========================================
+   BOTÃO FIXO (FAB)
+   ======================================== */
+.fab-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--secondary-700) 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4),
+              0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-base);
+  z-index: 999;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.fab-button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5),
+              0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.fab-button:active:not(:disabled) {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4),
+              0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.fab-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fab-button:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 4px;
+}
+
+@media (max-width: 768px) {
+  .fab-button {
+    bottom: 20px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+  }
+}
+
+@media (max-width: 640px) {
+  .fab-button {
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .fab-button svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ========================================
+   SEÇÃO DE FORMULÁRIOS
+   ======================================== */
+.agenda-form-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.agenda-form-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-xl);
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.agenda-form-card h3 {
+  margin: 0 0 var(--spacing-lg) 0;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.book-appointment-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.book-appointment-form select,
+.book-appointment-form input[type="time"],
+.book-appointment-form input[type="number"] {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: all var(--transition-base);
+}
+
+.book-appointment-form select:focus,
+.book-appointment-form input[type="time"]:focus,
+.book-appointment-form input[type="number"]:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--secondary-100);
+}
+
+.book-appointment-form select:disabled,
+.book-appointment-form input[type="time"]:disabled,
+.book-appointment-form input[type="number"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bg-secondary);
+}
+
+.book-slot-deal-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.book-slot-deal-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.book-slot-price-input {
+  width: 100%;
+}
+
+.book-slot-time-input {
+  width: 100%;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.form-actions button {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.form-actions button:first-child {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--secondary-700) 100%);
+  color: white;
+}
+
+.form-actions button:first-child:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.form-actions button:first-child:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-actions .cancel-button {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-light);
+}
+
+.form-actions .cancel-button:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--border-medium);
+}
+
+.error-message {
+  color: var(--danger-500);
+  font-size: var(--text-sm);
+  margin: 0;
+  padding: var(--spacing-xs) 0;
+}
+
+@media (max-width: 768px) {
+  .agenda-form-card {
+    padding: var(--spacing-lg);
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
   }
 }

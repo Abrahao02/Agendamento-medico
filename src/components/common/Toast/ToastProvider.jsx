@@ -1,9 +1,9 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext } from "react";
 import { X } from "lucide-react";
 import { useToastManager } from "../../../hooks/common/useToastManager";
 import "./Toast.css";
 
-const ToastContext = createContext(null);
+export const ToastContext = createContext(null);
 
 export function ToastProvider({ children }) {
   const { state, api } = useToastManager();
@@ -36,13 +36,5 @@ export function ToastProvider({ children }) {
       </div>
     </ToastContext.Provider>
   );
-}
-
-export function useToast() {
-  const ctx = useContext(ToastContext);
-  if (!ctx) {
-    throw new Error("useToast must be used within <ToastProvider>");
-  }
-  return ctx;
 }
 

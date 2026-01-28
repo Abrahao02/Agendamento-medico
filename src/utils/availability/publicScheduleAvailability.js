@@ -23,15 +23,57 @@ export const buildPublicScheduleAvailability = ({
       .filter((appt) => appt.date === day.date && STATUS_GROUPS.ACTIVE.includes(appt.status))
       .map((appt) => appt.time);
 
+    // Atualiza slots existentes para restringir localização quando há appointment cancelado
+    const updatedSlots = (day.slots || []).map((slot) => {
+      const slotTime = getSlotTime(slot);
+      const cancelledAppt = cancelledAppointmentsForDay.find((appt) => appt.time === slotTime);
+      
+      if (cancelledAppt && !bookedTimes.includes(slotTime)) {
+        // Se há appointment cancelado neste slot, restringe ao local do appointment cancelado
+        const appointmentType = cancelledAppt.appointmentType || 'presencial';
+        const allowedLocationIds = (appointmentType === 'presencial' && cancelledAppt.location) 
+          ? [cancelledAppt.location] 
+          : [];
+        
+        // Se slot já é objeto, atualiza; se é string, converte para objeto
+        if (typeof slot === 'object' && slot !== null) {
+          return {
+            ...slot,
+            appointmentType,
+            allowedLocationIds,
+          };
+        } else {
+          return {
+            time: slot,
+            appointmentType,
+            allowedLocationIds,
+          };
+        }
+      }
+      return slot;
+    });
+
     const cancelledSlotsNotInAvailability = cancelledAppointmentsForDay
-      .map((appt) => appt.time)
-      .filter((time) => {
-        if (bookedTimes.includes(time)) return false;
-        if (isSlotInPast(day.date, time, now)) return false;
-        return !(day.slots || []).some((slot) => getSlotTime(slot) === time);
+      .filter((appt) => {
+        if (bookedTimes.includes(appt.time)) return false;
+        if (isSlotInPast(day.date, appt.time, now)) return false;
+        return !updatedSlots.some((slot) => getSlotTime(slot) === appt.time);
+      })
+      .map((appt) => {
+        // Cria objeto de slot preservando informações de localização do appointment cancelado
+        const appointmentType = appt.appointmentType || 'presencial';
+        const allowedLocationIds = (appointmentType === 'presencial' && appt.location) 
+          ? [appt.location] 
+          : [];
+        
+        return {
+          time: appt.time,
+          appointmentType,
+          allowedLocationIds,
+        };
       });
 
-    const allSlots = [...(day.slots || []), ...cancelledSlotsNotInAvailability];
+    const allSlots = [...updatedSlots, ...cancelledSlotsNotInAvailability];
 
     const validSlots = allSlots.filter((slot) => {
       const slotTime = getSlotTime(slot);
@@ -77,12 +119,24 @@ export const buildPublicScheduleAvailability = ({
         .map((appt) => appt.time);
 
       const cancelledSlots = cancelledForDate
-        .map((appt) => appt.time)
-        .filter((time) => {
-          if (bookedTimes.includes(time)) return false;
-          return !isSlotInPast(date, time, now);
+        .filter((appt) => {
+          if (bookedTimes.includes(appt.time)) return false;
+          return !isSlotInPast(date, appt.time, now);
         })
-        .sort();
+        .map((appt) => {
+          // Cria objeto de slot preservando informações de localização do appointment cancelado
+          const appointmentType = appt.appointmentType || 'presencial';
+          const allowedLocationIds = (appointmentType === 'presencial' && appt.location) 
+            ? [appt.location] 
+            : [];
+          
+          return {
+            time: appt.time,
+            appointmentType,
+            allowedLocationIds,
+          };
+        })
+        .sort((a, b) => a.time.localeCompare(b.time));
 
       if (cancelledSlots.length > 0) {
         return {
@@ -101,9 +155,54 @@ export const buildPublicScheduleAvailability = ({
   const uniqueDays = allDays.reduce((acc, day) => {
     const existing = acc.find((d) => d.date === day.date);
     if (existing) {
-      const combinedSlots = sortSlotsByTime(
-        [...new Set([...(existing.slots || []), ...(day.slots || [])])]
-      );
+      // Combina slots preservando restrições de localização
+      const slotsMap = new Map();
+      
+      // Adiciona slots existentes
+      (existing.slots || []).forEach((slot) => {
+        const time = getSlotTime(slot);
+        if (time) {
+          slotsMap.set(time, typeof slot === 'object' && slot !== null ? slot : { time });
+        }
+      });
+      
+      // Combina com novos slots, preservando restrições mais restritivas
+      (day.slots || []).forEach((slot) => {
+        const time = getSlotTime(slot);
+        if (!time) return;
+        
+        const existingSlot = slotsMap.get(time);
+        if (existingSlot) {
+          // Se ambos são objetos, combina allowedLocationIds (interseção)
+          const newSlot = typeof slot === 'object' && slot !== null ? slot : { time };
+          const existingAllowed = Array.isArray(existingSlot.allowedLocationIds) 
+            ? existingSlot.allowedLocationIds 
+            : [];
+          const newAllowed = Array.isArray(newSlot.allowedLocationIds) 
+            ? newSlot.allowedLocationIds 
+            : [];
+          
+          // Se ambos têm restrições, faz interseção; se um não tem, mantém o que tem
+          let combinedAllowed = [];
+          if (existingAllowed.length > 0 && newAllowed.length > 0) {
+            combinedAllowed = existingAllowed.filter(id => newAllowed.includes(id));
+          } else if (existingAllowed.length > 0) {
+            combinedAllowed = existingAllowed;
+          } else if (newAllowed.length > 0) {
+            combinedAllowed = newAllowed;
+          }
+          
+          slotsMap.set(time, {
+            time,
+            appointmentType: newSlot.appointmentType || existingSlot.appointmentType || 'presencial',
+            allowedLocationIds: combinedAllowed,
+          });
+        } else {
+          slotsMap.set(time, typeof slot === 'object' && slot !== null ? slot : { time });
+        }
+      });
+      
+      const combinedSlots = sortSlotsByTime(Array.from(slotsMap.values()));
       return acc.map((d) => (d.date === day.date ? { ...d, slots: combinedSlots } : d));
     }
     return [...acc, day];

@@ -31,6 +31,7 @@ export const useDashboardFilters = () => {
   const [selectedDateTo, setSelectedDateTo] = useState(defaultDateTo);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedLocation, setSelectedLocation] = useState("all");
 
   const availableYears = useMemo(() => generateYearRange(1), []);
 
@@ -42,6 +43,7 @@ export const useDashboardFilters = () => {
     setSelectedDateTo(formatDateToQuery(lastDay));
     setSelectedMonth(currentMonth);
     setSelectedYear(currentYear);
+    setSelectedLocation("all");
   }, [currentMonth, currentYear]);
 
   const filterOptions = useMemo(() => ({
@@ -49,19 +51,22 @@ export const useDashboardFilters = () => {
     endDate: selectedDateTo,
     selectedMonth,
     selectedYear,
-  }), [selectedDateFrom, selectedDateTo, selectedMonth, selectedYear]);
+    selectedLocation,
+  }), [selectedDateFrom, selectedDateTo, selectedMonth, selectedYear, selectedLocation]);
 
   return {
     selectedDateFrom,
     selectedDateTo,
     selectedMonth,
     selectedYear,
+    selectedLocation,
     availableYears,
     filterOptions,
     setSelectedDateFrom,
     setSelectedDateTo,
     setSelectedMonth,
     setSelectedYear,
+    setSelectedLocation,
     resetFilters,
   };
 };

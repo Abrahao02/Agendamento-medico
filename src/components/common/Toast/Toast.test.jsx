@@ -4,9 +4,10 @@
 // ============================================
 
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ToastProvider, useToast } from './ToastProvider';
+import { ToastProvider } from './ToastProvider';
+import { useToast } from '../../../hooks/common/useToast';
 
 describe('ToastProvider', () => {
   beforeEach(() => {

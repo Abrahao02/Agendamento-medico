@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 import './Input.css';
 
 /**
@@ -33,7 +33,8 @@ const Input = forwardRef(({
   id,
   ...props
 }, ref) => {
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = useId();
+  const inputId = id || `input-${generatedId}`;
   
   const inputClasses = [
     'input',
@@ -129,7 +130,8 @@ export const TextArea = forwardRef(({
   id,
   ...props
 }, ref) => {
-  const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedTextareaId = useId();
+  const textareaId = id || `textarea-${generatedTextareaId}`;
 
   const textareaClasses = [
     'textarea',

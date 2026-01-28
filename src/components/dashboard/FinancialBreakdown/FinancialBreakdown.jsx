@@ -15,7 +15,7 @@ export default function FinancialBreakdown({
 }) {
   return (
     <div className="financial-breakdown-card">
-      <h3 className="financial-breakdown-title">Detalhamento por status</h3>
+      <h3 className="standardized-h3">Detalhamento por status</h3>
       
       <div className="financial-breakdown-sections">
         {/* Confirmados */}

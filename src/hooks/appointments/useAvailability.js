@@ -207,7 +207,7 @@ export const useAvailability = () => {
    * Remove um slot de disponibilidade
    * ✅ ATUALIZADO: Valida apenas contra appointments ATIVOS
    */
-  const removeSlot = async (date, slot) => {
+  const removeSlot = useCallback(async (date, slot) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
     try {
@@ -219,8 +219,21 @@ export const useAvailability = () => {
       const result = await removeAvailability(user.uid, date, slot);
       if (!result.success) throw new Error(result.error);
 
+      // Extrair o horário do slot (pode ser string ou objeto)
+      const slotTime = getSlotTime(slot) || slot;
+      
+      // Atualizar estado removendo o slot pela comparação de horário
       setAvailability(prev => prev
-        .map(a => a.date === date ? { ...a, slots: a.slots.filter(s => s !== slot) } : a)
+        .map(a => {
+          if (a.date === date) {
+            const filteredSlots = a.slots.filter(s => {
+              const sTime = getSlotTime(s);
+              return sTime !== slotTime;
+            });
+            return { ...a, slots: filteredSlots };
+          }
+          return a;
+        })
         .filter(a => a.slots.length > 0)
       );
 
@@ -228,13 +241,13 @@ export const useAvailability = () => {
     } catch (err) {
       return { success: false, error: err.message };
     }
-  };
+  }, [user, appointments]);
 
   /* ==============================
      ACTIONS - APPOINTMENTS
   ============================== */
 
-  const bookAppointment = async ({ patientId, date, time, appointmentType, location, customValue }) => {
+  const bookAppointment = useCallback(async ({ patientId, date, time, appointmentType, location, customValue }) => {
     if (!user) return { success: false, error: "Usuário não autenticado" };
 
     if (isLimitReached) {
@@ -310,7 +323,7 @@ export const useAvailability = () => {
     } catch (err) {
       return { success: false, error: err.message };
     }
-  };
+  }, [user, isLimitReached, appointments, patients, availability, doctor]);
 
   /**
    * Deleta um agendamento (remove completamente)
@@ -378,7 +391,7 @@ export const useAvailability = () => {
       return { success: false, error: "Nenhuma data selecionada" };
     }
     return await removeSlot(selectedDate, slot);
-  }, [selectedDate]);
+  }, [selectedDate, removeSlot]);
 
   const handleBookAppointment = useCallback(async (patientId, time, appointmentType, location, customValue) => {
     if (!selectedDate) {

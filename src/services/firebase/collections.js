@@ -5,6 +5,7 @@ export const COLLECTIONS = {
   PATIENTS: "patients",
   AVAILABILITY: "availability",
   APPOINTMENTS: "appointments",
+  EXPENSES: "expenses",
 };
 
 export function getAvailabilityId(doctorId, date) {

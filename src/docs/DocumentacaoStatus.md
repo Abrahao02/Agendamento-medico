@@ -481,16 +481,16 @@ if (appointment.status === APPOINTMENT_STATUS.CONFIRMED) {
 
 ### ✅ 2. Verificação Redundante em useDashboard (CORRIGIDO)
 
-**Localização:** `src/hooks/dashboard/useDashboard.js` (linhas 359-360, 499-500)
+**Localização:** `src/hooks/dashboard/useDashboard.js`
 
 **Status:** ✅ **CORRIGIDO** - Removida verificação redundante, agora usa apenas `STATUS_GROUPS.ACTIVE.includes()`.
 
 ### ✅ 3. Verificações Diretas de CANCELLED (Correto)
 
 **Localizações:**
-- `src/utils/stats/enhancedStats.js` (linha 31)
-- `src/utils/stats/appointmentStats.js` (linha 71)
-- `src/hooks/dashboard/useDashboard.js` (linha 495)
+- `src/utils/stats/enhancedStats.js`
+- `src/utils/stats/appointmentStats.js`
+- `src/hooks/dashboard/useDashboard.js`
 
 **Status:** ✅ **CORRETO** - Necessário para contar apenas Cancelado (não incluir NO_SHOW).
 

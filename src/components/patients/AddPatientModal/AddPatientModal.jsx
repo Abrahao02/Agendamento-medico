@@ -19,7 +19,7 @@ export default function AddPatientModal({
   error,
   loading = false,
 }) {
-  const { handlers } = useModal({ isOpen, onClose });
+  const { handleBackdropClick, handleKeyDown } = useModal(isOpen, onClose);
 
   // Handler de submit do formulário
   const handleSubmit = async (e) => {
@@ -32,8 +32,8 @@ export default function AddPatientModal({
   const modalContent = (
     <div
       className="add-patient-modal__overlay"
-      onClick={handlers.handleBackdropClick}
-      onKeyDown={handlers.handleKeyDown}
+      onClick={handleBackdropClick}
+      onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-patient-modal-title"

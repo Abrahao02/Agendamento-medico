@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AppointmentForm from './AppointmentForm';
-import { createPublicAppointmentService } from '../../../services/appointments/publicAppointment.service';
 
 // Mock do serviço
 vi.mock('../../../services/appointments/publicAppointment.service', () => ({

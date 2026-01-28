@@ -67,7 +67,7 @@ export function getUniqueLocationsFromSlots(slots, doctorConfig = null) {
     try {
       const normalized = normalizeSlot(slot, doctorConfig);
       normalized.allowedLocationIds.forEach(id => locationIds.add(id));
-    } catch (error) {
+    } catch {
       // Skip invalid slots
     }
   });

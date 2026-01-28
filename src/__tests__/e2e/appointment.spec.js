@@ -46,7 +46,7 @@ test.describe('Public Appointment Flow', () => {
     expect(unexpectedErrors.length).toBe(0);
   });
 
-  test.skip('deve mostrar horários disponíveis', async ({ page }) => {
+  test.skip('deve mostrar horários disponíveis', async () => {
     // Este teste requer um médico válido no sistema
     // Para implementar: criar fixture de médico de teste
     // const slug = 'medico-teste';
@@ -54,7 +54,7 @@ test.describe('Public Appointment Flow', () => {
     // await expect(page.locator('.available-slot, .day-card')).toBeVisible();
   });
 
-  test.skip('deve validar formulário de agendamento', async ({ page }) => {
+  test.skip('deve validar formulário de agendamento', async () => {
     // Este teste requer um médico válido e horários disponíveis
     // Para implementar: criar fixture completa de dados de teste
     // 1. Navegar para página pública

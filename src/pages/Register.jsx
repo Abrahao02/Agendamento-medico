@@ -1,13 +1,16 @@
 import { useNavigate } from "react-router-dom"
-import { Mail, Phone, User } from "lucide-react"
+import { Mail, Phone, User, Briefcase } from "lucide-react"
 
 import Input from "../components/common/Input"
 import Button from "../components/common/Button"
 import PasswordInput from "../components/common/PasswordInput"
 import PasswordChecklist from "../components/common/PasswordChecklist"
+import Checkbox from "../components/common/Checkbox"
+import Select from "../components/common/Select"
 
 import { useRegister } from "../hooks/auth/useRegister"
 import { formatWhatsapp } from "../utils/formatter/formatWhatsapp"
+import { LEGAL_ROUTES, HEALTH_PROFESSIONAL_TYPES } from "../constants/legal"
 
 import "./Register.css"
 
@@ -15,10 +18,16 @@ export default function Register() {
   const navigate = useNavigate()
   const { form, errors, passwordCriteria, handleChange, handleSubmit } = useRegister()
 
+  // Prepara opções para o Select
+  const professionalOptions = HEALTH_PROFESSIONAL_TYPES.map(type => ({
+    value: type.value,
+    label: `${type.label} (${type.council})`
+  }))
+
   return (
     <div className="register-container">
       <div className="register-card">
-        <h2 className="register-title">Cadastro de Médico</h2>
+        <h2 className="register-title">Cadastro de Profissional</h2>
         <p className="register-subtitle">Preencha seus dados para criar sua conta.</p>
 
         <form onSubmit={handleSubmit} className="register-form">
@@ -30,6 +39,18 @@ export default function Register() {
             value={form.name}
             error={errors.name}
             leftIcon={<User size={18} />}
+            onChange={handleChange}
+          />
+
+          <Select
+            label="Tipo de Profissional"
+            name="professionalType"
+            required
+            placeholder="Selecione sua profissão"
+            value={form.professionalType}
+            error={errors.professionalType}
+            options={professionalOptions}
+            leftIcon={<Briefcase size={18} />}
             onChange={handleChange}
           />
 
@@ -76,17 +97,59 @@ export default function Register() {
             onChange={handleChange}
           />
 
+          <div className="terms-section">
+            <Checkbox
+              name="acceptedTerms"
+              checked={form.acceptedTerms}
+              onChange={handleChange}
+              error={errors.acceptedTerms}
+              label={
+                <>
+                  Li e concordo com os{" "}
+                  <a
+                    href={LEGAL_ROUTES.terms}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Termos de Uso
+                  </a>
+                </>
+              }
+            />
+
+            <Checkbox
+              name="acceptedDoctorResponsibility"
+              checked={form.acceptedDoctorResponsibility}
+              onChange={handleChange}
+              error={errors.acceptedDoctorResponsibility}
+              label={
+                <>
+                  Li e concordo com o{" "}
+                  <a
+                    href={LEGAL_ROUTES.doctorResponsibility}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Termo de Responsabilidade Profissional
+                  </a>
+                </>
+              }
+            />
+          </div>
+
           <Button type="submit" variant="primary" fullWidth>
             Criar conta
           </Button>
 
           <div className="back-to-login-wrapper">
-            <span 
-              className="back-to-login-link" 
+            <span
+              className="back-to-login-link"
               onClick={() => navigate("/login")}
               role="button"
               tabIndex={0}
-              onKeyPress={(e) => e.key === 'Enter' && navigate("/login")}
+              onKeyDown={(e) => e.key === 'Enter' && navigate("/login")}
             >
               Já tem uma conta? Voltar para Login
             </span>

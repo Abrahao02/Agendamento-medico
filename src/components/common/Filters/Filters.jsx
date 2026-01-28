@@ -12,6 +12,7 @@ import StatusFilter from "./StatusFilter";
 import DateRangeFilter from "./DateRangeFilter";
 import MonthYearFilter from "./MonthYearFilter";
 import QuickFilters from "./QuickFilters";
+import LocationFilter from "./LocationFilter";
 import "./Filters.css";
 
 export default function Filters({
@@ -20,7 +21,6 @@ export default function Filters({
   status = null,
   dateRange = null,
   monthYear = null,
-  quickFilters = null,
   
   // Props individuais (compatibilidade - podem ser passadas diretamente)
   searchTerm: searchTermProp,
@@ -38,17 +38,22 @@ export default function Filters({
   onMonthChange: onMonthChangeProp,
   onYearChange: onYearChangeProp,
   availableYears: availableYearsProp,
-  
+  selectedLocation: selectedLocationProp,
+  onLocationChange: onLocationChangeProp,
+  availableLocations: availableLocationsProp,
+
   // Ações
   onReset,
   extraActions = null,
-  
+
   // Config
   showSearch = false,
   showStatus = false,
+  showLocation = false,
   showDateRange = true,
   showMonthYear = true,
   showQuickFilters = false,
+  showHeading = true,
 }) {
   // Extrair valores das props agrupadas ou usar valores individuais (compatibilidade)
   // Prioriza props individuais se fornecidas, caso contrário usa props agrupadas
@@ -67,11 +72,18 @@ export default function Filters({
   const onDateFromChange = onDateFromChangeProp ?? dateRange?.onChange?.from ?? dateRange?.onChange;
   const onDateToChange = onDateToChangeProp ?? dateRange?.onChange?.to ?? dateRange?.onChange;
   
-  const month = monthProp ?? monthYear?.month;
+  // Garantir que month preserve null quando "Todos" está selecionado
+  // Se monthProp for explicitamente passado (mesmo que null), usa ele
+  // Caso contrário, tenta usar monthYear?.month
+  const month = monthProp !== undefined ? monthProp : monthYear?.month;
   const year = yearProp ?? monthYear?.year;
   const onMonthChange = onMonthChangeProp ?? monthYear?.onChange?.month ?? monthYear?.onChange;
   const onYearChange = onYearChangeProp ?? monthYear?.onChange?.year ?? monthYear?.onChange;
   const availableYears = availableYearsProp ?? monthYear?.availableYears ?? [];
+
+  const selectedLocation = selectedLocationProp;
+  const onLocationChange = onLocationChangeProp;
+  const availableLocations = availableLocationsProp || [];
 
   const { state, refs, computed, handlers } = useFilters({
     dateFrom,
@@ -87,10 +99,10 @@ export default function Filters({
   return (
     <div className="filters-container" role="region" aria-label="Filtros">
       {/* Título padronizado */}
-      {showQuickFilters && (
+      {showQuickFilters && showHeading && (
         <h3 className="standardized-h3">Selecionar filtro</h3>
       )}
-      
+
       {/* Botões rápidos de filtro */}
       {showQuickFilters && (
         <QuickFilters
@@ -102,6 +114,10 @@ export default function Filters({
           state={state}
           refs={refs}
           handlers={handlers}
+          showLocation={showLocation}
+          selectedLocation={selectedLocation}
+          onLocationChange={onLocationChange}
+          availableLocations={availableLocations}
         />
       )}
 
@@ -121,6 +137,16 @@ export default function Filters({
             statusFilter={statusFilter}
             onStatusChange={onStatusChange}
             statusOptions={statusOptions}
+          />
+        )}
+
+        {/* 📍 Local (opcional) */}
+        {showLocation && selectedLocation !== undefined && (
+          <LocationFilter
+            selectedLocation={selectedLocation}
+            onLocationChange={onLocationChange}
+            availableLocations={availableLocations}
+            disabled={false}
           />
         )}
 

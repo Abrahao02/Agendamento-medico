@@ -1,5 +1,5 @@
 // src/components/patients/PatientItem/PatientItem.jsx
-import React from "react";
+import React, { useRef } from "react";
 import Button from "../../common/Button";
 import { Edit, Save, X, ChevronDown, ChevronUp, Phone, DollarSign, Calendar } from "lucide-react";
 import { formatCurrency } from "../../../utils/formatter/formatCurrency";
@@ -16,15 +16,21 @@ function PatientItem({
   onFieldChange,
   formatWhatsappDisplay,
 }) {
+  const itemRef = useRef(null);
   const { state, handlers } = usePatientItem({
     isEditing,
     onEdit,
     onSave,
     onCancel,
+    itemRef,
   });
 
   return (
-    <div className="patient-item" onClick={handlers.handleItemClick}>
+    <div 
+      ref={itemRef} 
+      className={`patient-item ${state.isExpanded ? 'patient-item-expanded' : ''}`} 
+      onClick={handlers.handleItemClick}
+    >
       <div className="patient-item-content">
         {/* Header com nome, WhatsApp e ações */}
         <div className="patient-item-header">
@@ -58,6 +64,7 @@ function PatientItem({
                 <button
                   type="button"
                   onClick={handlers.handleEditClick}
+                  onMouseDown={(e) => e.stopPropagation()}
                   className="patient-item-edit-icon-btn"
                   aria-label="Editar paciente"
                 >
@@ -99,59 +106,57 @@ function PatientItem({
         </div>
 
         {/* Conteúdo colapsável */}
-        {state.isExpanded && (
-          <div className="patient-item-details-wrapper">
-            <div className="patient-item-details">
-              <div className="patient-item-field">
-                <label>Nome de referência</label>
+        <div className={`patient-item-details-wrapper ${state.isExpanded ? 'expanded' : 'collapsed'}`}>
+          <div className="patient-item-details">
+            <div className="patient-item-field">
+              <label>Nome de referência</label>
+              <input
+                type="text"
+                value={patient.referenceName || ""}
+                onChange={(e) => onFieldChange("referenceName", e.target.value)}
+                disabled={!isEditing}
+                className="patient-item-input"
+                placeholder="Nome preferido"
+              />
+            </div>
+
+            <div className="patient-item-field">
+              <label>WhatsApp</label>
+              <div className="patient-item-whatsapp">
+                <Phone size={16} />
+                {formatWhatsappDisplay(patient.whatsapp)}
+              </div>
+            </div>
+
+            <div className="patient-item-field">
+              <label>Valor da consulta</label>
+              {!isEditing ? (
+                <div className="patient-item-price-display">
+                  <DollarSign size={16} />
+                  {formatCurrency(patient.price || 0)}
+                </div>
+              ) : (
                 <input
-                  type="text"
-                  value={patient.referenceName || ""}
-                  onChange={(e) => onFieldChange("referenceName", e.target.value)}
-                  disabled={!isEditing}
-                  className="patient-item-input"
-                  placeholder="Nome preferido"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={patient.price || 0}
+                  onChange={(e) => onFieldChange("price", e.target.value)}
+                  className="patient-item-input patient-item-input-price"
+                  placeholder="0.00"
                 />
-              </div>
+              )}
+            </div>
 
-              <div className="patient-item-field">
-                <label>WhatsApp</label>
-                <div className="patient-item-whatsapp">
-                  <Phone size={16} />
-                  {formatWhatsappDisplay(patient.whatsapp)}
-                </div>
-              </div>
-
-              <div className="patient-item-field">
-                <label>Valor da consulta</label>
-                {!isEditing ? (
-                  <div className="patient-item-price-display">
-                    <DollarSign size={16} />
-                    {formatCurrency(patient.price || 0)}
-                  </div>
-                ) : (
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={patient.price || 0}
-                    onChange={(e) => onFieldChange("price", e.target.value)}
-                    className="patient-item-input patient-item-input-price"
-                    placeholder="0.00"
-                  />
-                )}
-              </div>
-
-              <div className="patient-item-field">
-                <label>Total de consultas</label>
-                <div className="patient-item-total">
-                  <Calendar size={16} />
-                  {patient.totalConsultas || 0}
-                </div>
+            <div className="patient-item-field">
+              <label>Total de consultas</label>
+              <div className="patient-item-total">
+                <Calendar size={16} />
+                {patient.totalConsultas || 0}
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
