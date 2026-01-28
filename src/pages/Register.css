@@ -29,14 +29,16 @@
   font-weight: var(--font-bold);
   color: var(--text-primary);
   margin-bottom: var(--spacing-xs);
-  text-align: center; /* centraliza */
+  text-align: center;
+  /* centraliza */
 }
 
 .register-subtitle {
   font-size: var(--text-sm);
   color: var(--text-secondary);
   margin-bottom: var(--spacing-md);
-  text-align: center; /* centraliza */
+  text-align: center;
+  /* centraliza */
 }
 
 .register-form {
@@ -76,6 +78,27 @@
   margin-top: -0.5rem;
 }
 
+/* Seção de Termos */
+.terms-section {
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary, #f7fafc);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.terms-section .checkbox-wrapper {
+  margin: 0.5rem 0;
+}
+
+.terms-section .checkbox-wrapper:first-child {
+  margin-top: 0;
+}
+
+.terms-section .checkbox-wrapper:last-child {
+  margin-bottom: 0;
+}
+
 /* Link "Voltar para Login" */
 .back-to-login-wrapper {
   text-align: center;
@@ -83,15 +106,20 @@
 }
 
 .back-to-login-link {
-  display: inline-block; /* inline-block permite centralização mas ocupa só o tamanho do texto */
+  display: inline-block;
+  /* inline-block permite centralização mas ocupa só o tamanho do texto */
   font-size: var(--text-sm);
   color: var(--text-link);
   cursor: pointer;
-  text-decoration: underline; /* se quiser underline */
+  text-decoration: underline;
+  /* se quiser underline */
   transition: color var(--transition-fast);
-  padding: 0; /* remove qualquer padding que aumente a área */
-  margin: 0;  /* remove margens que podem aumentar a área */
-  width: fit-content; /* garante que ocupe apenas o espaço do texto */
+  padding: 0;
+  /* remove qualquer padding que aumente a área */
+  margin: 0;
+  /* remove margens que podem aumentar a área */
+  width: fit-content;
+  /* garante que ocupe apenas o espaço do texto */
 }
 
 .back-to-login-link:hover {

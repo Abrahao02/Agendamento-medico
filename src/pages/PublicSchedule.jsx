@@ -82,9 +82,9 @@ export default function PublicSchedule() {
         <Card className="error-card">
           <div className="error-content">
             <AlertCircle size={48} color="var(--danger-500)" />
-            <h2>Médico não encontrado</h2>
+            <h2>Profissional não encontrado</h2>
             <p>
-              {error || "O link que você acessou não corresponde a nenhum médico cadastrado."}
+              {error || "O link que você acessou não corresponde a nenhum profissional cadastrado."}
             </p>
           </div>
         </Card>

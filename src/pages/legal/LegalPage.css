@@ -1,0 +1,287 @@
+/* ============================================
+   LEGAL PAGES - ESTILOS COMPARTILHADOS
+   ============================================
+
+   Estilos responsivos e mobile-first para todas
+   as páginas legais (Termos, Privacidade, etc.)
+   Usa design system do projeto (variables.css)
+*/
+
+@import url('../../styles/variables.css');
+
+.legal-page {
+    min-height: 100vh;
+    background: var(--gradient-hero);
+    padding: var(--spacing-2xl) var(--spacing-md);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.legal-container {
+    max-width: 800px;
+    width: 100%;
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2xl);
+    padding: var(--spacing-2xl);
+    margin: 0 auto;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   BOTAO VOLTAR
+   ============================================ */
+
+.legal-back-button {
+    background: transparent;
+    border: none;
+    color: var(--color-secondary);
+    font-size: var(--text-base);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    padding: var(--spacing-sm) 0;
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    transition: var(--transition-base);
+    font-family: var(--font-family-base);
+}
+
+.legal-back-button:hover {
+    color: var(--color-secondary-hover);
+    transform: translateX(-4px);
+}
+
+.legal-back-button:focus {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.legal-header {
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--border-light);
+}
+
+.legal-header h1 {
+    font-size: var(--heading-1);
+    color: var(--text-primary);
+    margin: 0 0 var(--spacing-sm) 0;
+    line-height: var(--leading-tight);
+    font-weight: var(--font-bold);
+    font-family: var(--font-family-heading);
+}
+
+.legal-version {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    margin: 0;
+    font-style: italic;
+}
+
+/* ============================================
+   CONTEUDO
+   ============================================ */
+
+.legal-content {
+    color: var(--text-primary);
+    line-height: var(--leading-relaxed);
+    font-size: var(--text-base);
+    font-family: var(--font-family-base);
+}
+
+.legal-content section {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.legal-content section:last-child {
+    margin-bottom: 0;
+}
+
+.legal-content h2 {
+    font-size: var(--heading-2);
+    color: var(--text-primary);
+    margin: var(--spacing-xl) 0 var(--spacing-md) 0;
+    font-weight: var(--font-semibold);
+    line-height: var(--leading-snug);
+    font-family: var(--font-family-heading);
+}
+
+.legal-content h3 {
+    font-size: var(--heading-3);
+    color: var(--text-secondary);
+    margin: var(--spacing-lg) 0 var(--spacing-sm) 0;
+    font-weight: var(--font-semibold);
+    font-family: var(--font-family-heading);
+}
+
+.legal-content p {
+    margin: 0 0 var(--spacing-md) 0;
+}
+
+.legal-content ul {
+    margin: var(--spacing-md) 0;
+    padding-left: var(--spacing-lg);
+}
+
+.legal-content li {
+    margin-bottom: var(--spacing-sm);
+    line-height: var(--leading-relaxed);
+}
+
+.legal-content li:last-child {
+    margin-bottom: 0;
+}
+
+.legal-content strong {
+    color: var(--text-primary);
+    font-weight: var(--font-semibold);
+}
+
+.legal-content a {
+    color: var(--text-link);
+    text-decoration: underline;
+    transition: var(--transition-base);
+}
+
+.legal-content a:hover {
+    color: var(--text-link-hover);
+}
+
+.legal-content a:focus {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.legal-footer {
+    margin-top: var(--spacing-2xl);
+    padding-top: var(--spacing-lg);
+    border-top: 2px solid var(--border-light);
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.legal-footer p {
+    margin: var(--spacing-xs) 0;
+}
+
+/* ============================================
+   RESPONSIVIDADE MOBILE (<640px)
+   ============================================ */
+
+@media (max-width: 640px) {
+    .legal-page {
+        padding: var(--spacing-md) var(--spacing-sm);
+    }
+
+    .legal-container {
+        padding: var(--spacing-lg);
+        border-radius: var(--radius-lg);
+    }
+
+    .legal-header {
+        margin-bottom: var(--spacing-lg);
+        padding-bottom: var(--spacing-md);
+    }
+
+    .legal-content {
+        font-size: var(--text-sm);
+    }
+
+    .legal-content h2 {
+        margin: var(--spacing-lg) 0 var(--spacing-sm) 0;
+    }
+
+    .legal-content h3 {
+        margin: var(--spacing-md) 0 var(--spacing-xs) 0;
+    }
+
+    .legal-content ul {
+        padding-left: var(--spacing-md);
+    }
+
+    .legal-content li {
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .legal-footer {
+        margin-top: var(--spacing-xl);
+        padding-top: var(--spacing-md);
+    }
+}
+
+@media (max-width: 375px) {
+    .legal-page {
+        padding: var(--spacing-sm) var(--spacing-xs);
+    }
+
+    .legal-container {
+        padding: var(--spacing-md);
+    }
+}
+
+/* ============================================
+   SCROLL SUAVE
+   ============================================ */
+
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+/* ============================================
+   IMPRESSAO
+   ============================================ */
+
+@media print {
+    .legal-page {
+        background: var(--white);
+        padding: 0;
+    }
+
+    .legal-back-button {
+        display: none;
+    }
+
+    .legal-container {
+        box-shadow: none;
+        max-width: 100%;
+    }
+
+    .legal-content a {
+        color: var(--black);
+        text-decoration: none;
+    }
+
+    .legal-content a::after {
+        content: " (" attr(href) ")";
+        font-size: 0.8em;
+        color: var(--text-secondary);
+    }
+}

@@ -52,16 +52,29 @@ async function generateUniqueSlug(baseSlug) {
 }
 
 
-export async function createDoctor({ uid, name, email, whatsapp }) {
+export async function createDoctor({
+  uid,
+  name,
+  email,
+  whatsapp,
+  professionalType,
+  council,
+  termsVersion,
+  termsAcceptedAt,
+  doctorResponsibilityVersion,
+  doctorResponsibilityAcceptedAt
+}) {
   try {
     const baseSlug = generateSlug(name);
     const uniqueSlug = await generateUniqueSlug(baseSlug);
 
-    await setDoc(doc(db, COLLECTIONS.DOCTORS, uid), {
+    const doctorData = {
       uid,
       name,
       email,
       whatsapp,
+      professionalType: professionalType || "medico",
+      council: council || "CRM",
       slug: uniqueSlug,
       plan: "free",
       patientLimit: 10,
@@ -84,7 +97,24 @@ export async function createDoctor({ uid, name, email, whatsapp }) {
         locations: [],
       },
       createdAt: serverTimestamp(),
-    });
+    };
+
+    // ✅ Adiciona dados de aceite dos termos (LGPD)
+    if (termsVersion && termsAcceptedAt) {
+      doctorData.termsAcceptance = {
+        version: termsVersion,
+        acceptedAt: termsAcceptedAt,
+      };
+    }
+
+    if (doctorResponsibilityVersion && doctorResponsibilityAcceptedAt) {
+      doctorData.doctorResponsibilityAcceptance = {
+        version: doctorResponsibilityVersion,
+        acceptedAt: doctorResponsibilityAcceptedAt,
+      };
+    }
+
+    await setDoc(doc(db, COLLECTIONS.DOCTORS, uid), doctorData);
 
     return { success: true };
   } catch (error) {
@@ -100,7 +130,7 @@ export async function getDoctor(doctorId) {
     const docSnap = await getDoc(doc(db, COLLECTIONS.DOCTORS, doctorId));
 
     if (!docSnap.exists()) {
-      return { success: false, error: "Médico não encontrado" };
+      return { success: false, error: "Profissional não encontrado" };
     }
 
     return {
@@ -127,7 +157,7 @@ export async function getDoctorBySlug(slug) {
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
-      return { success: false, error: "Médico não encontrado" };
+      return { success: false, error: "Profissional não encontrado" };
     }
 
     if (snapshot.docs.length > 1) {

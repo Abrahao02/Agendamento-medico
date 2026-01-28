@@ -1,0 +1,241 @@
+@import url('../../../styles/variables.css');
+
+/* ========================================
+   SELECT WRAPPER
+   ======================================== */
+
+.select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.select-wrapper-full-width {
+  width: 100%;
+}
+
+/* ========================================
+   SELECT LABEL
+   ======================================== */
+
+.select-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  display: block;
+}
+
+.select-required {
+  color: var(--danger-500);
+  margin-left: var(--spacing-xs);
+}
+
+/* ========================================
+   SELECT CONTAINER
+   ======================================== */
+
+.select-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* ========================================
+   SELECT BASE
+   ======================================== */
+
+.select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-base);
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: calc(var(--spacing-lg) * 2.5);
+}
+
+.select:hover {
+  border-color: var(--border-dark);
+}
+
+.select:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Placeholder style for empty value */
+.select:invalid,
+.select option[value=""] {
+  color: var(--text-tertiary);
+}
+
+.select option {
+  color: var(--text-primary);
+}
+
+/* ========================================
+   SELECT SIZES
+   ======================================== */
+
+.select-sm {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--text-sm);
+  min-height: 36px;
+}
+
+.select-md {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--text-base);
+  min-height: 44px;
+}
+
+.select-lg {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  font-size: var(--text-lg);
+  min-height: 52px;
+}
+
+/* ========================================
+   SELECT WITH ICONS
+   ======================================== */
+
+.select-icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  font-size: var(--text-lg);
+}
+
+.select-icon-left {
+  left: var(--spacing-md);
+}
+
+.select-icon-right {
+  right: var(--spacing-md);
+}
+
+.select-with-left-icon {
+  padding-left: calc(var(--spacing-lg) * 2.5);
+}
+
+.select-container-with-left-icon .select {
+  padding-left: calc(var(--spacing-lg) * 2.5);
+}
+
+/* ========================================
+   SELECT STATES
+   ======================================== */
+
+/* Error State */
+.select-error {
+  border-color: var(--danger-500);
+}
+
+.select-error:focus {
+  border-color: var(--danger-500);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Disabled State */
+.select-disabled,
+.select:disabled {
+  background: var(--gray-100);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Full Width */
+.select-full-width {
+  width: 100%;
+}
+
+/* ========================================
+   SELECT MESSAGES
+   ======================================== */
+
+.select-message {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.select-error-message {
+  color: var(--danger-600);
+  font-weight: var(--font-medium);
+}
+
+.select-helper-text {
+  color: var(--text-secondary);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .select-sm {
+    min-height: 40px;
+  }
+
+  .select-md {
+    min-height: 48px;
+  }
+
+  .select-lg {
+    min-height: 56px;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+.select:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================
+   PRINT
+   ======================================== */
+
+@media print {
+  .select {
+    border: 1px solid var(--gray-400);
+    box-shadow: none;
+  }
+}
+
+/* ========================================
+   DARK MODE (OPCIONAL)
+   ======================================== */
+
+[data-theme="dark"] .select {
+  background: var(--gray-800);
+  border-color: var(--gray-600);
+  color: var(--gray-100);
+}
+
+[data-theme="dark"] .select:focus {
+  border-color: var(--color-secondary);
+}

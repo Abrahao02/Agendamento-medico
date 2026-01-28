@@ -18,7 +18,7 @@ export async function validateSlotLocations(doctorId, slotData) {
     // Get doctor config
     const doctorResult = await DoctorService.getDoctor(doctorId);
     if (!doctorResult.success) {
-      return { valid: false, error: "Médico não encontrado" };
+      return { valid: false, error: "Profissional não encontrado" };
     }
 
     const doctorConfig = doctorResult.data;
@@ -60,7 +60,7 @@ export async function validateSlotLocations(doctorId, slotData) {
           if (!validateLocationExists(locationId, doctorConfig)) {
             return { 
               valid: false, 
-              error: `Local "${locationId}" não existe na configuração do médico` 
+              error: `Local "${locationId}" não existe na configuração do profissional` 
             };
           }
         }

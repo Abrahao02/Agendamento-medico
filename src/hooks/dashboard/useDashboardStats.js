@@ -34,9 +34,19 @@ export const useDashboardStats = ({
   filterOptions,
 }) => {
   const filteredAppointments = useMemo(() =>
-    filterAppointments(appointments, filterOptions), 
+    filterAppointments(appointments, filterOptions),
     [appointments, filterOptions]
   );
+
+  // Appointments filtrados apenas por location (para cálculos que ignoram filtro de data)
+  const locationFilteredAppointments = useMemo(() => {
+    if (!filterOptions.selectedLocation || filterOptions.selectedLocation === "all") {
+      return appointments;
+    }
+    return appointments.filter(appointment =>
+      appointment.location === filterOptions.selectedLocation
+    );
+  }, [appointments, filterOptions.selectedLocation]);
 
   const filteredAvailability = useMemo(() => {
     const inPeriod = filterAppointments(availability.map(day => ({ date: day.date })), filterOptions);
@@ -475,14 +485,16 @@ export const useDashboardStats = ({
 
   // Previous Months Summary - Agrupado por mês (Recebido + Pendentes + Não compareceu)
   // Filtra apenas o ano atual (inclui meses anteriores e o mês atual do ano atual)
+  // Respeita o filtro de location
   const previousMonthsSummary = useMemo(() => {
     const today = getTodayLocal(); // "2026-01-26" - timezone-safe
     const todayDate = new Date(); // Usar apenas para extrair mês/ano
     const currentMonth = todayDate.getMonth() + 1; // 1-12
     const currentYear = todayDate.getFullYear();
-    
+
     // Filtrar appointments apenas do ano atual (meses anteriores e o mês atual)
-    const allMonthsAppointments = appointments.filter(appointment => {
+    // Usa locationFilteredAppointments para respeitar o filtro de local
+    const allMonthsAppointments = locationFilteredAppointments.filter(appointment => {
       if (!appointment.date) return false;
       
       const appointmentDate = new Date(appointment.date);
@@ -547,17 +559,19 @@ export const useDashboardStats = ({
       months: monthsArray,
       totals,
     };
-  }, [appointments]);
+  }, [locationFilteredAppointments]);
 
   // Future Months Comparison - Meses atuais e futuros com appointments (previsão)
+  // Respeita o filtro de location
   const futureMonthsComparison = useMemo(() => {
     const today = getTodayLocal(); // "2026-01-26" - timezone-safe
     const todayDate = new Date(); // Usar apenas para extrair mês/ano
     const currentMonth = todayDate.getMonth() + 1; // 1-12
     const currentYear = todayDate.getFullYear();
-    
+
     // Filtrar appointments do mês atual e futuros do ano atual
-    const futureMonthsAppointments = appointments.filter(appointment => {
+    // Usa locationFilteredAppointments para respeitar o filtro de local
+    const futureMonthsAppointments = locationFilteredAppointments.filter(appointment => {
       if (!appointment.date) return false;
       
       const appointmentDate = new Date(appointment.date);
@@ -623,7 +637,7 @@ export const useDashboardStats = ({
       months: monthsArray,
       totals,
     };
-  }, [appointments]);
+  }, [locationFilteredAppointments]);
 
   // Extract filtered expenses from expenseStats
   const filteredExpenses = useMemo(() => expenseStats.filtered, [expenseStats]);
