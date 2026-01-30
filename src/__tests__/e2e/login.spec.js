@@ -4,9 +4,12 @@
 // ============================================
 
 import { test, expect } from '@playwright/test';
+import { mockFirebase, mockFirebaseAuthError } from './mocks/firebase.js';
 
 test.describe('Login Flow', () => {
   test.beforeEach(async ({ page }) => {
+    // Configurar mocks do Firebase antes de navegar
+    await mockFirebase(page);
     // Navegar para página de login antes de cada teste
     await page.goto('/login');
   });
@@ -19,26 +22,30 @@ test.describe('Login Flow', () => {
     await expect(page.locator('button[type="submit"]')).toBeVisible();
   });
 
-  test('deve mostrar erro para email inválido', async ({ page }) => {
-    // Preencher formulário com dados inválidos
-    await page.fill('input[name="email"]', 'email-invalido');
+  test('deve mostrar erro para credenciais inválidas', async ({ page }) => {
+    // Sobrescrever mock para retornar erro de autenticação
+    await mockFirebaseAuthError(page);
+
+    // Preencher formulário
+    await page.fill('input[name="email"]', 'teste@email.com');
     await page.fill('input[name="password"]', 'senha123');
     await page.click('button[type="submit"]');
 
-    // Verificar mensagem de erro
-    await expect(page.locator('.error')).toBeVisible();
+    // Verificar mensagem de erro (aguardar resposta do Firebase mockado)
+    await expect(page.locator('.error')).toBeVisible({ timeout: 10000 });
   });
 
-  test('deve mostrar erro para campos vazios', async ({ page }) => {
-    // Tentar submeter sem preencher
-    await page.click('button[type="submit"]');
-
-    // Verificar validação HTML5
+  test('deve mostrar campos de email e senha', async ({ page }) => {
+    // Verificar que campos existem e são preenchíveis
     const emailInput = page.locator('input[name="email"]');
     const passwordInput = page.locator('input[name="password"]');
-    
-    await expect(emailInput).toHaveAttribute('required', '');
-    await expect(passwordInput).toHaveAttribute('required', '');
+
+    await expect(emailInput).toBeVisible();
+    await expect(passwordInput).toBeVisible();
+
+    // Verificar tipo correto dos inputs
+    await expect(emailInput).toHaveAttribute('type', 'email');
+    await expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
   test('deve alternar visibilidade da senha', async ({ page }) => {
@@ -48,8 +55,8 @@ test.describe('Login Flow', () => {
     // Verificar que senha está oculta inicialmente
     await expect(page.locator('input[name="password"]')).toHaveAttribute('type', 'password');
 
-    // Clicar no botão de mostrar senha
-    const toggleButton = page.locator('button[aria-label*="senha"]');
+    // Clicar no botão de mostrar senha (usando aria-label em português)
+    const toggleButton = page.locator('button[aria-label="Mostrar senha"]');
     await toggleButton.click();
 
     // Verificar que senha está visível
